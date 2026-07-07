@@ -12,6 +12,6 @@ class HcRetired extends Model
     public $incrementing = false;
     protected $primaryKey = 'id';
     protected $fillable = [
-        'id', 'nama', 'jabatan', 'tahun', 'tanggal', 'keterangan'
+        'id', 'nama', 'jabatan', 'umur_pensiun', 'tahun', 'tanggal', 'keterangan'
     ];
 }
