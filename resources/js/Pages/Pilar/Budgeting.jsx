@@ -129,7 +129,7 @@ export default function Budgeting(props) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <KpiCard 
                     title="Total Budget (Plafon)" 
-                    value={formatCurrency(totalBudget)} 
+                    value={formatShortCurrency(totalBudget)} 
                     subtitle="Tahun Anggaran berjalan" 
                     icon={Calculator} 
                     colorClass="text-blue-600" 
@@ -137,7 +137,7 @@ export default function Budgeting(props) {
                 />
                 <KpiCard 
                     title="Consumed (PR/PO)" 
-                    value={formatCurrency(totalConsumed)} 
+                    value={formatShortCurrency(totalConsumed)} 
                     subtitle={`Terserap ${formatPercentage(totalConsumed, totalBudget)}`} 
                     icon={TrendingUp} 
                     colorClass="text-yellow-600" 
@@ -145,7 +145,7 @@ export default function Budgeting(props) {
                 />
                 <KpiCard 
                     title="Actual (Realisasi)" 
-                    value={formatCurrency(totalActual)} 
+                    value={formatShortCurrency(totalActual)} 
                     subtitle={`Realisasi ${formatPercentage(totalActual, totalBudget)}`} 
                     icon={CheckCircle} 
                     colorClass="text-green-600" 
@@ -153,7 +153,7 @@ export default function Budgeting(props) {
                 />
                 <KpiCard 
                     title="Available (Sisa Plafon)" 
-                    value={formatCurrency(totalAvailable)} 
+                    value={formatShortCurrency(totalAvailable)} 
                     subtitle="Sisa anggaran bebas" 
                     icon={AlertCircle} 
                     colorClass="text-indigo-600" 
