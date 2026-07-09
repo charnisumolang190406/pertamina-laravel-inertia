@@ -11,6 +11,7 @@ use App\Models\BudgetDetail;
 use App\Models\AlatBerat;
 use App\Models\Perbaikan;
 use App\Models\HcMutation;
+use App\Models\TadMutation;
 use App\Models\Asset;
 use App\Models\Arsip;
 use App\Models\UploadArchive;
@@ -77,8 +78,8 @@ class ImportController extends Controller
                             'jabatan' => $row['jabatan'] ?? 'Staff',
                             'fungsi' => $row['fungsi'] ?? 'BUSINESS SUPPORT',
                             'upah' => intval($row['upah'] ?? 0),
-                            'jamLembur' => floatval($row['jamLembur'] ?? 0),
-                            'lemburVal' => intval($row['lemburVal'] ?? 0),
+                            'jamLembur' => floatval($row['jamLembur'] ?? $row['jam_lembur'] ?? 0),
+                            'lemburVal' => intval($row['lemburVal'] ?? $row['lembur_val'] ?? 0),
                             'periode' => $row['periode'] ?? date('F Y'),
                         ]);
                         $insertedCount++;
@@ -138,6 +139,19 @@ class ImportController extends Controller
                         $insertedCount++;
                         break;
 
+                    case 'tad_mutation':
+                        TadMutation::create([
+                            'id' => $uniqueId,
+                            'bulan' => $row['bulan'] ?? date('F Y'),
+                            'nama' => $row['nama'] ?? 'Pegawai TAD',
+                            'jenis' => $row['jenis'] ?? 'Masuk',
+                            'peran' => $row['peran'] ?? 'Staff',
+                            'vendor' => $row['vendor'] ?? '-',
+                            'keterangan' => $row['keterangan'] ?? '-',
+                        ]);
+                        $insertedCount++;
+                        break;
+
                     case 'it_asset':
                         Asset::create([
                             'id' => $uniqueId,
@@ -173,7 +187,7 @@ class ImportController extends Controller
                 $archiveCategory = 'Kontrak & SCM';
             } elseif ($type === 'mom') {
                 $archiveCategory = 'MOM Rapat';
-            } elseif (in_array($type, ['hc', 'lembur_tad'])) {
+            } elseif (in_array($type, ['hc', 'lembur_tad', 'tad_mutation'])) {
                 $archiveCategory = 'Laporan Bulanan';
             }
 
