@@ -18,7 +18,7 @@ import FeedbackModal from '../Components/FeedbackModal';
 import UploadWizardModal from '../Components/UploadWizardModal';
 
 export default function Dashboard(props) {
-    const { auth, flash } = props;
+    const { auth, flash, env } = props;
     const currentUser = auth.user;
 
     const getDefaultTab = (role) => {
@@ -222,13 +222,6 @@ export default function Dashboard(props) {
                             )}
                         </div>
 
-                        {/* System Badge */}
-                        <div className="text-right hidden sm:block">
-                            <span className="text-[10px] font-bold text-slate-500 block leading-none">Status Koneksi</span>
-                            <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-green-600 mt-1 uppercase">
-                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Connected (Hostinger MySQL)
-                            </span>
-                        </div>
                     </div>
                 </header>
 
