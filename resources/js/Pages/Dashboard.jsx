@@ -8,7 +8,6 @@ import {
 import MainDashboard from './Pilar/MainDashboard';
 import Budgeting from './Pilar/Budgeting';
 import HumanCapital from './Pilar/HumanCapital';
-import TenagaAlihDaya from './Pilar/TenagaAlihDaya';
 import Logistik from './Pilar/Logistik';
 import Scm from './Pilar/Scm';
 import Arsip from './Pilar/Arsip';
@@ -55,7 +54,6 @@ export default function Dashboard(props) {
         { id: 'view-main', title: 'Main Dashboard', label: 'Executive Recast', icon: LayoutDashboard },
         { id: 'view-budget', title: 'Budgeting', label: 'ABI & ABO Monitor', icon: Calculator },
         { id: 'view-hc', title: 'Human Capital', label: 'SDM & Organik PGE', icon: Users },
-        { id: 'view-tad', title: 'Tenaga Alih Daya', label: 'TAD & Lembur Monitor', icon: UsersRound },
         { id: 'view-logistik', title: 'Facility Management', label: 'Logistik & SCM', icon: Package },
         { id: 'view-it-asset', title: 'IT Asset Area', label: 'Server & Workstation', icon: Laptop },
         { id: 'view-scm', title: 'Kontrak', label: 'Monitoring Vendor', icon: FileSignature },
@@ -76,7 +74,7 @@ export default function Dashboard(props) {
             return tabId === 'view-budget' || tabId === 'view-scm' || tabId === 'view-arsip' || tabId === 'view-calendar';
         }
         if (roleLower.includes('hc') || roleLower.includes('human')) {
-            return tabId === 'view-hc' || tabId === 'view-tad' || tabId === 'view-scm' || tabId === 'view-arsip' || tabId === 'view-calendar';
+            return tabId === 'view-hc' || tabId === 'view-scm' || tabId === 'view-arsip' || tabId === 'view-calendar';
         }
         if (roleLower.includes('scm')) {
             return tabId === 'view-scm' || tabId === 'view-arsip' || tabId === 'view-calendar';
@@ -255,7 +253,6 @@ export default function Dashboard(props) {
                     {activeTab === 'view-main' && <MainDashboard {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-budget' && <Budgeting {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-hc' && <HumanCapital {...props} onOpenFeedback={openFeedback} />}
-                    {activeTab === 'view-tad' && <TenagaAlihDaya {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-logistik' && <Logistik {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-scm' && <Scm {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-arsip' && <Arsip {...props} onOpenFeedback={openFeedback} />}
