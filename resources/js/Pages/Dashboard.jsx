@@ -120,6 +120,8 @@ export default function Dashboard(props) {
                         const isAllowed = isTabAllowed(item.id, currentUser.role);
                         if (!isAllowed) return null;
 
+                        const isMain = item.id === 'view-main';
+
                         return (
                             <React.Fragment key={item.id}>
                                 <button
