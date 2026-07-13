@@ -16,6 +16,15 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
+            AlatBeratSeeder::class,
+            PerbaikanSeeder::class,
+            LemburTadSeeder::class,
+            BudgetDetailSeeder::class,
+            StokSeeder::class,
+            ArsipSeeder::class,
+            AssetSeeder::class,
+            UploadArchiveSeeder::class,
+            BbmStockSeeder::class,
         ]);
 
         // 2. Seed SCM Contracts
