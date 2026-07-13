@@ -119,22 +119,32 @@ export default function Dashboard(props) {
                         const Icon = item.icon;
                         const isAllowed = isTabAllowed(item.id, currentUser.role);
                         if (!isAllowed) return null;
+                        
+                        const isMain = item.id === 'view-main';
 
                         return (
-                            <button
-                                key={item.id}
-                                onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-3.5 py-2.5 px-4 my-1 rounded-r-full mr-4 transition-all cursor-pointer border border-transparent ${
-                                    activeTab === item.id 
-                                        ? 'bg-pertamina-green text-white shadow-md shadow-pertamina-green/30' 
-                                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                                }`}
-                            >
-                                <Icon className="w-4 h-4 shrink-0" />
-                                <div className="text-left">
-                                    <div className="leading-none text-[13px]">{item.title}</div>
-                                </div>
-                            </button>
+                            <React.Fragment key={item.id}>
+                                {!isMain && item.id === 'view-budget' && (
+                                    <div className="px-5 mt-4 mb-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                                        Pillar / Function
+                                    </div>
+                                )}
+                                <button
+                                    onClick={() => setActiveTab(item.id)}
+                                    className={`flex items-center gap-3.5 py-2.5 px-4 my-1 rounded-r-full mr-4 transition-all cursor-pointer border border-transparent ${
+                                        !isMain ? 'w-[calc(100%-1rem)] ml-4' : 'w-full'
+                                    } ${
+                                        activeTab === item.id 
+                                            ? 'bg-pertamina-green text-white shadow-md shadow-pertamina-green/30' 
+                                            : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    <Icon className="w-4 h-4 shrink-0" />
+                                    <div className="text-left">
+                                        <div className="leading-none text-[13px]">{item.title}</div>
+                                    </div>
+                                </button>
+                            </React.Fragment>
                         );
                     })}
                 </nav>
