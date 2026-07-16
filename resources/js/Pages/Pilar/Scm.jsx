@@ -25,16 +25,37 @@ export default function Scm(props) {
         fungsi: 'BS',
     });
 
-    const filteredScm = scmList.filter(c => 
+    const calculateProgress = (start, end) => {
+        if (!start || !end) return 0;
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const now = new Date();
+        
+        if (now < startDate) return 0;
+        if (now > endDate) return 100;
+        
+        const totalDuration = endDate.getTime() - startDate.getTime();
+        const elapsed = now.getTime() - startDate.getTime();
+        
+        const rawProgress = (elapsed / totalDuration) * 100;
+        return Math.min(Math.max(Math.round(rawProgress), 0), 100);
+    };
+
+    const contractsWithProgress = scmList.map(c => ({
+        ...c,
+        calculatedProgress: calculateProgress(c.mulai, c.selesai)
+    }));
+
+    const filteredScm = contractsWithProgress.filter(c => 
         c.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.nomor.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.vendor.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const totalContracts = scmList.length;
-    const totalValue = scmList.reduce((acc, c) => acc + c.nilai, 0);
-    const activeContracts = scmList.filter(c => c.status === 'Aktif' || c.status === 'Amandemen').length;
-    const criticalContracts = scmList.filter(c => c.status === 'Kritis').length;
+    const totalContracts = contractsWithProgress.length;
+    const totalValue = contractsWithProgress.reduce((acc, c) => acc + c.nilai, 0);
+    const activeContracts = contractsWithProgress.filter(c => c.calculatedProgress < 100).length;
+    const criticalContracts = contractsWithProgress.filter(c => c.calculatedProgress >= 90 && c.calculatedProgress < 100).length;
 
     const formatCurrency = (val) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
@@ -93,18 +114,18 @@ export default function Scm(props) {
                 <KpiCard 
                     title="Kontrak Aktif" 
                     value={`${activeContracts} Kontrak`} 
-                    subtitle="Status Aktif & Amandemen" 
+                    subtitle="Masih berjalan (Progress < 100%)" 
                     icon={CheckCircle} 
                     colorClass="text-indigo-600" 
                     bgClass="bg-indigo-50" 
                 />
                 <KpiCard 
-                    title="Kontrak Status Kritis" 
+                    title="Kontrak Akan Selesai" 
                     value={`${criticalContracts} Unit`} 
-                    subtitle="Butuh perhatian / percepatan" 
+                    subtitle="Progress >= 90%" 
                     icon={AlertCircle} 
-                    colorClass="text-red-600" 
-                    bgClass="bg-red-50" 
+                    colorClass="text-amber-600" 
+                    bgClass="bg-amber-50" 
                 />
             </div>
 
@@ -165,8 +186,7 @@ export default function Scm(props) {
                                 <th className="p-3.5 text-slate-500 font-bold">Mitra Kerja / Vendor</th>
                                 <th className="p-3.5 text-slate-500 font-bold text-right">Nilai Kontrak</th>
                                 <th className="p-3.5 text-slate-500 font-bold text-center">Jangka Waktu</th>
-                                <th className="p-3.5 text-slate-500 font-bold text-center w-24">Progress</th>
-                                <th className="p-3.5 text-slate-500 font-bold w-24">Status</th>
+                                <th className="p-3.5 text-slate-500 font-bold text-center w-24">Progress Waktu</th>
                                 {isAdmin && <th className="p-3.5 text-slate-500 font-bold text-center w-20">Aksi</th>}
                             </tr>
                         </thead>
@@ -185,23 +205,14 @@ export default function Scm(props) {
                                             <div className="w-16 bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200 shrink-0">
                                                 <div 
                                                     className={`h-full rounded-full ${
-                                                        item.progres >= 100 ? 'bg-green-500' :
-                                                        item.progres >= 50 ? 'bg-blue-500' : 'bg-yellow-500'
+                                                        item.calculatedProgress >= 100 ? 'bg-green-500' :
+                                                        item.calculatedProgress >= 90 ? 'bg-amber-500' : 'bg-blue-500'
                                                     }`}
-                                                    style={{ width: `${Math.min(item.progres, 100)}%` }}
+                                                    style={{ width: `${Math.min(item.calculatedProgress, 100)}%` }}
                                                 />
                                             </div>
-                                            <span className="font-bold text-slate-700 text-[10px]">{item.progres}%</span>
+                                            <span className="font-bold text-slate-700 text-[10px]">{item.calculatedProgress}%</span>
                                         </div>
-                                    </td>
-                                    <td className="p-3.5">
-                                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${
-                                            item.status === 'Selesai' ? 'bg-green-100 text-green-800' :
-                                            item.status === 'Aktif' ? 'bg-blue-100 text-blue-800' :
-                                            item.status === 'Amandemen' ? 'bg-indigo-100 text-indigo-800' : 'bg-red-100 text-red-800'
-                                        }`}>
-                                            {item.status}
-                                        </span>
                                     </td>
                                     {isAdmin && (
                                         <td className="p-3.5 text-center">
@@ -218,7 +229,7 @@ export default function Scm(props) {
                             ))}
                             {filteredScm.length === 0 && (
                                 <tr>
-                                    <td colSpan={isAdmin ? 8 : 7} className="p-8 text-center text-slate-400 font-medium">
+                                    <td colSpan={isAdmin ? 7 : 6} className="p-8 text-center text-slate-400 font-medium">
                                         Tidak ada data monitoring kontrak vendor.
                                     </td>
                                 </tr>
@@ -328,33 +339,7 @@ export default function Scm(props) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Status Awal</label>
-                                    <select
-                                        value={data.status}
-                                        onChange={(e) => setData('status', e.target.value)}
-                                        className="w-full p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 font-bold text-slate-700"
-                                    >
-                                        <option value="Aktif">Aktif</option>
-                                        <option value="Amandemen">Amandemen</option>
-                                        <option value="Selesai">Selesai</option>
-                                        <option value="Kritis">Kritis (Terlambat)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Progress Fisik (%)</label>
-                                    <input
-                                        type="number"
-                                        value={data.progres}
-                                        onChange={(e) => setData('progres', e.target.value)}
-                                        min="0"
-                                        max="100"
-                                        className="w-full p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 font-semibold text-slate-800"
-                                        required
-                                    />
-                                </div>
-                            </div>
+                            {/* Removed Status and Progress fields as they are dynamically calculated */}
 
                             <div className="flex justify-end gap-2 text-xs font-bold pt-4 border-t border-slate-100">
                                 <button

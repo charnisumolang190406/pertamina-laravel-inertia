@@ -18,6 +18,7 @@ use App\Models\Asset;
 use App\Models\UploadArchive;
 use App\Models\Employee;
 use App\Models\TadMutation;
+use App\Models\BbmStock;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -53,6 +54,7 @@ class DashboardController extends Controller
             'arsipList' => Arsip::orderBy('id', 'desc')->get(),
             'assetList' => Asset::all(),
             'uploadArchive' => UploadArchive::orderBy('id', 'desc')->get(),
+            'bbmList' => BbmStock::all(),
         ]);
     }
 }

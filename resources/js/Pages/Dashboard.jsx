@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
-import { 
-  LayoutDashboard, Calculator, Users, Package, FileSignature, 
-  FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound
+import {
+    LayoutDashboard, Calculator, Users, Package, FileSignature,
+    FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound
 } from 'lucide-react';
 
 import MainDashboard from './Pilar/MainDashboard';
 import Budgeting from './Pilar/Budgeting';
 import HumanCapital from './Pilar/HumanCapital';
-import TenagaAlihDaya from './Pilar/TenagaAlihDaya';
 import Logistik from './Pilar/Logistik';
 import Scm from './Pilar/Scm';
 import Arsip from './Pilar/Arsip';
@@ -18,7 +17,7 @@ import FeedbackModal from '../Components/FeedbackModal';
 import UploadWizardModal from '../Components/UploadWizardModal';
 
 export default function Dashboard(props) {
-    const { auth, flash } = props;
+    const { auth, flash, env } = props;
     const currentUser = auth.user;
 
     const getDefaultTab = (role) => {
@@ -55,7 +54,6 @@ export default function Dashboard(props) {
         { id: 'view-main', title: 'Main Dashboard', label: 'Executive Recast', icon: LayoutDashboard },
         { id: 'view-budget', title: 'Budgeting', label: 'ABI & ABO Monitor', icon: Calculator },
         { id: 'view-hc', title: 'Human Capital', label: 'SDM & Organik PGE', icon: Users },
-        { id: 'view-tad', title: 'Tenaga Alih Daya', label: 'TAD & Lembur Monitor', icon: UsersRound },
         { id: 'view-logistik', title: 'Facility Management', label: 'Logistik & SCM', icon: Package },
         { id: 'view-it-asset', title: 'IT Asset Area', label: 'Server & Workstation', icon: Laptop },
         { id: 'view-scm', title: 'Kontrak', label: 'Monitoring Vendor', icon: FileSignature },
@@ -65,7 +63,7 @@ export default function Dashboard(props) {
 
     const isTabAllowed = (tabId, role) => {
         const roleLower = (role || '').toLowerCase();
-        
+
         // Managers, Executives, and Kepala see everything (like Manager BS)
         if (roleLower.includes('manager') || roleLower.includes('kepala') || roleLower.includes('executive') || roleLower.includes('viewer')) {
             return true;
@@ -76,7 +74,7 @@ export default function Dashboard(props) {
             return tabId === 'view-budget' || tabId === 'view-scm' || tabId === 'view-arsip' || tabId === 'view-calendar';
         }
         if (roleLower.includes('hc') || roleLower.includes('human')) {
-            return tabId === 'view-hc' || tabId === 'view-tad' || tabId === 'view-scm' || tabId === 'view-arsip' || tabId === 'view-calendar';
+            return tabId === 'view-hc' || tabId === 'view-scm' || tabId === 'view-arsip' || tabId === 'view-calendar';
         }
         if (roleLower.includes('scm')) {
             return tabId === 'view-scm' || tabId === 'view-arsip' || tabId === 'view-calendar';
@@ -106,10 +104,10 @@ export default function Dashboard(props) {
             <aside className="w-[260px] bg-white text-slate-600 flex flex-col border-r border-slate-200 shadow-sm shrink-0 z-30">
                 {/* Brand Logo Header */}
                 <div className="h-24 px-4 border-b border-slate-100 flex items-center justify-center py-2">
-                    <img 
-                        src="/logo-pertamina.jpg" 
-                        alt="Pertamina Geothermal Energy" 
-                        className="w-full max-w-[200px] h-auto object-contain mix-blend-multiply" 
+                    <img
+                        src="/logo-pertamina.jpg"
+                        alt="Pertamina Geothermal Energy"
+                        className="w-full max-w-[200px] h-auto object-contain mix-blend-multiply"
                     />
                 </div>
 
@@ -120,21 +118,29 @@ export default function Dashboard(props) {
                         const isAllowed = isTabAllowed(item.id, currentUser.role);
                         if (!isAllowed) return null;
 
+                        const isMain = item.id === 'view-main';
+
                         return (
-                            <button
-                                key={item.id}
-                                onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-3.5 py-2.5 px-4 my-1 rounded-r-full mr-4 transition-all cursor-pointer border border-transparent ${
-                                    activeTab === item.id 
-                                        ? 'bg-pertamina-green text-white shadow-md shadow-pertamina-green/30' 
-                                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                                }`}
-                            >
-                                <Icon className="w-4 h-4 shrink-0" />
-                                <div className="text-left">
-                                    <div className="leading-none text-[13px]">{item.title}</div>
-                                </div>
-                            </button>
+                            <React.Fragment key={item.id}>
+                                {!isMain && item.id === 'view-budget' && (
+                                    <div className="px-5 mt-4 mb-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                                        Pillar / Function
+                                    </div>
+                                )}
+                                <button
+                                    onClick={() => setActiveTab(item.id)}
+                                    className={`flex items-center gap-3.5 py-2.5 px-4 my-1 rounded-r-full mr-4 transition-all cursor-pointer border border-transparent ${!isMain ? 'w-[calc(100%-1rem)] ml-4' : 'w-full'
+                                        } ${activeTab === item.id
+                                            ? 'bg-pertamina-green text-white shadow-md shadow-pertamina-green/30'
+                                            : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    <Icon className="w-4 h-4 shrink-0" />
+                                    <div className="text-left">
+                                        <div className="leading-none text-[13px]">{item.title}</div>
+                                    </div>
+                                </button>
+                            </React.Fragment>
                         );
                     })}
                 </nav>
@@ -199,8 +205,8 @@ export default function Dashboard(props) {
                                     <div className="flex justify-between items-center mb-3">
                                         <h4 className="text-xs font-bold text-slate-800">Notifikasi Terbaru</h4>
                                         {notifications.length > 0 && (
-                                            <button 
-                                                onClick={() => setNotifications([])} 
+                                            <button
+                                                onClick={() => setNotifications([])}
                                                 className="text-[10px] text-blue-600 hover:text-blue-700 font-bold cursor-pointer"
                                             >
                                                 Bersihkan
@@ -222,13 +228,7 @@ export default function Dashboard(props) {
                             )}
                         </div>
 
-                        {/* System Badge */}
-                        <div className="text-right hidden sm:block">
-                            <span className="text-[10px] font-bold text-slate-500 block leading-none">Status Koneksi</span>
-                            <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-green-600 mt-1 uppercase">
-                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Connected (Hostinger MySQL)
-                            </span>
-                        </div>
+                        {/* System Badge Removed */}
                     </div>
                 </header>
 
@@ -250,7 +250,6 @@ export default function Dashboard(props) {
                     {activeTab === 'view-main' && <MainDashboard {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-budget' && <Budgeting {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-hc' && <HumanCapital {...props} onOpenFeedback={openFeedback} />}
-                    {activeTab === 'view-tad' && <TenagaAlihDaya {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-logistik' && <Logistik {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-scm' && <Scm {...props} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-arsip' && <Arsip {...props} onOpenFeedback={openFeedback} />}
@@ -258,17 +257,17 @@ export default function Dashboard(props) {
                     {activeTab === 'view-calendar' && <CalendarTab {...props} />}
                 </main>
 
-                <FeedbackModal 
-                    isOpen={feedbackModalOpen} 
-                    onClose={() => setFeedbackModalOpen(false)} 
-                    momId={feedbackMomId} 
-                    initialFeedback={feedbackText} 
+                <FeedbackModal
+                    isOpen={feedbackModalOpen}
+                    onClose={() => setFeedbackModalOpen(false)}
+                    momId={feedbackMomId}
+                    initialFeedback={feedbackText}
                     initialStatus={feedbackStatus}
                 />
 
-                <UploadWizardModal 
-                    isOpen={uploadWizardOpen} 
-                    onClose={() => setUploadWizardOpen(false)} 
+                <UploadWizardModal
+                    isOpen={uploadWizardOpen}
+                    onClose={() => setUploadWizardOpen(false)}
                 />
             </div>
         </div>

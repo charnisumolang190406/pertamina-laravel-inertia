@@ -43,6 +43,9 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+            'env' => [
+                'db_connection' => config('database.default', 'mysql'),
+            ]
         ]);
     }
 }

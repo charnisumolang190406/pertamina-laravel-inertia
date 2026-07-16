@@ -118,55 +118,7 @@ const productionCostScatter = [
     { label: 'Q4 2025', costKwh: 20.23, produksi: 110 },
 ];
 
-/* ─── Dummy Data: Realisasi ABO ─── */
-const aboYearly = [
-    { tahun: '2019', rkap: 28.5, actual: 26.0, variance: -8.78 },
-    { tahun: '2020', rkap: 30.2, actual: 24.2, variance: -19.99 },
-    { tahun: '2021', rkap: 31.8, actual: 28.5, variance: -10.38 },
-    { tahun: '2022', rkap: 33.5, actual: 31.2, variance: -6.87 },
-    { tahun: '2023', rkap: 35.0, actual: 33.8, variance: -3.43 },
-    { tahun: '2024', rkap: 36.5, actual: 35.2, variance: -3.56 },
-    { tahun: '2025', rkap: 38.0, actual: 37.5, variance: -1.32 },
-    { tahun: '2026', rkap: 39.5, actual: 38.8, variance: -1.77 },
-];
-
-const aboKumulatif2026 = [
-    { bulan: '1', rkap: 3.2, realisasi: 3.0 },
-    { bulan: '2', rkap: 6.5, realisasi: 6.2 },
-    { bulan: '3', rkap: 9.8, realisasi: 9.5 },
-    { bulan: '4', rkap: 13.2, realisasi: 12.8 },
-    { bulan: '5', rkap: 16.5, realisasi: 16.0 },
-    { bulan: '6', rkap: 19.8, realisasi: 19.2 },
-    { bulan: '7', rkap: 23.2, realisasi: 22.5 },
-    { bulan: '8', rkap: 26.5, realisasi: 25.8 },
-    { bulan: '9', rkap: 29.8, realisasi: 29.0 },
-    { bulan: '10', rkap: 33.2, realisasi: 32.2 },
-    { bulan: '11', rkap: 36.5, realisasi: 35.5 },
-    { bulan: '12', rkap: 39.5, realisasi: 38.8 },
-];
-
-const aboMonthly2026 = [
-    { bulan: '1', rkap: 3.2, realisasi: 3.0 },
-    { bulan: '2', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '3', rkap: 3.3, realisasi: 3.3 },
-    { bulan: '4', rkap: 3.4, realisasi: 3.3 },
-    { bulan: '5', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '6', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '7', rkap: 3.4, realisasi: 3.3 },
-    { bulan: '8', rkap: 3.3, realisasi: 3.3 },
-    { bulan: '9', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '10', rkap: 3.4, realisasi: 3.2 },
-    { bulan: '11', rkap: 3.3, realisasi: 3.3 },
-    { bulan: '12', rkap: 3.0, realisasi: 3.3 },
-];
-
-const aboPerFungsi = [
-    { fungsi: 'Operation', budget: 12.5, actual: 12.4, variance: -0.8 },
-    { fungsi: 'Maintenance', budget: 10.2, actual: 10.1, variance: -1.0 },
-    { fungsi: 'GM', budget: 5.8, actual: 5.7, variance: -1.7 },
-    { fungsi: 'HSSE', budget: 4.5, actual: 4.5, variance: 0.0 },
-    { fungsi: 'Bus. Support', budget: 6.5, actual: 6.1, variance: -6.2 },
-];
+/* Realisasi ABO moved to Budgeting */
 
 const PERTAMINA_BLUE = '#00529C';
 const PERTAMINA_GREEN = '#8DC63F';
@@ -315,72 +267,7 @@ function TabFinancial() {
     );
 }
 
-/* ─── Tab: Realisasi ABO ─── */
-function TabAbo() {
-    return (
-        <div className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard title="ABO 2019 – 2026 (USD Juta)" subtitle="Perbandingan RKAP vs Actual — Kenaikan anggaran ABO Area Lahendong" className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={aboYearly} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <RechartsTooltip formatter={(v, name) => [`${v} Juta USD`, name]} />
-                            <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Bar dataKey="rkap" name="RKAP (USD)" fill="#93c5fd" radius={[3, 3, 0, 0]} />
-                            <Bar dataKey="actual" name="Actual (USD)" fill={PERTAMINA_GREEN} radius={[3, 3, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartCard>
-
-                <ChartCard title="Actual ABO Area Lahendong 2026 — Kumulatif" subtitle="Serapan anggaran kumulatif RKAP vs Realisasi (IDR Miliar)" className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={aboKumulatif2026} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="bulan" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} label={{ value: 'Bulan', position: 'insideBottom', offset: -2, style: { fontSize: 9 } }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <RechartsTooltip formatter={(v, name) => [`${v} Miliar`, name]} />
-                            <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Line type="monotone" dataKey="rkap" name="RKAP Kumulatif" stroke={PERTAMINA_BLUE} strokeWidth={2.5} dot={{ r: 3 }} />
-                            <Line type="monotone" dataKey="realisasi" name="Realisasi Kumulatif" stroke={PERTAMINA_GREEN} strokeWidth={2.5} dot={{ r: 3 }} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </ChartCard>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard title="Actual ABO Area Lahendong 2026 — Monthly" subtitle="Realisasi bulanan RKAP vs Actual (IDR Miliar)" className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={aboMonthly2026} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="bulan" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} domain={[2.5, 3.8]} />
-                            <RechartsTooltip formatter={(v, name) => [`${v} Miliar`, name]} />
-                            <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Line type="monotone" dataKey="rkap" name="RKAP 2026" stroke={PERTAMINA_BLUE} strokeWidth={2} dot={{ r: 3 }} />
-                            <Line type="monotone" dataKey="realisasi" name="Real 2026" stroke={PERTAMINA_GREEN} strokeWidth={2} dot={{ r: 3 }} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </ChartCard>
-
-                <ChartCard title="Rincian Realisasi ABO per Fungsi" subtitle="Budget vs Actual per fungsi — Area Lahendong 2026 (IDR Miliar)" className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={aboPerFungsi} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="fungsi" tickLine={false} axisLine={false} tick={{ fontSize: 9 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <RechartsTooltip formatter={(v, name) => [`${v} Miliar`, name]} />
-                            <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Bar dataKey="budget" name="Budget" fill="#93c5fd" radius={[3, 3, 0, 0]} />
-                            <Bar dataKey="actual" name="Actual" fill={PERTAMINA_GREEN} radius={[3, 3, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartCard>
-            </div>
-        </div>
-    );
-}
+/* TabAbo moved to Budgeting */
 
 /* ─── Main Dashboard ─── */
 export default function MainDashboard(props) {
@@ -402,7 +289,6 @@ export default function MainDashboard(props) {
     const tabs = [
         { id: 'operasi', label: 'Kinerja Operasi & Reliability', icon: Activity },
         { id: 'financial', label: 'Financial Performance', icon: DollarSign },
-        { id: 'abo', label: 'Realisasi ABO', icon: PieChartIcon },
     ];
 
     return (
@@ -453,7 +339,6 @@ export default function MainDashboard(props) {
             {/* Tab Content */}
             {activeSubTab === 'operasi' && <TabOperasi />}
             {activeSubTab === 'financial' && <TabFinancial />}
-            {activeSubTab === 'abo' && <TabAbo />}
         </div>
     );
 }
