@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
-import { 
-  LayoutDashboard, Calculator, Users, Package, FileSignature, 
-  FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound
+import {
+    LayoutDashboard, Calculator, Users, Package, FileSignature,
+    FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound
 } from 'lucide-react';
 
 import MainDashboard from './Pilar/MainDashboard';
@@ -63,7 +63,7 @@ export default function Dashboard(props) {
 
     const isTabAllowed = (tabId, role) => {
         const roleLower = (role || '').toLowerCase();
-        
+
         // Managers, Executives, and Kepala see everything (like Manager BS)
         if (roleLower.includes('manager') || roleLower.includes('kepala') || roleLower.includes('executive') || roleLower.includes('viewer')) {
             return true;
@@ -104,10 +104,10 @@ export default function Dashboard(props) {
             <aside className="w-[260px] bg-white text-slate-600 flex flex-col border-r border-slate-200 shadow-sm shrink-0 z-30">
                 {/* Brand Logo Header */}
                 <div className="h-24 px-4 border-b border-slate-100 flex items-center justify-center py-2">
-                    <img 
-                        src="/logo-pertamina.jpg" 
-                        alt="Pertamina Geothermal Energy" 
-                        className="w-full max-w-[200px] h-auto object-contain mix-blend-multiply" 
+                    <img
+                        src="/logo-pertamina.jpg"
+                        alt="Pertamina Geothermal Energy"
+                        className="w-full max-w-[200px] h-auto object-contain mix-blend-multiply"
                     />
                 </div>
 
@@ -117,30 +117,23 @@ export default function Dashboard(props) {
                         const Icon = item.icon;
                         const isAllowed = isTabAllowed(item.id, currentUser.role);
                         if (!isAllowed) return null;
-                        
-                        const isMain = item.id === 'view-main';
 
                         const isMain = item.id === 'view-main';
 
                         return (
                             <React.Fragment key={item.id}>
-<<<<<<< HEAD
                                 {!isMain && item.id === 'view-budget' && (
                                     <div className="px-5 mt-4 mb-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
                                         Pillar / Function
                                     </div>
                                 )}
-=======
->>>>>>> origin/charni
                                 <button
                                     onClick={() => setActiveTab(item.id)}
-                                    className={`flex items-center gap-3.5 py-2.5 px-4 my-1 rounded-r-full mr-4 transition-all cursor-pointer border border-transparent ${
-                                        !isMain ? 'w-[calc(100%-1rem)] ml-4' : 'w-full'
-                                    } ${
-                                        activeTab === item.id 
-                                            ? 'bg-pertamina-green text-white shadow-md shadow-pertamina-green/30' 
+                                    className={`flex items-center gap-3.5 py-2.5 px-4 my-1 rounded-r-full mr-4 transition-all cursor-pointer border border-transparent ${!isMain ? 'w-[calc(100%-1rem)] ml-4' : 'w-full'
+                                        } ${activeTab === item.id
+                                            ? 'bg-pertamina-green text-white shadow-md shadow-pertamina-green/30'
                                             : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                                    }`}
+                                        }`}
                                 >
                                     <Icon className="w-4 h-4 shrink-0" />
                                     <div className="text-left">
@@ -212,8 +205,8 @@ export default function Dashboard(props) {
                                     <div className="flex justify-between items-center mb-3">
                                         <h4 className="text-xs font-bold text-slate-800">Notifikasi Terbaru</h4>
                                         {notifications.length > 0 && (
-                                            <button 
-                                                onClick={() => setNotifications([])} 
+                                            <button
+                                                onClick={() => setNotifications([])}
                                                 className="text-[10px] text-blue-600 hover:text-blue-700 font-bold cursor-pointer"
                                             >
                                                 Bersihkan
@@ -235,10 +228,7 @@ export default function Dashboard(props) {
                             )}
                         </div>
 
-<<<<<<< HEAD
-=======
                         {/* System Badge Removed */}
->>>>>>> origin/charni
                     </div>
                 </header>
 
@@ -267,17 +257,17 @@ export default function Dashboard(props) {
                     {activeTab === 'view-calendar' && <CalendarTab {...props} />}
                 </main>
 
-                <FeedbackModal 
-                    isOpen={feedbackModalOpen} 
-                    onClose={() => setFeedbackModalOpen(false)} 
-                    momId={feedbackMomId} 
-                    initialFeedback={feedbackText} 
+                <FeedbackModal
+                    isOpen={feedbackModalOpen}
+                    onClose={() => setFeedbackModalOpen(false)}
+                    momId={feedbackMomId}
+                    initialFeedback={feedbackText}
                     initialStatus={feedbackStatus}
                 />
 
-                <UploadWizardModal 
-                    isOpen={uploadWizardOpen} 
-                    onClose={() => setUploadWizardOpen(false)} 
+                <UploadWizardModal
+                    isOpen={uploadWizardOpen}
+                    onClose={() => setUploadWizardOpen(false)}
                 />
             </div>
         </div>
