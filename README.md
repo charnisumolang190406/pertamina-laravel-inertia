@@ -66,6 +66,9 @@ git branch --show-current
 
 Pastikan berada pada branch pribadi masing-masing.
 
+JIKA BELUM GUNAKAN:
+git switch charni
+
 # 2. Ambil Update Terbaru dari GitHub
 git fetch origin
 
