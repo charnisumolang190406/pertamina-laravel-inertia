@@ -16,15 +16,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
-            AlatBeratSeeder::class,
-            PerbaikanSeeder::class,
-            LemburTadSeeder::class,
-            BudgetDetailSeeder::class,
-            StokSeeder::class,
-            ArsipSeeder::class,
-            AssetSeeder::class,
-            UploadArchiveSeeder::class,
-            BbmStockSeeder::class,
         ]);
 
         // 2. Seed SCM Contracts
@@ -247,7 +238,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 1,
                 'bulan' => 'Mei 2026',
-                'nama' => 'Andi Wijaya',
+                'nama' => 'Pegawai 01',
                 'jenis' => 'Masuk',
                 'fungsi' => 'MTC / Engineer Area',
                 'keterangan' => 'Mutasi dari Area Kamojang',
@@ -257,7 +248,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 2,
                 'bulan' => 'Mei 2026',
-                'nama' => 'Rudi Hermawan',
+                'nama' => 'Pegawai 05',
                 'jenis' => 'Keluar',
                 'fungsi' => 'OP / Operator Control Room',
                 'keterangan' => 'Pensiun Normal',
@@ -267,7 +258,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 3,
                 'bulan' => 'April 2026',
-                'nama' => 'Siti Rahma',
+                'nama' => 'Pegawai 02',
                 'jenis' => 'Masuk',
                 'fungsi' => 'BS / Finance Analyst',
                 'keterangan' => 'Karyawan Baru Rekrutmen',
@@ -277,7 +268,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 4,
                 'bulan' => 'Maret 2026',
-                'nama' => 'Ferry K.',
+                'nama' => 'Pegawai 21',
                 'jenis' => 'Keluar',
                 'fungsi' => 'SCM / Buyer',
                 'keterangan' => 'Mutasi ke Kantor Pusat',
@@ -290,7 +281,7 @@ class DatabaseSeeder extends Seeder
         DB::table('hc_tad')->insert([
             [
                 'id' => 1,
-                'nama' => 'Joko Susilo',
+                'nama' => 'TAD 08',
                 'peran' => 'Driver Operasional',
                 'vendor' => 'PT Kawanua Multi Mandiri',
                 'status' => 'Aktif',
@@ -299,7 +290,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 2,
-                'nama' => 'Nancy Pangemanan',
+                'nama' => 'TAD 05',
                 'peran' => 'Admin Support BS',
                 'vendor' => 'PT Trans Kawanua Rentcar',
                 'status' => 'Aktif',
@@ -308,7 +299,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'nama' => 'Tono Sumarjo',
+                'nama' => 'TAD 07',
                 'peran' => 'Security Guard Cluster 4',
                 'vendor' => 'PT Garda Utama Manado',
                 'status' => 'Aktif',
@@ -317,7 +308,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 4,
-                'nama' => 'Meike Tumewu',
+                'nama' => 'TAD 03',
                 'peran' => 'Catering Service BS',
                 'vendor' => 'PT Minahasa Boga Rasa',
                 'status' => 'Aktif',
@@ -330,7 +321,7 @@ class DatabaseSeeder extends Seeder
         DB::table('hc_retired')->insert([
             [
                 'id' => 1,
-                'nama' => 'Budi Santoso',
+                'nama' => 'Pegawai 03',
                 'jabatan' => 'Manager Area Lahendong',
                 'umur_pensiun' => 56,
                 'tahun' => 2026,
@@ -341,7 +332,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 2,
-                'nama' => 'Rudi Hermawan',
+                'nama' => 'Pegawai 05',
                 'jabatan' => 'Supervisor Maintenance Unit 5',
                 'umur_pensiun' => 56,
                 'tahun' => 2026,
@@ -352,7 +343,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'nama' => 'Sri Wahyuni',
+                'nama' => 'Pegawai 10',
                 'jabatan' => 'Senior Staff Finance & Accounting',
                 'umur_pensiun' => 55,
                 'tahun' => 2027,
@@ -363,7 +354,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 4,
-                'nama' => 'Wayan Sastrawan',
+                'nama' => 'Pegawai 09',
                 'jabatan' => 'Operator Utama Sumur Kluster',
                 'umur_pensiun' => 56,
                 'tahun' => 2027,
@@ -374,7 +365,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 5,
-                'nama' => 'Hanny Lumentut',
+                'nama' => 'Pegawai 12',
                 'jabatan' => 'Senior Staff SCM & Procurement',
                 'umur_pensiun' => 55,
                 'tahun' => 2028,
@@ -385,7 +376,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 6,
-                'nama' => 'Bambang Sudarsono',
+                'nama' => 'Pegawai 13',
                 'jabatan' => 'Supervisor Operasi Produksi',
                 'umur_pensiun' => 56,
                 'tahun' => 2028,
@@ -396,7 +387,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 7,
-                'nama' => 'Dewi Kartika',
+                'nama' => 'Pegawai 04',
                 'jabatan' => 'Staff HR & General Affairs',
                 'umur_pensiun' => 55,
                 'tahun' => 2029,
@@ -407,7 +398,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 8,
-                'nama' => 'Agus Salim',
+                'nama' => 'Pegawai 11',
                 'jabatan' => 'Engineer Well Service',
                 'umur_pensiun' => 56,
                 'tahun' => 2029,
@@ -420,38 +411,38 @@ class DatabaseSeeder extends Seeder
 
         // 7b. Seed Employees (demografi organik)
         DB::table('employees')->insert([
-            ['employee_id' => 'PGE-001', 'name' => 'Andi Wijaya', 'gender' => 'Laki-laki', 'age' => 32, 'position' => 'Engineer MTC', 'department' => 'Maintenance', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-002', 'name' => 'Siti Rahma', 'gender' => 'Perempuan', 'age' => 28, 'position' => 'Finance Analyst', 'department' => 'Business Support', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-003', 'name' => 'Budi Santoso', 'gender' => 'Laki-laki', 'age' => 55, 'position' => 'Manager Area', 'department' => 'Management', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-004', 'name' => 'Dewi Kartika', 'gender' => 'Perempuan', 'age' => 48, 'position' => 'Staff HR', 'department' => 'Human Capital', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-005', 'name' => 'Rudi Hermawan', 'gender' => 'Laki-laki', 'age' => 54, 'position' => 'Supervisor MTC', 'department' => 'Maintenance', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-006', 'name' => 'Maya Sari', 'gender' => 'Perempuan', 'age' => 35, 'position' => 'Operator Control Room', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-007', 'name' => 'Ferry Kurniawan', 'gender' => 'Laki-laki', 'age' => 41, 'position' => 'Buyer SCM', 'department' => 'SCM', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-008', 'name' => 'Nina Anggraini', 'gender' => 'Perempuan', 'age' => 38, 'position' => 'Staff Procurement', 'department' => 'SCM', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-009', 'name' => 'Wayan Sastrawan', 'gender' => 'Laki-laki', 'age' => 52, 'position' => 'Operator Sumur', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-010', 'name' => 'Sri Wahyuni', 'gender' => 'Perempuan', 'age' => 51, 'position' => 'Senior Staff Finance', 'department' => 'Business Support', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-011', 'name' => 'Agus Salim', 'gender' => 'Laki-laki', 'age' => 50, 'position' => 'Engineer Well Service', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-012', 'name' => 'Hanny Lumentut', 'gender' => 'Perempuan', 'age' => 49, 'position' => 'Senior Staff SCM', 'department' => 'SCM', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-013', 'name' => 'Bambang Sudarsono', 'gender' => 'Laki-laki', 'age' => 53, 'position' => 'Supervisor Operasi', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-014', 'name' => 'Ratna Dewi', 'gender' => 'Perempuan', 'age' => 33, 'position' => 'Staff IT', 'department' => 'ICT', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-015', 'name' => 'Eko Prasetyo', 'gender' => 'Laki-laki', 'age' => 36, 'position' => 'Engineer Production', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-016', 'name' => 'Linda Manoppo', 'gender' => 'Perempuan', 'age' => 29, 'position' => 'Admin BS', 'department' => 'Business Support', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-017', 'name' => 'Yudi Hartono', 'gender' => 'Laki-laki', 'age' => 44, 'position' => 'Supervisor Logistik', 'department' => 'Logistics', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-018', 'name' => 'Grace Polii', 'gender' => 'Perempuan', 'age' => 31, 'position' => 'Staff Planning', 'department' => 'Planning', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-019', 'name' => 'Tommy Lumowa', 'gender' => 'Laki-laki', 'age' => 39, 'position' => 'Technician MTC', 'department' => 'Maintenance', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
-            ['employee_id' => 'PGE-020', 'name' => 'Vera Simanjuntak', 'gender' => 'Perempuan', 'age' => 42, 'position' => 'Staff HSE', 'department' => 'HSE', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-001', 'name' => 'Pegawai 01', 'gender' => 'Laki-laki', 'age' => 32, 'position' => 'Engineer MTC', 'department' => 'Maintenance', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-002', 'name' => 'Pegawai 02', 'gender' => 'Perempuan', 'age' => 28, 'position' => 'Finance Analyst', 'department' => 'Business Support', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-003', 'name' => 'Pegawai 03', 'gender' => 'Laki-laki', 'age' => 55, 'position' => 'Manager Area', 'department' => 'Management', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-004', 'name' => 'Pegawai 04', 'gender' => 'Perempuan', 'age' => 48, 'position' => 'Staff HR', 'department' => 'Human Capital', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-005', 'name' => 'Pegawai 05', 'gender' => 'Laki-laki', 'age' => 54, 'position' => 'Supervisor MTC', 'department' => 'Maintenance', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-006', 'name' => 'Pegawai 06', 'gender' => 'Perempuan', 'age' => 35, 'position' => 'Operator Control Room', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-007', 'name' => 'Pegawai 07', 'gender' => 'Laki-laki', 'age' => 41, 'position' => 'Buyer SCM', 'department' => 'SCM', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-008', 'name' => 'Pegawai 08', 'gender' => 'Perempuan', 'age' => 38, 'position' => 'Staff Procurement', 'department' => 'SCM', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-009', 'name' => 'Pegawai 09', 'gender' => 'Laki-laki', 'age' => 52, 'position' => 'Operator Sumur', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-010', 'name' => 'Pegawai 10', 'gender' => 'Perempuan', 'age' => 51, 'position' => 'Senior Staff Finance', 'department' => 'Business Support', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-011', 'name' => 'Pegawai 11', 'gender' => 'Laki-laki', 'age' => 50, 'position' => 'Engineer Well Service', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-012', 'name' => 'Pegawai 12', 'gender' => 'Perempuan', 'age' => 49, 'position' => 'Senior Staff SCM', 'department' => 'SCM', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-013', 'name' => 'Pegawai 13', 'gender' => 'Laki-laki', 'age' => 53, 'position' => 'Supervisor Operasi', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-014', 'name' => 'Pegawai 14', 'gender' => 'Perempuan', 'age' => 33, 'position' => 'Staff IT', 'department' => 'ICT', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-015', 'name' => 'Pegawai 15', 'gender' => 'Laki-laki', 'age' => 36, 'position' => 'Engineer Production', 'department' => 'Operations', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-016', 'name' => 'Pegawai 16', 'gender' => 'Perempuan', 'age' => 29, 'position' => 'Admin BS', 'department' => 'Business Support', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-017', 'name' => 'Pegawai 17', 'gender' => 'Laki-laki', 'age' => 44, 'position' => 'Supervisor Logistik', 'department' => 'Logistics', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-018', 'name' => 'Pegawai 18', 'gender' => 'Perempuan', 'age' => 31, 'position' => 'Staff Planning', 'department' => 'Planning', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-019', 'name' => 'Pegawai 19', 'gender' => 'Laki-laki', 'age' => 39, 'position' => 'Technician MTC', 'department' => 'Maintenance', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
+            ['employee_id' => 'PGE-020', 'name' => 'Pegawai 20', 'gender' => 'Perempuan', 'age' => 42, 'position' => 'Staff HSE', 'department' => 'HSE', 'status' => 'Aktif', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // 7c. Seed TAD Mutations
         DB::table('tad_mutations')->insert([
-            ['id' => 1, 'bulan' => 'Mei 2026', 'nama' => 'Rizky Pratama', 'jenis' => 'Masuk', 'peran' => 'Driver Operasional', 'vendor' => 'PT Kawanua Multi Mandiri', 'keterangan' => 'Pengganti kontrak baru', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 2, 'bulan' => 'Mei 2026', 'nama' => 'Surya Wijaya', 'jenis' => 'Keluar', 'peran' => 'Security Guard', 'vendor' => 'PT Garda Utama Manado', 'keterangan' => 'Kontrak berakhir', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 3, 'bulan' => 'April 2026', 'nama' => 'Meike Tumewu', 'jenis' => 'Masuk', 'peran' => 'Catering Service BS', 'vendor' => 'PT Minahasa Boga Rasa', 'keterangan' => 'Perpanjangan kontrak', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 4, 'bulan' => 'April 2026', 'nama' => 'Doni Kusuma', 'jenis' => 'Keluar', 'peran' => 'Admin Support BS', 'vendor' => 'PT Trans Kawanua Rentcar', 'keterangan' => 'Mutasi ke vendor lain', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 5, 'bulan' => 'Maret 2026', 'nama' => 'Nancy Pangemanan', 'jenis' => 'Masuk', 'peran' => 'Admin Support BS', 'vendor' => 'PT Trans Kawanua Rentcar', 'keterangan' => 'Rekrutmen baru', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 6, 'bulan' => 'Maret 2026', 'nama' => 'Ahmad Fauzi', 'jenis' => 'Keluar', 'peran' => 'Driver Operasional', 'vendor' => 'PT Kawanua Multi Mandiri', 'keterangan' => 'Resign', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 7, 'bulan' => 'Juni 2026', 'nama' => 'Tono Sumarjo', 'jenis' => 'Masuk', 'peran' => 'Security Guard Cluster 4', 'vendor' => 'PT Garda Utama Manado', 'keterangan' => 'Rotasi pos security', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 8, 'bulan' => 'Juni 2026', 'nama' => 'Joko Susilo', 'jenis' => 'Keluar', 'peran' => 'Driver Operasional', 'vendor' => 'PT Kawanua Multi Mandiri', 'keterangan' => 'Pindah area Kamojang', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 1, 'bulan' => 'Mei 2026', 'nama' => 'TAD 01', 'jenis' => 'Masuk', 'peran' => 'Driver Operasional', 'vendor' => 'PT Kawanua Multi Mandiri', 'keterangan' => 'Pengganti kontrak baru', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'bulan' => 'Mei 2026', 'nama' => 'TAD 02', 'jenis' => 'Keluar', 'peran' => 'Security Guard', 'vendor' => 'PT Garda Utama Manado', 'keterangan' => 'Kontrak berakhir', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'bulan' => 'April 2026', 'nama' => 'TAD 03', 'jenis' => 'Masuk', 'peran' => 'Catering Service BS', 'vendor' => 'PT Minahasa Boga Rasa', 'keterangan' => 'Perpanjangan kontrak', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 4, 'bulan' => 'April 2026', 'nama' => 'TAD 04', 'jenis' => 'Keluar', 'peran' => 'Admin Support BS', 'vendor' => 'PT Trans Kawanua Rentcar', 'keterangan' => 'Mutasi ke vendor lain', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 5, 'bulan' => 'Maret 2026', 'nama' => 'TAD 05', 'jenis' => 'Masuk', 'peran' => 'Admin Support BS', 'vendor' => 'PT Trans Kawanua Rentcar', 'keterangan' => 'Rekrutmen baru', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 6, 'bulan' => 'Maret 2026', 'nama' => 'TAD 06', 'jenis' => 'Keluar', 'peran' => 'Driver Operasional', 'vendor' => 'PT Kawanua Multi Mandiri', 'keterangan' => 'Resign', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 7, 'bulan' => 'Juni 2026', 'nama' => 'TAD 07', 'jenis' => 'Masuk', 'peran' => 'Security Guard Cluster 4', 'vendor' => 'PT Garda Utama Manado', 'keterangan' => 'Rotasi pos security', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 8, 'bulan' => 'Juni 2026', 'nama' => 'TAD 08', 'jenis' => 'Keluar', 'peran' => 'Driver Operasional', 'vendor' => 'PT Kawanua Multi Mandiri', 'keterangan' => 'Pindah area Kamojang', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // 8. Seed Alat Berat
@@ -639,7 +630,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 1,
                 'nopok' => 'M343-250714',
-                'nama' => 'Abdulrahman Masriento',
+                'nama' => 'TAD 09',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4248000,
@@ -652,7 +643,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 2,
                 'nopok' => 'M343-250715',
-                'nama' => 'Amelia Ibrahim',
+                'nama' => 'TAD 10',
                 'jabatan' => 'Pemuka Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4478000,
@@ -665,7 +656,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 3,
                 'nopok' => 'M343-250700',
-                'nama' => 'Asep Fudy Juliansyah',
+                'nama' => 'TAD 11',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4248000,
@@ -678,7 +669,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 4,
                 'nopok' => 'M343-250710',
-                'nama' => 'Erian Dyon Orah',
+                'nama' => 'TAD 12',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4320000,
@@ -691,7 +682,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 5,
                 'nopok' => 'M343-250704',
-                'nama' => 'Grasela Anggreini Rumengan',
+                'nama' => 'TAD 13',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4410000,
@@ -704,7 +695,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 6,
                 'nopok' => 'M343-250720',
-                'nama' => 'Budi Santoso',
+                'nama' => 'Pegawai 03',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4300000,
@@ -717,7 +708,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 7,
                 'nopok' => 'M343-250721',
-                'nama' => 'Citra Dewi',
+                'nama' => 'TAD 14',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4280000,
@@ -730,7 +721,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 8,
                 'nopok' => 'M343-250722',
-                'nama' => 'Dedi Kurniawan',
+                'nama' => 'TAD 15',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4200000,
@@ -743,7 +734,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 9,
                 'nopok' => 'M343-250723',
-                'nama' => 'Eka Putri',
+                'nama' => 'TAD 16',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4350000,
@@ -756,7 +747,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 10,
                 'nopok' => 'M343-250724',
-                'nama' => 'Fajar Nugroho',
+                'nama' => 'TAD 17',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4400000,
@@ -769,7 +760,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 11,
                 'nopok' => 'M343-250725',
-                'nama' => 'Gita Maharani',
+                'nama' => 'TAD 18',
                 'jabatan' => 'Pembantu Wisma/Kantor',
                 'fungsi' => 'BUSINESS SUPPORT',
                 'upah' => 4380000,
