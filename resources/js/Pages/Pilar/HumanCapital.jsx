@@ -6,11 +6,7 @@ import {
 } from 'lucide-react';
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
-<<<<<<< HEAD
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
-=======
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Customized
->>>>>>> 2c246a6808d8ea64e7b2c3966d28c611fe495d5d
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Customized
 } from 'recharts';
 import KpiCard from '../../Components/KpiCard';
 import MomTable from '../../Components/MomTable';
@@ -76,7 +72,7 @@ function MutationBarChart({ mutationChartData }) {
 }
 
 export default function HumanCapital(props) {
-    const { 
+    const {
         hcMutations, retiredWorkers, genderStats, momList, auth, onOpenFeedback,
         tadWorkers = [], lemburTadList = [], tadMutations = [], arsipList = [],
         organikWorkers = []
@@ -116,7 +112,7 @@ export default function HumanCapital(props) {
             if (!emp.age) return;
             const age = parseInt(emp.age);
             if (isNaN(age)) return;
-            
+
             const isMale = ['laki-laki', 'l', 'pria'].includes((emp.gender || '').toLowerCase());
             const genderKey = isMale ? 'Pria' : 'Wanita';
 
@@ -129,7 +125,7 @@ export default function HumanCapital(props) {
             else if (age >= 51 && age <= 55) buckets['51-55'][genderKey]++;
             else if (age > 55) buckets['>55'][genderKey]++;
         });
-        
+
         // Filter out empty buckets for a cleaner chart
         return Object.values(buckets).filter(b => b.Pria > 0 || b.Wanita > 0);
     }, [organikWorkers]);
@@ -194,11 +190,11 @@ export default function HumanCapital(props) {
             if (curr.nopok) acc[fungsi].personil.add(curr.nopok);
             return acc;
         }, {});
-        
+
         let totalAllBiaya = 0;
         let totalAllJam = 0;
         let totalAllPersonil = new Set();
-        
+
         const result = Object.values(grouped).map(g => {
             totalAllBiaya += g.value;
             totalAllJam += g.jam;
@@ -210,7 +206,7 @@ export default function HumanCapital(props) {
                 personilCount: g.personil.size
             };
         }).sort((a, b) => b.value - a.value); // sort by value descending
-        
+
         return {
             details: result,
             totalBiaya: totalAllBiaya,
@@ -237,28 +233,26 @@ export default function HumanCapital(props) {
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto animate-[fadeIn_0.3s_ease-in-out] font-sans text-slate-800">
-            
+
             {/* MASTER TOGGLE SWITCH */}
             <div className="flex justify-center mb-6">
                 <div className="bg-white p-1 rounded-full border border-slate-200 shadow-sm inline-flex">
                     <button
                         onClick={() => setMasterView('organik')}
-                        className={`px-6 py-2.5 rounded-full text-xs font-extrabold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
-                            masterView === 'organik' 
-                                ? 'bg-pertamina-blue text-white shadow-md' 
+                        className={`px-6 py-2.5 rounded-full text-xs font-extrabold transition-all duration-300 flex items-center gap-2 cursor-pointer ${masterView === 'organik'
+                                ? 'bg-pertamina-blue text-white shadow-md'
                                 : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                        }`}
+                            }`}
                     >
                         <UserCheck className="w-4 h-4" />
                         SDM Organik ({totalOrganik})
                     </button>
                     <button
                         onClick={() => setMasterView('tad')}
-                        className={`px-6 py-2.5 rounded-full text-xs font-extrabold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
-                            masterView === 'tad' 
-                                ? 'bg-pertamina-blue text-white shadow-md' 
+                        className={`px-6 py-2.5 rounded-full text-xs font-extrabold transition-all duration-300 flex items-center gap-2 cursor-pointer ${masterView === 'tad'
+                                ? 'bg-pertamina-blue text-white shadow-md'
                                 : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                        }`}
+                            }`}
                     >
                         <Users className="w-4 h-4" />
                         Tenaga Alih Daya ({totalTad})
@@ -404,7 +398,7 @@ export default function HumanCapital(props) {
                                         <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={true} stroke="#f1f5f9" />
                                         <XAxis type="number" tick={{ fontSize: 11, fill: '#64748b' }} allowDecimals={false} />
                                         <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#475569', fontWeight: 'bold' }} width={50} />
-                                        <RechartsTooltip formatter={(value, name) => [`${value} orang`, name]} cursor={{fill: 'transparent'}} />
+                                        <RechartsTooltip formatter={(value, name) => [`${value} orang`, name]} cursor={{ fill: 'transparent' }} />
                                         <Legend wrapperStyle={{ fontSize: 12, paddingTop: '10px' }} />
                                         <Bar dataKey="Pria" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} barSize={24} />
                                         <Bar dataKey="Wanita" stackId="a" fill="#ec4899" radius={[0, 4, 4, 0]} barSize={24} />
@@ -422,18 +416,16 @@ export default function HumanCapital(props) {
                     <div className="flex border-b border-slate-200 bg-white p-2 rounded-2xl shadow-2xs">
                         <button
                             onClick={() => setActiveSubTabOrganik('mutasi')}
-                            className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                activeSubTabOrganik === 'mutasi' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                            className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabOrganik === 'mutasi' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                                }`}
                         >
                             <Users className="w-3.5 h-3.5" />
                             Mutasi & Pergerakan SDM ({totalMutations})
                         </button>
                         <button
                             onClick={() => setActiveSubTabOrganik('retired')}
-                            className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                activeSubTabOrganik === 'retired' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                            className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabOrganik === 'retired' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                                }`}
                         >
                             <UserCheck className="w-3.5 h-3.5" />
                             Proyeksi Pensiun 3 Tahun ({totalRetired})
@@ -466,9 +458,8 @@ export default function HumanCapital(props) {
                                                 <td className="p-3.5 font-bold text-slate-700">{item.bulan}</td>
                                                 <td className="p-3.5 font-bold text-slate-800">{item.nama}</td>
                                                 <td className="p-3.5">
-                                                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${
-                                                        item.jenis === 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                    }`}>
+                                                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${item.jenis === 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                        }`}>
                                                         {item.jenis}
                                                     </span>
                                                 </td>
@@ -568,25 +559,22 @@ export default function HumanCapital(props) {
                     <div className="flex flex-wrap border-b border-slate-200 bg-white p-2 rounded-2xl shadow-2xs gap-1">
                         <button
                             onClick={() => setActiveSubTabTad('tad')}
-                            className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                activeSubTabTad === 'tad' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                            className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabTad === 'tad' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                                }`}
                         >
                             Daftar TAD ({totalTad})
                         </button>
                         <button
                             onClick={() => setActiveSubTabTad('lembur')}
-                            className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                activeSubTabTad === 'lembur' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                            className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabTad === 'lembur' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                                }`}
                         >
                             Monitoring Lembur ({groupedLemburList.length})
                         </button>
                         <button
                             onClick={() => setActiveSubTabTad('mutasi')}
-                            className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                activeSubTabTad === 'mutasi' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                            className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabTad === 'mutasi' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                                }`}
                         >
                             Mutasi TAD ({totalTadMutasi})
                         </button>
@@ -640,21 +628,7 @@ export default function HumanCapital(props) {
                                 </div>
                                 {lemburChartData.length > 0 ? (
                                     <div className="h-64">
-<<<<<<< HEAD
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={lemburChartData} margin={{ top: 20, right: 15, left: -20, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                                <XAxis dataKey="periode" tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                                <YAxis tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(val) => val === 0 ? '0' : val} />
-                                                <RechartsTooltip
-                                                    formatter={(value) => [`Rp ${value} juta`, 'Biaya Lembur']}
-                                                />
-                                                <Line type="linear" dataKey="nilai" stroke="#16a34a" strokeWidth={2} dot={{ fill: '#16a34a', r: 3 }} activeDot={{ r: 5 }} label={{ position: 'top', fontSize: 9, fill: '#334155', formatter: (v) => v }} />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-=======
                                         <LemburBarChart lemburChartData={lemburChartData} />
->>>>>>> 2c246a6808d8ea64e7b2c3966d28c611fe495d5d
                                     </div>
                                 ) : (
                                     <div className="h-64 flex items-center justify-center text-slate-400 text-xs font-medium bg-slate-50/50 rounded-2xl">
@@ -662,7 +636,7 @@ export default function HumanCapital(props) {
                                     </div>
                                 )}
                                 <div className="mt-2 text-right">
-                                    <p className="text-[9px] font-bold text-slate-400 italic">*Data per {lemburChartData[lemburChartData.length-1]?.periode || 'saat ini'}</p>
+                                    <p className="text-[9px] font-bold text-slate-400 italic">*Data per {lemburChartData[lemburChartData.length - 1]?.periode || 'saat ini'}</p>
                                 </div>
                             </div>
 
@@ -714,7 +688,7 @@ export default function HumanCapital(props) {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 {/* FUNGSI TABLE */}
                                 <div className="mt-6 border border-slate-300 rounded-lg overflow-hidden">
                                     <table className="w-full text-left text-[10px] whitespace-nowrap">
@@ -742,7 +716,7 @@ export default function HumanCapital(props) {
                                     </table>
                                 </div>
                                 <div className="mt-2 text-right">
-                                    <p className="text-[9px] font-bold text-slate-400 italic">*Data per {lemburChartData[lemburChartData.length-1]?.periode || 'saat ini'}</p>
+                                    <p className="text-[9px] font-bold text-slate-400 italic">*Data per {lemburChartData[lemburChartData.length - 1]?.periode || 'saat ini'}</p>
                                 </div>
                             </div>
                         </div>
@@ -792,9 +766,8 @@ export default function HumanCapital(props) {
                                                     <td className="p-3.5 font-bold text-slate-700">{item.bulan}</td>
                                                     <td className="p-3.5 font-bold text-slate-800">{item.nama}</td>
                                                     <td className="p-3.5">
-                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${
-                                                            item.jenis === 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                        }`}>
+                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${item.jenis === 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                            }`}>
                                                             {item.jenis === 'Masuk' ? <UserPlus className="w-3 h-3" /> : <UserMinus className="w-3 h-3" />}
                                                             {item.jenis}
                                                         </span>
