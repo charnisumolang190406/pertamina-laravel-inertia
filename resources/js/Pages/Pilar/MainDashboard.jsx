@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-    ResponsiveContainer, LineChart, Line, Legend, ComposedChart, Area,
+    ResponsiveContainer, LineChart, Line, Legend, ComposedChart, Area, Customized,
 } from 'recharts';
 import {
     FileSignature, Calculator, Shield,
-    Activity, DollarSign, PieChart as PieChartIcon, Zap, TrendingUp,
+    Activity, DollarSign, PieChart as PieChartIcon, Zap, TrendingUp, Maximize2
 } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
+import ChartDetailModal from '../../Components/ChartDetailModal';
+import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
+
 
 /* ─── Dummy Data: Kinerja Operasi & Reliability ─── */
 const produksiGwh = [
@@ -125,14 +128,32 @@ const PERTAMINA_GREEN = '#8DC63F';
 const PERTAMINA_YELLOW = '#F59E0B';
 const PERTAMINA_RED = '#E52B2D';
 
-function ChartCard({ title, subtitle, children, className = '' }) {
+function ChartCard({ title, subtitle, children, className = '', onClick }) {
+    const isClickable = !!onClick;
     return (
-        <div className={`bg-white p-5 rounded-3xl border border-slate-200 shadow-xs flex flex-col ${className}`}>
-            <div className="mb-3">
-                <h4 className="font-bold text-slate-800 text-sm">{title}</h4>
-                {subtitle && <p className="text-[10px] text-slate-400 font-bold mt-0.5">{subtitle}</p>}
+        <div 
+            onClick={onClick}
+            className={`bg-white p-5 rounded-3xl border border-slate-200 shadow-xs flex flex-col transition-all duration-300 relative group ${
+                isClickable ? 'hover:shadow-md hover:border-slate-350 cursor-pointer' : ''
+            } ${className}`}
+        >
+            <div className="mb-3 flex justify-between items-start">
+                <div className="min-w-0">
+                    <h4 className="font-bold text-slate-800 text-sm truncate">{title}</h4>
+                    {subtitle && <p className="text-[10px] text-slate-400 font-bold mt-0.5 truncate">{subtitle}</p>}
+                </div>
+                {isClickable && (
+                    <span className="p-1 text-slate-350 group-hover:text-blue-600 rounded-lg group-hover:bg-blue-55 transition-all opacity-0 group-hover:opacity-100 shrink-0" title="Detail Chart">
+                        <Maximize2 className="w-3.5 h-3.5" />
+                    </span>
+                )}
             </div>
             <div className="flex-1 w-full min-h-0 text-[10px]">{children}</div>
+            {isClickable && (
+                <div className="absolute bottom-2 right-4 text-[8px] font-extrabold text-blue-600 tracking-wider opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    KLIK UNTUK DETAIL & FILTER
+                </div>
+            )}
         </div>
     );
 }
@@ -152,11 +173,17 @@ function ReliabilityLineChart({ data, dataKey, unit, color = PERTAMINA_BLUE, dom
 }
 
 /* ─── Tab: Kinerja Operasi & Reliability ─── */
-function TabOperasi() {
+function TabOperasi({ onChartClick }) {
+    const realisasiHover = useBarHover();
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard title="Produksi (GWh)" subtitle="Trend produksi tahunan Area Lahendong 2018–2026 (forecast)" className="h-72">
+                <ChartCard 
+                    title="Produksi (GWh)" 
+                    subtitle="Trend produksi tahunan Area Lahendong 2018–2026 (forecast)" 
+                    className="h-72"
+                    onClick={() => onChartClick('produksi-gwh')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={produksiGwh} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -168,9 +195,14 @@ function TabOperasi() {
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Realisasi Produksi 2025 (GWh)" subtitle="RKAP vs Realisasi bulanan & kumulatif — Total: 109,63 GWh" className="h-72">
+                <ChartCard 
+                    title="Realisasi Produksi 2025 (GWh)" 
+                    subtitle="RKAP vs Realisasi bulanan & kumulatif — Total: 109,63 GWh" 
+                    className="h-72"
+                    onClick={() => onChartClick('realisasi-produksi-2025')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={realisasiProduksi2025} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                        <ComposedChart data={realisasiProduksi2025} margin={{ top: 10, right: 55, left: -10, bottom: 5 }} {...realisasiHover.barChartProps}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                             <XAxis dataKey="bulan" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} label={{ value: 'Bulan', position: 'insideBottom', offset: -2, style: { fontSize: 9 } }} />
                             <YAxis yAxisId="left" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
@@ -181,22 +213,43 @@ function TabOperasi() {
                             <Bar yAxisId="left" dataKey="realisasi" name="Realisasi" fill={PERTAMINA_GREEN} radius={[2, 2, 0, 0]} barSize={8} />
                             <Line yAxisId="right" type="monotone" dataKey="kumRkap" name="Kum. RKAP" stroke={PERTAMINA_BLUE} strokeWidth={2} dot={false} />
                             <Line yAxisId="right" type="monotone" dataKey="kumReal" name="Kum. Realisasi" stroke="#16a34a" strokeWidth={2} dot={false} />
+                            <Customized component={BarDiffOverlay} barKey1="rkap" barKey2="realisasi" activeIndex={realisasiHover.activeIndex} yAxisId="left" />
                         </ComposedChart>
                     </ResponsiveContainer>
                 </ChartCard>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <ChartCard title="EAF (%)" subtitle="Equivalent Availability Factor — Higher is better" className="h-56">
+                <ChartCard 
+                    title="EAF (%)" 
+                    subtitle="Equivalent Availability Factor — Higher is better" 
+                    className="h-56"
+                    onClick={() => onChartClick('eaf')}
+                >
                     <ReliabilityLineChart data={eafData} dataKey="nilai" unit="%" color={PERTAMINA_GREEN} domain={[80, 100]} />
                 </ChartCard>
-                <ChartCard title="MTBF (Day)" subtitle="Mean Time Between Failures" className="h-56">
+                <ChartCard 
+                    title="MTBF (Day)" 
+                    subtitle="Mean Time Between Failures" 
+                    className="h-56"
+                    onClick={() => onChartClick('mtbf')}
+                >
                     <ReliabilityLineChart data={mtbfData} dataKey="nilai" unit="hari" color={PERTAMINA_BLUE} />
                 </ChartCard>
-                <ChartCard title="EFOR (%)" subtitle="Equivalent Forced Outage Rate — Lower is better" className="h-56">
+                <ChartCard 
+                    title="EFOR (%)" 
+                    subtitle="Equivalent Forced Outage Rate — Lower is better" 
+                    className="h-56"
+                    onClick={() => onChartClick('efor')}
+                >
                     <ReliabilityLineChart data={eforData} dataKey="nilai" unit="%" color={PERTAMINA_YELLOW} domain={[0, 10]} />
                 </ChartCard>
-                <ChartCard title="MTTR (Hour)" subtitle="Mean Time To Repair — Lower is better" className="h-56">
+                <ChartCard 
+                    title="MTTR (Hour)" 
+                    subtitle="Mean Time To Repair — Lower is better" 
+                    className="h-56"
+                    onClick={() => onChartClick('mttr')}
+                >
                     <ReliabilityLineChart data={mttrData} dataKey="nilai" unit="jam" color={PERTAMINA_RED} />
                 </ChartCard>
             </div>
@@ -205,11 +258,16 @@ function TabOperasi() {
 }
 
 /* ─── Tab: Financial Performance ─── */
-function TabFinancial() {
+function TabFinancial({ onChartClick }) {
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard title="Revenue, Cost & Profit/Loss (Juta USD)" subtitle="Trend finansial tahunan Area Lahendong" className="h-80">
+                <ChartCard 
+                    title="Revenue, Cost & Profit/Loss (Juta USD)" 
+                    subtitle="Trend finansial tahunan Area Lahendong" 
+                    className="h-80"
+                    onClick={() => onChartClick('financial-trend')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={financialTrend} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -225,7 +283,12 @@ function TabFinancial() {
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Production vs Cost per kWh" subtitle="Korelasi produksi (GWh) dan biaya per kWh (cent USD)" className="h-80">
+                <ChartCard 
+                    title="Production vs Cost per kWh" 
+                    subtitle="Korelasi produksi (GWh) dan biaya per kWh (cent USD)" 
+                    className="h-80"
+                    onClick={() => onChartClick('production-cost-scatter')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={productionCostScatter} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -239,7 +302,12 @@ function TabFinancial() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard title="Cost/kWh (cent USD)" subtitle="Biaya produksi per kWh — 2025: 20,23 cent USD" className="h-64">
+                <ChartCard 
+                    title="Cost/kWh (cent USD)" 
+                    subtitle="Biaya produksi per kWh — 2025: 20,23 cent USD" 
+                    className="h-64"
+                    onClick={() => onChartClick('cost-kwh')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={costKwhData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -251,7 +319,12 @@ function TabFinancial() {
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="EBITDA (Juta USD)" subtitle="Earnings Before Interest, Taxes, Depreciation & Amortization" className="h-64">
+                <ChartCard 
+                    title="EBITDA (Juta USD)" 
+                    subtitle="Earnings Before Interest, Taxes, Depreciation & Amortization" 
+                    className="h-64"
+                    onClick={() => onChartClick('ebitda')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={ebitdaData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -274,6 +347,8 @@ export default function MainDashboard(props) {
     const { scmList, budgetDetailsList } = props;
 
     const [activeSubTab, setActiveSubTab] = useState('operasi');
+    const [selectedChart, setSelectedChart] = useState(null);
+    const [isChartModalOpen, setIsChartModalOpen] = useState(false);
 
     const totalScmContracts = scmList.length;
     const totalScmValue = scmList.reduce((acc, c) => acc + c.nilai, 0);
@@ -284,6 +359,147 @@ export default function MainDashboard(props) {
         if (val >= 1000000000) return `Rp ${(val / 1000000000).toFixed(1)} M`;
         if (val >= 1000000) return `Rp ${(val / 1000000).toFixed(1)} Jt`;
         return `Rp ${val}`;
+    };
+
+    // Configuration Registry for Clickable Detail Modal
+    const chartConfigs = {
+        'produksi-gwh': {
+            id: 'produksi-gwh',
+            title: 'Produksi (GWh)',
+            subtitle: 'Trend produksi tahunan Area Lahendong 2018–2026 (forecast)',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            yAxisDomain: [0, 200],
+            series: [
+                { key: 'nilai', label: 'Produksi', color: PERTAMINA_BLUE, unit: 'GWh' }
+            ],
+            rawData: produksiGwh
+        },
+        'realisasi-produksi-2025': {
+            id: 'realisasi-produksi-2025',
+            title: 'Realisasi Produksi 2025 (GWh)',
+            subtitle: 'RKAP vs Realisasi bulanan & kumulatif — Total: 109,63 GWh',
+            type: 'composed',
+            xAxisKey: 'bulan',
+            timeType: 'month',
+            yAxisIdLeft: 'left',
+            yAxisIdRight: 'right',
+            series: [
+                { key: 'rkap', label: 'RKAP', color: '#93c5fd', type: 'bar', yAxisId: 'left', unit: 'GWh' },
+                { key: 'realisasi', label: 'Realisasi', color: PERTAMINA_GREEN, type: 'bar', yAxisId: 'left', unit: 'GWh' },
+                { key: 'kumRkap', label: 'Kum. RKAP', color: PERTAMINA_BLUE, type: 'line', yAxisId: 'right', unit: 'GWh' },
+                { key: 'kumReal', label: 'Kum. Realisasi', color: '#16a34a', type: 'line', yAxisId: 'right', unit: 'GWh' }
+            ],
+            rawData: realisasiProduksi2025
+        },
+        'eaf': {
+            id: 'eaf',
+            title: 'EAF (%)',
+            subtitle: 'Equivalent Availability Factor — Higher is better',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            yAxisDomain: [80, 100],
+            series: [
+                { key: 'nilai', label: 'EAF', color: PERTAMINA_GREEN, unit: '%' }
+            ],
+            rawData: eafData
+        },
+        'mtbf': {
+            id: 'mtbf',
+            title: 'MTBF (Day)',
+            subtitle: 'Mean Time Between Failures',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            series: [
+                { key: 'nilai', label: 'MTBF', color: PERTAMINA_BLUE, unit: 'hari' }
+            ],
+            rawData: mtbfData
+        },
+        'efor': {
+            id: 'efor',
+            title: 'EFOR (%)',
+            subtitle: 'Equivalent Forced Outage Rate — Lower is better',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            yAxisDomain: [0, 10],
+            series: [
+                { key: 'nilai', label: 'EFOR', color: PERTAMINA_YELLOW, unit: '%' }
+            ],
+            rawData: eforData
+        },
+        'mttr': {
+            id: 'mttr',
+            title: 'MTTR (Hour)',
+            subtitle: 'Mean Time To Repair — Lower is better',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            series: [
+                { key: 'nilai', label: 'MTTR', color: PERTAMINA_RED, unit: 'jam' }
+            ],
+            rawData: mttrData
+        },
+        'financial-trend': {
+            id: 'financial-trend',
+            title: 'Revenue, Cost & Profit/Loss (Juta USD)',
+            subtitle: 'Trend finansial tahunan Area Lahendong',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            series: [
+                { key: 'revenue', label: 'Revenue', color: PERTAMINA_BLUE, unit: 'Juta USD' },
+                { key: 'cost', label: 'Cost', color: PERTAMINA_GREEN, unit: 'Juta USD' },
+                { key: 'depreciation', label: 'Depreciation', color: PERTAMINA_YELLOW, unit: 'Juta USD' },
+                { key: 'profitLoss', label: 'Profit/Loss Net', color: '#94a3b8', unit: 'Juta USD' }
+            ],
+            rawData: financialTrend
+        },
+        'production-cost-scatter': {
+            id: 'production-cost-scatter',
+            title: 'Production vs Cost per kWh',
+            subtitle: 'Korelasi produksi (GWh) dan biaya per kWh (cent USD)',
+            type: 'composed',
+            xAxisKey: 'costKwh',
+            timeType: 'other',
+            series: [
+                { key: 'produksi', label: 'Produksi', color: PERTAMINA_BLUE, type: 'line', unit: 'GWh' }
+            ],
+            rawData: productionCostScatter
+        },
+        'cost-kwh': {
+            id: 'cost-kwh',
+            title: 'Cost/kWh (cent USD)',
+            subtitle: 'Biaya produksi per kWh — 2025: 20,23 cent USD',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            yAxisDomain: [5, 26],
+            series: [
+                { key: 'nilai', label: 'Cost/kWh', color: PERTAMINA_BLUE, unit: 'cent USD' }
+            ],
+            rawData: costKwhData
+        },
+        'ebitda': {
+            id: 'ebitda',
+            title: 'EBITDA (Juta USD)',
+            subtitle: 'Earnings Before Interest, Taxes, Depreciation & Amortization',
+            type: 'area',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            series: [
+                { key: 'nilai', label: 'EBITDA', color: PERTAMINA_BLUE, unit: 'Juta USD' }
+            ],
+            rawData: ebitdaData
+        }
+    };
+
+    const handleChartClick = (chartId) => {
+        setSelectedChart(chartConfigs[chartId]);
+        setIsChartModalOpen(true);
     };
 
     const tabs = [
@@ -337,8 +553,18 @@ export default function MainDashboard(props) {
             </div>
 
             {/* Tab Content */}
-            {activeSubTab === 'operasi' && <TabOperasi />}
-            {activeSubTab === 'financial' && <TabFinancial />}
+            {activeSubTab === 'operasi' && <TabOperasi onChartClick={handleChartClick} />}
+            {activeSubTab === 'financial' && <TabFinancial onChartClick={handleChartClick} />}
+
+            {/* Premium Chart Detail Modal */}
+            <ChartDetailModal
+                isOpen={isChartModalOpen}
+                onClose={() => {
+                    setIsChartModalOpen(false);
+                    setSelectedChart(null);
+                }}
+                chartConfig={selectedChart}
+            />
         </div>
     );
 }

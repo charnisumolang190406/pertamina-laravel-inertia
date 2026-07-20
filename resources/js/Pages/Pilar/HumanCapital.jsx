@@ -6,10 +6,15 @@ import {
 } from 'lucide-react';
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
+<<<<<<< HEAD
     BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
+=======
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Customized
+>>>>>>> 2c246a6808d8ea64e7b2c3966d28c611fe495d5d
 } from 'recharts';
 import KpiCard from '../../Components/KpiCard';
 import MomTable from '../../Components/MomTable';
+import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
 
 const GENDER_COLORS = ['#3b82f6', '#ec4899'];
 
@@ -26,6 +31,48 @@ function sortByPeriod(a, b) {
         return year * 100 + month;
     };
     return parsePeriod(a) - parsePeriod(b);
+}
+
+function LemburBarChart({ lemburChartData }) {
+    const lemburHover = useBarHover();
+    return (
+        <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={lemburChartData} margin={{ top: 5, right: 60, left: 0, bottom: 5 }} {...lemburHover.barChartProps}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="periode" tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis yAxisId="left" tick={{ fontSize: 10, fill: '#64748b' }} label={{ value: 'Jam', angle: -90, position: 'insideLeft', style: { fontSize: 10 } }} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: '#64748b' }} label={{ value: 'Juta Rp', angle: 90, position: 'insideRight', style: { fontSize: 10 } }} />
+                <RechartsTooltip
+                    formatter={(value, name) => [
+                        name === 'jam' ? `${value} jam` : `Rp ${value} juta`,
+                        name === 'jam' ? 'Total Jam Lembur' : 'Total Nilai Lembur',
+                    ]}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar yAxisId="left" dataKey="jam" name="Jam Lembur" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar yAxisId="right" dataKey="nilai" name="Nilai (Juta Rp)" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Customized component={BarDiffOverlay} barKey1="jam" barKey2="nilai" activeIndex={lemburHover.activeIndex} />
+            </BarChart>
+        </ResponsiveContainer>
+    );
+}
+
+function MutationBarChart({ mutationChartData }) {
+    const mutationHover = useBarHover();
+    return (
+        <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={mutationChartData} margin={{ top: 5, right: 60, left: 0, bottom: 5 }} {...mutationHover.barChartProps}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="bulan" tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                <RechartsTooltip formatter={(value, name) => [`${value} orang`, name === 'masuk' ? 'Masuk' : 'Keluar']} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="masuk" name="Masuk" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="keluar" name="Keluar" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Customized component={BarDiffOverlay} barKey1="masuk" barKey2="keluar" activeIndex={mutationHover.activeIndex} />
+            </BarChart>
+        </ResponsiveContainer>
+    );
 }
 
 export default function HumanCapital(props) {
@@ -593,6 +640,7 @@ export default function HumanCapital(props) {
                                 </div>
                                 {lemburChartData.length > 0 ? (
                                     <div className="h-64">
+<<<<<<< HEAD
                                         <ResponsiveContainer width="100%" height="100%">
                                             <LineChart data={lemburChartData} margin={{ top: 20, right: 15, left: -20, bottom: 5 }}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -604,6 +652,9 @@ export default function HumanCapital(props) {
                                                 <Line type="linear" dataKey="nilai" stroke="#16a34a" strokeWidth={2} dot={{ fill: '#16a34a', r: 3 }} activeDot={{ r: 5 }} label={{ position: 'top', fontSize: 9, fill: '#334155', formatter: (v) => v }} />
                                             </LineChart>
                                         </ResponsiveContainer>
+=======
+                                        <LemburBarChart lemburChartData={lemburChartData} />
+>>>>>>> 2c246a6808d8ea64e7b2c3966d28c611fe495d5d
                                     </div>
                                 ) : (
                                     <div className="h-64 flex items-center justify-center text-slate-400 text-xs font-medium bg-slate-50/50 rounded-2xl">
@@ -707,17 +758,7 @@ export default function HumanCapital(props) {
                                 </div>
                                 {mutationChartData.length > 0 ? (
                                     <div className="h-64">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={mutationChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                                <XAxis dataKey="bulan" tick={{ fontSize: 10, fill: '#64748b' }} />
-                                                <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                                                <RechartsTooltip formatter={(value, name) => [`${value} orang`, name === 'masuk' ? 'Masuk' : 'Keluar']} />
-                                                <Legend wrapperStyle={{ fontSize: 11 }} />
-                                                <Bar dataKey="masuk" name="Masuk" fill="#10b981" radius={[4, 4, 0, 0]} />
-                                                <Bar dataKey="keluar" name="Keluar" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                                            </BarChart>
-                                        </ResponsiveContainer>
+                                        <MutationBarChart mutationChartData={mutationChartData} />
                                     </div>
                                 ) : (
                                     <div className="h-48 flex items-center justify-center text-slate-400 text-xs font-medium">
