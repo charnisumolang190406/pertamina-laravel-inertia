@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { 
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, Customized
 } from 'recharts';
+import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
 import { 
   Calculator, TrendingUp, CheckCircle, AlertCircle, Plus, Trash2, Check, X, ShieldAlert, Activity, Wrench, Users2,
   FileSpreadsheet, Database, Search, PieChart as PieIcon
@@ -78,12 +79,15 @@ function ChartCard({ title, subtitle, children, className = '' }) {
 }
 
 function TabRealisasiAbo() {
+    const aboYearlyHover = useBarHover();
+    const aboFungsiHover = useBarHover();
+
     return (
         <div className="space-y-4 animate-[fadeIn_0.3s_ease-in-out]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <ChartCard title="ABO 2019 – 2026 (USD Juta)" subtitle="Perbandingan RKAP vs Actual — Kenaikan anggaran ABO Area Lahendong" className="h-72">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={aboYearly} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                        <BarChart data={aboYearly} margin={{ top: 10, right: 60, left: -10, bottom: 5 }} {...aboYearlyHover.barChartProps}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                             <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
                             <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
@@ -91,6 +95,7 @@ function TabRealisasiAbo() {
                             <Legend wrapperStyle={{ fontSize: 9 }} />
                             <Bar dataKey="rkap" name="RKAP (USD)" fill="#93c5fd" radius={[3, 3, 0, 0]} />
                             <Bar dataKey="actual" name="Actual (USD)" fill={PERTAMINA_GREEN} radius={[3, 3, 0, 0]} />
+                            <Customized component={BarDiffOverlay} barKey1="rkap" barKey2="actual" activeIndex={aboYearlyHover.activeIndex} />
                         </BarChart>
                     </ResponsiveContainer>
                 </ChartCard>
@@ -127,7 +132,7 @@ function TabRealisasiAbo() {
 
                 <ChartCard title="Rincian Realisasi ABO per Fungsi" subtitle="Budget vs Actual per fungsi — Area Lahendong 2026 (IDR Miliar)" className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={aboPerFungsi} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                        <BarChart data={aboPerFungsi} margin={{ top: 10, right: 60, left: -10, bottom: 5 }} {...aboFungsiHover.barChartProps}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                             <XAxis dataKey="fungsi" tickLine={false} axisLine={false} tick={{ fontSize: 9 }} />
                             <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
@@ -135,11 +140,30 @@ function TabRealisasiAbo() {
                             <Legend wrapperStyle={{ fontSize: 9 }} />
                             <Bar dataKey="budget" name="Budget" fill="#93c5fd" radius={[3, 3, 0, 0]} />
                             <Bar dataKey="actual" name="Actual" fill={PERTAMINA_GREEN} radius={[3, 3, 0, 0]} />
+                            <Customized component={BarDiffOverlay} barKey1="budget" barKey2="actual" activeIndex={aboFungsiHover.activeIndex} />
                         </BarChart>
                     </ResponsiveContainer>
                 </ChartCard>
             </div>
         </div>
+    );
+}
+
+function RingkasanBarChart({ chartData, formatCurrency }) {
+    const ringkasanHover = useBarHover();
+    return (
+        <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 10, right: 60, left: -20, bottom: 5 }} {...ringkasanHover.barChartProps}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} className="font-semibold text-slate-500" />
+                <YAxis tickLine={false} axisLine={false} className="font-semibold text-slate-500" tickFormatter={(v) => `${(v / 1000000000).toFixed(0)}M`} />
+                <RechartsTooltip formatter={(value) => formatCurrency(value)} />
+                <Legend wrapperStyle={{ paddingTop: 10 }} />
+                <Bar dataKey="budget" name="RKAP Plafon Budget" fill="#00529C" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="actual" name="Realisasi Actual" fill="#8DC63F" radius={[4, 4, 0, 0]} />
+                <Customized component={BarDiffOverlay} barKey1="budget" barKey2="actual" activeIndex={ringkasanHover.activeIndex} />
+            </BarChart>
+        </ResponsiveContainer>
     );
 }
 
@@ -376,17 +400,7 @@ export default function Budgeting(props) {
                         </div>
 
                         <div className="flex-1 w-full min-h-0 text-[10px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="name" tickLine={false} axisLine={false} className="font-semibold text-slate-500" />
-                                    <YAxis tickLine={false} axisLine={false} className="font-semibold text-slate-500" tickFormatter={(v) => `${(v / 1000000000).toFixed(0)}M`} />
-                                    <RechartsTooltip formatter={(value) => formatCurrency(value)} />
-                                    <Legend wrapperStyle={{ paddingTop: 10 }} />
-                                    <Bar dataKey="budget" name="RKAP Plafon Budget" fill="#00529C" radius={[4, 4, 0, 0]} />
-                                    <Bar dataKey="actual" name="Realisasi Actual" fill="#8DC63F" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <RingkasanBarChart chartData={chartData} formatCurrency={formatCurrency} />
                         </div>
                     </div>
 
