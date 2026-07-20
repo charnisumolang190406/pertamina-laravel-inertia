@@ -37,10 +37,26 @@ class DashboardController extends Controller
             'hcMutations' => HcMutation::orderBy('id', 'desc')->get(),
             'tadWorkers' => HcTad::all(),
             'tadMutations' => TadMutation::orderBy('id', 'desc')->get(),
-            'retiredWorkers' => HcRetired::whereBetween('tahun', [$currentYear, $currentYear + 3])
-                ->orderBy('tahun')
-                ->orderBy('tanggal')
-                ->get(),
+            'retiredWorkers' => Employee::where('age', '>=', 53)
+                ->get()
+                ->map(function ($emp) use ($currentYear) {
+                    $tahunPensiun = $currentYear + (56 - $emp->age);
+                    return [
+                        'id' => $emp->id,
+                        'nama' => $emp->name,
+                        'jabatan' => $emp->position,
+                        'umur_pensiun' => 56,
+                        'tahun' => $tahunPensiun,
+                        'tanggal' => $tahunPensiun . '-12-31', // Estimasi akhir tahun karena tidak ada data tanggal lahir lengkap
+                        'keterangan' => 'Proyeksi Otomatis dari Master Data (Umur saat ini: ' . $emp->age . ' Tahun)',
+                    ];
+                })
+                ->filter(function ($emp) use ($currentYear) {
+                    return $emp['tahun'] >= $currentYear && $emp['tahun'] <= $currentYear + 3;
+                })
+                ->sortBy(['tahun', 'tanggal'])
+                ->values(),
+            'organikWorkers' => Employee::all(),
             'genderStats' => [
                 'male' => $maleCount,
                 'female' => $femaleCount,

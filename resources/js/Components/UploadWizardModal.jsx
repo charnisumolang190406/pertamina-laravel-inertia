@@ -13,7 +13,10 @@ const MAPPING_SPECS = {
     hc: { bulan: 'Periode', nama: 'Nama Pegawai', jenis: 'Jenis Mutasi', fungsi: 'Fungsi Tujuan', keterangan: 'Keterangan' },
     tad_mutation: { bulan: 'Periode', nama: 'Nama TAD', jenis: 'Jenis Mutasi', peran: 'Peran Kerja', vendor: 'Vendor Penyedia', keterangan: 'Keterangan' },
     it_asset: { nomor_seri: 'Nomor Seri / Tag', jenis: 'Jenis Aset', merek: 'Merek/Model', user: 'Pengguna', fungsi: 'Fungsi', status: 'Status' },
-    mom: { fungsi: 'Fungsi', isu: 'Isu / Detail Laporan', tindak_lanjut: 'Rencana Tindak Lanjut' }
+    mom: { fungsi: 'Fungsi', isu: 'Isu / Detail Laporan', tindak_lanjut: 'Rencana Tindak Lanjut' },
+    master_organik: { nopok: 'No. Pegawai', nama: 'Nama Pegawai', gender: 'Jenis Kelamin', umur: 'Umur', jabatan: 'Jabatan', fungsi: 'Fungsi/Departemen' },
+    master_tad: { nama: 'Nama Lengkap', peran: 'Peran Kerja', vendor: 'Vendor Penyedia', status: 'Status Kontrak' },
+    master_pensiun: { nama: 'Nama Karyawan', jabatan: 'Jabatan Terakhir', umur: 'Umur Pensiun', tahun: 'Tahun Pensiun', tanggal: 'Tanggal Efektif', keterangan: 'Keterangan' }
 };
 
 const MAPPING_DEFAULTS = {
@@ -26,7 +29,10 @@ const MAPPING_DEFAULTS = {
     hc: { bulan: '', nama: 'Nama Karyawan', jenis: 'Masuk', fungsi: 'BS', keterangan: '' },
     tad_mutation: { bulan: '', nama: 'Nama TAD', jenis: 'Masuk', peran: 'Staff', vendor: 'PT Vendor', keterangan: '' },
     it_asset: { nomor_seri: '', jenis: 'PC', merek: 'HP', user: 'Staff', fungsi: 'BS', status: 'Optimal' },
-    mom: { fungsi: 'BS', isu: 'Isu Laporan', tindak_lanjut: 'Segera diproses' }
+    mom: { fungsi: 'BS', isu: 'Isu Laporan', tindak_lanjut: 'Segera diproses' },
+    master_organik: { nopok: '-', nama: 'Nama Pegawai', gender: 'Laki-laki', umur: 30, jabatan: 'Staff', fungsi: 'Operasi' },
+    master_tad: { nama: 'Nama TAD', peran: 'Security', vendor: 'PT Daya', status: 'Aktif' },
+    master_pensiun: { nama: 'Nama Pensiun', jabatan: 'Staff', umur: 56, tahun: 2026, tanggal: '2026-01-01', keterangan: 'Pensiun Normal' }
 };
 
 export default function UploadWizardModal({ isOpen, onClose }) {
@@ -42,18 +48,28 @@ export default function UploadWizardModal({ isOpen, onClose }) {
 
     const fileInputRef = useRef(null);
 
-    const dataTypes = [
-        { id: 'lembur_tad', label: 'Data Lembur TAD (Human Capital)' },
-        { id: 'tad_mutation', label: 'Mutasi Tenaga Alih Daya (TAD)' },
-        { id: 'scm', label: 'Data Monitoring Kontrak (SCM)' },
-        { id: 'budget_detail', label: 'Data Detail Budget ABI/ABO (Budgeting)' },
-        { id: 'logistik', label: 'Stok Material Gudang (Logistik)' },
-        { id: 'alat_berat', label: 'Aset Alat Berat & KIR (Logistik)' },
-        { id: 'perbaikan_rumdin', label: 'Perbaikan Rumah Dinas (Logistik)' },
-        { id: 'hc', label: 'Mutasi & Demografi Organik (HC)' },
-        { id: 'it_asset', label: 'Aset Perangkat IT (IT Asset)' },
-        { id: 'mom', label: 'Agenda Feedback Loop & Review (MOM)' }
-    ];
+    const groupedDataTypes = {
+        'Human Capital (HC)': [
+            { id: 'master_organik', label: 'Master Data Pegawai Organik (Demografi & Gender)' },
+            { id: 'master_tad', label: 'Master Data Tenaga Alih Daya (Daftar Aktif TAD)' },
+            { id: 'hc', label: 'Mutasi Organik (HC)' },
+            { id: 'tad_mutation', label: 'Mutasi Tenaga Alih Daya (TAD)' },
+            { id: 'lembur_tad', label: 'Data Lembur TAD (Human Capital)' },
+        ],
+        'Logistik': [
+            { id: 'logistik', label: 'Stok Material Gudang (Logistik)' },
+            { id: 'alat_berat', label: 'Aset Alat Berat & KIR (Logistik)' },
+            { id: 'perbaikan_rumdin', label: 'Perbaikan Rumah Dinas (Logistik)' },
+        ],
+        'Budgeting & SCM': [
+            { id: 'budget_detail', label: 'Data Detail Budget ABI/ABO (Budgeting)' },
+            { id: 'scm', label: 'Data Monitoring Kontrak (SCM)' },
+        ],
+        'Lainnya': [
+            { id: 'it_asset', label: 'Aset Perangkat IT (IT Asset)' },
+            { id: 'mom', label: 'Agenda Feedback Loop & Review (MOM)' }
+        ]
+    };
 
     const handleTypeSelect = (type) => {
         setDataType(type);
@@ -82,12 +98,17 @@ export default function UploadWizardModal({ isOpen, onClose }) {
                     return;
                 }
 
-                // Locate header row (first row with non-empty cells)
+                // Locate header row: Find the row within the first 15 rows that has the most non-empty columns
                 let headerIdx = 0;
-                for (let i = 0; i < json.length; i++) {
-                    if (json[i] && json[i].some(c => c !== null && c !== undefined && String(c).trim() !== '')) {
-                        headerIdx = i;
-                        break;
+                let maxCols = 0;
+                for (let i = 0; i < Math.min(json.length, 15); i++) {
+                    const row = json[i];
+                    if (row && Array.isArray(row)) {
+                        const filledCols = row.filter(c => c !== null && c !== undefined && String(c).trim() !== '').length;
+                        if (filledCols > maxCols) {
+                            maxCols = filledCols;
+                            headerIdx = i;
+                        }
                     }
                 }
 
@@ -245,16 +266,23 @@ export default function UploadWizardModal({ isOpen, onClose }) {
                     {step === 1 && (
                         <div className="space-y-4">
                             <h4 className="font-bold text-slate-800 text-xs text-center mb-4">Pilih kategori data laporan yang ingin Anda impor:</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {dataTypes.map(t => (
-                                    <button
-                                        key={t.id}
-                                        onClick={() => handleTypeSelect(t.id)}
-                                        className="text-left px-4 py-3.5 border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 rounded-2xl cursor-pointer text-xs font-bold text-slate-700 transition-all flex justify-between items-center group active:scale-98"
-                                    >
-                                        <span>{t.label}</span>
-                                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-transform group-hover:translate-x-1" />
-                                    </button>
+                            <div className="space-y-6">
+                                {Object.keys(groupedDataTypes).map(groupName => (
+                                    <div key={groupName} className="space-y-3">
+                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1 border-b border-slate-100 pb-1">{groupName}</h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {groupedDataTypes[groupName].map(t => (
+                                                <button
+                                                    key={t.id}
+                                                    onClick={() => handleTypeSelect(t.id)}
+                                                    className="text-left px-4 py-3 border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 rounded-2xl cursor-pointer text-xs font-bold text-slate-700 transition-all flex justify-between items-center group active:scale-98"
+                                                >
+                                                    <span className="leading-relaxed pr-2">{t.label}</span>
+                                                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-transform group-hover:translate-x-1 shrink-0" />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
-    BarChart, Bar, XAxis, YAxis, CartesianGrid
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
 } from 'recharts';
 import KpiCard from '../../Components/KpiCard';
 import MomTable from '../../Components/MomTable';
@@ -31,7 +31,8 @@ function sortByPeriod(a, b) {
 export default function HumanCapital(props) {
     const { 
         hcMutations, retiredWorkers, genderStats, momList, auth, onOpenFeedback,
-        tadWorkers = [], lemburTadList = [], tadMutations = [], arsipList = []
+        tadWorkers = [], lemburTadList = [], tadMutations = [], arsipList = [],
+        organikWorkers = []
     } = props;
     const currentUser = auth.user;
     const isAdmin = currentUser?.role?.startsWith('Admin');
@@ -51,6 +52,40 @@ export default function HumanCapital(props) {
         { name: 'Pria', value: totalMale },
         { name: 'Wanita', value: totalFemale },
     ].filter((item) => item.value > 0), [totalMale, totalFemale]);
+
+    const ageChartData = useMemo(() => {
+        const buckets = {
+            '20-25': { name: '20-25', Pria: 0, Wanita: 0 },
+            '26-30': { name: '26-30', Pria: 0, Wanita: 0 },
+            '31-35': { name: '31-35', Pria: 0, Wanita: 0 },
+            '36-40': { name: '36-40', Pria: 0, Wanita: 0 },
+            '41-45': { name: '41-45', Pria: 0, Wanita: 0 },
+            '46-50': { name: '46-50', Pria: 0, Wanita: 0 },
+            '51-55': { name: '51-55', Pria: 0, Wanita: 0 },
+            '>55': { name: '>55', Pria: 0, Wanita: 0 }
+        };
+
+        organikWorkers.forEach(emp => {
+            if (!emp.age) return;
+            const age = parseInt(emp.age);
+            if (isNaN(age)) return;
+            
+            const isMale = ['laki-laki', 'l', 'pria'].includes((emp.gender || '').toLowerCase());
+            const genderKey = isMale ? 'Pria' : 'Wanita';
+
+            if (age >= 20 && age <= 25) buckets['20-25'][genderKey]++;
+            else if (age >= 26 && age <= 30) buckets['26-30'][genderKey]++;
+            else if (age >= 31 && age <= 35) buckets['31-35'][genderKey]++;
+            else if (age >= 36 && age <= 40) buckets['36-40'][genderKey]++;
+            else if (age >= 41 && age <= 45) buckets['41-45'][genderKey]++;
+            else if (age >= 46 && age <= 50) buckets['46-50'][genderKey]++;
+            else if (age >= 51 && age <= 55) buckets['51-55'][genderKey]++;
+            else if (age > 55) buckets['>55'][genderKey]++;
+        });
+        
+        // Filter out empty buckets for a cleaner chart
+        return Object.values(buckets).filter(b => b.Pria > 0 || b.Wanita > 0);
+    }, [organikWorkers]);
 
     const currentYear = new Date().getFullYear();
 
@@ -97,8 +132,45 @@ export default function HumanCapital(props) {
     const lemburChartData = useMemo(() => groupedLemburList.map((g) => ({
         periode: g.periode,
         jam: parseFloat(g.totalJam.toFixed(1)),
-        nilai: Math.round(g.totalNilai / 1000000),
+        nilai: Math.round(g.totalNilai / 1000000), // in Juta Rupiah
     })), [groupedLemburList]);
+
+    const lemburFungsiData = useMemo(() => {
+        const grouped = (lemburTadList || []).reduce((acc, curr) => {
+            let fungsi = (curr.fungsi || 'Lainnya').toUpperCase().trim();
+            // Simplify some names based on screenshot if needed, but let's just use raw for now
+            if (!acc[fungsi]) {
+                acc[fungsi] = { name: fungsi, value: 0, jam: 0, personil: new Set() };
+            }
+            acc[fungsi].value += curr.lemburVal;
+            acc[fungsi].jam += curr.jamLembur;
+            if (curr.nopok) acc[fungsi].personil.add(curr.nopok);
+            return acc;
+        }, {});
+        
+        let totalAllBiaya = 0;
+        let totalAllJam = 0;
+        let totalAllPersonil = new Set();
+        
+        const result = Object.values(grouped).map(g => {
+            totalAllBiaya += g.value;
+            totalAllJam += g.jam;
+            g.personil.forEach(p => totalAllPersonil.add(p));
+            return {
+                name: g.name,
+                value: g.value,
+                jam: g.jam,
+                personilCount: g.personil.size
+            };
+        }).sort((a, b) => b.value - a.value); // sort by value descending
+        
+        return {
+            details: result,
+            totalBiaya: totalAllBiaya,
+            totalJam: totalAllJam,
+            totalPersonil: totalAllPersonil.size
+        };
+    }, [lemburTadList]);
 
     const mutationChartData = useMemo(() => {
         const grouped = (tadMutations || []).reduce((acc, curr) => {
@@ -270,6 +342,33 @@ export default function HumanCapital(props) {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* AGE CHART ROW */}
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5">
+                        <div className="mb-4">
+                            <h3 className="font-extrabold text-slate-800 text-sm">Komposisi Pekerja Berdasarkan Usia</h3>
+                            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Distribusi usia karyawan organik berdasarkan gender.</p>
+                        </div>
+                        {ageChartData.length > 0 ? (
+                            <div className="h-72">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={ageChartData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={true} stroke="#f1f5f9" />
+                                        <XAxis type="number" tick={{ fontSize: 11, fill: '#64748b' }} allowDecimals={false} />
+                                        <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#475569', fontWeight: 'bold' }} width={50} />
+                                        <RechartsTooltip formatter={(value, name) => [`${value} orang`, name]} cursor={{fill: 'transparent'}} />
+                                        <Legend wrapperStyle={{ fontSize: 12, paddingTop: '10px' }} />
+                                        <Bar dataKey="Pria" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} barSize={24} />
+                                        <Bar dataKey="Wanita" stackId="a" fill="#ec4899" radius={[0, 4, 4, 0]} barSize={24} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : (
+                            <div className="h-56 flex items-center justify-center text-slate-400 text-xs font-medium">
+                                Data umur belum tersedia. Silakan unggah Master Data Organik yang mencakup umur.
+                            </div>
+                        )}
                     </div>
 
                     {/* SUB TAB NAV */}
@@ -486,100 +585,113 @@ export default function HumanCapital(props) {
 
                     {/* SUB-TAB 2: OVERTIME MONITORING + CHART */}
                     {activeSubTabTad === 'lembur' && (
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {/* KIRI: TREN BIAYA LEMBUR (LINE CHART) */}
                             <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5">
                                 <div className="mb-4">
-                                    <h3 className="font-extrabold text-slate-800 text-sm">Grafik Lembur TAD per Bulan</h3>
-                                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">Visualisasi total jam lembur dan nilai lembur (dalam jutaan Rp) per periode.</p>
+                                    <h3 className="font-extrabold text-slate-800 text-sm">Tren Biaya Lembur Tahun {currentYear}*</h3>
                                 </div>
                                 {lemburChartData.length > 0 ? (
                                     <div className="h-64">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={lemburChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                                <XAxis dataKey="periode" tick={{ fontSize: 10, fill: '#64748b' }} />
-                                                <YAxis yAxisId="left" tick={{ fontSize: 10, fill: '#64748b' }} label={{ value: 'Jam', angle: -90, position: 'insideLeft', style: { fontSize: 10 } }} />
-                                                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: '#64748b' }} label={{ value: 'Juta Rp', angle: 90, position: 'insideRight', style: { fontSize: 10 } }} />
+                                            <LineChart data={lemburChartData} margin={{ top: 20, right: 15, left: -20, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                                <XAxis dataKey="periode" tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                                                <YAxis tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(val) => val === 0 ? '0' : val} />
                                                 <RechartsTooltip
-                                                    formatter={(value, name) => [
-                                                        name === 'jam' ? `${value} jam` : `Rp ${value} juta`,
-                                                        name === 'jam' ? 'Total Jam Lembur' : 'Total Nilai Lembur',
-                                                    ]}
+                                                    formatter={(value) => [`Rp ${value} juta`, 'Biaya Lembur']}
                                                 />
-                                                <Legend wrapperStyle={{ fontSize: 11 }} />
-                                                <Bar yAxisId="left" dataKey="jam" name="Jam Lembur" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                                                <Bar yAxisId="right" dataKey="nilai" name="Nilai (Juta Rp)" fill="#10b981" radius={[4, 4, 0, 0]} />
-                                            </BarChart>
+                                                <Line type="linear" dataKey="nilai" stroke="#16a34a" strokeWidth={2} dot={{ fill: '#16a34a', r: 3 }} activeDot={{ r: 5 }} label={{ position: 'top', fontSize: 9, fill: '#334155', formatter: (v) => v }} />
+                                            </LineChart>
                                         </ResponsiveContainer>
                                     </div>
                                 ) : (
-                                    <div className="h-48 flex items-center justify-center text-slate-400 text-xs font-medium">
-                                        Belum ada data lembur. Unggah laporan lembur TAD melalui menu Upload.
+                                    <div className="h-64 flex items-center justify-center text-slate-400 text-xs font-medium bg-slate-50/50 rounded-2xl">
+                                        Belum ada data tren lembur.
                                     </div>
                                 )}
+                                <div className="mt-2 text-right">
+                                    <p className="text-[9px] font-bold text-slate-400 italic">*Data per {lemburChartData[lemburChartData.length-1]?.periode || 'saat ini'}</p>
+                                </div>
                             </div>
 
-                            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-                                <div className="p-5 border-b border-slate-100 bg-slate-50/30">
-                                    <h3 className="font-extrabold text-slate-800 text-sm">Rekap & Audit Lembur TAD Bulanan</h3>
-                                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">Penghitungan upah lembur bulanan teragregasi per fungsi.</p>
+                            {/* KANAN: BIAYA LEMBUR PER FUNGSI (PIE & TABEL) */}
+                            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5">
+                                <div className="mb-4">
+                                    <h3 className="font-extrabold text-slate-800 text-sm">Biaya Lembur Per Fungsi Tahun {currentYear}*</h3>
                                 </div>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-xs whitespace-nowrap">
-                                        <thead className="bg-slate-50 border-b border-slate-200">
+                                <div className="flex flex-col xl:flex-row items-center gap-4">
+                                    <div className="w-48 h-48 shrink-0">
+                                        {lemburFungsiData.details.length > 0 ? (
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <PieChart>
+                                                    <Pie
+                                                        data={lemburFungsiData.details}
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        innerRadius={45}
+                                                        outerRadius={80}
+                                                        paddingAngle={0}
+                                                        dataKey="value"
+                                                    >
+                                                        {lemburFungsiData.details.map((entry, index) => {
+                                                            const colors = ['#b8cc14', '#1d70b8', '#111827', '#6b7280', '#e11d48', '#8b5cf6'];
+                                                            return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
+                                                        })}
+                                                    </Pie>
+                                                    <RechartsTooltip formatter={(value) => formatCurrency(value)} />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-slate-50 rounded-full border border-slate-100">
+                                                <span className="text-[10px] text-slate-400 font-medium">No Data</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 w-full space-y-3">
+                                        {/* SUMMARY CARDS */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="bg-[#e4ece9] rounded-xl p-3 flex flex-col items-center justify-center text-center border border-slate-200/60 shadow-[inset_0_1px_3px_rgba(255,255,255,0.7)]">
+                                                <span className="text-[9px] font-extrabold text-slate-600 tracking-wider mb-1">TOTAL REALISASI BIAYA</span>
+                                                <span className="text-base font-black text-slate-900">Rp {Math.round(lemburFungsiData.totalBiaya / 1000000)} juta</span>
+                                                <span className="text-[8px] font-semibold text-slate-500 mt-1">({formatCurrency(lemburFungsiData.totalBiaya)})</span>
+                                            </div>
+                                            <div className="bg-[#e4ece9] rounded-xl p-3 flex flex-col items-center justify-center text-center border border-slate-200/60 shadow-[inset_0_1px_3px_rgba(255,255,255,0.7)]">
+                                                <span className="text-[9px] font-extrabold text-slate-600 tracking-wider mb-1">TOTAL JAM LEMBUR</span>
+                                                <span className="text-base font-black text-slate-900">{lemburFungsiData.totalJam.toLocaleString('id-ID')} Jam</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* FUNGSI TABLE */}
+                                <div className="mt-6 border border-slate-300 rounded-lg overflow-hidden">
+                                    <table className="w-full text-left text-[10px] whitespace-nowrap">
+                                        <thead className="bg-slate-100 border-b border-slate-300">
                                             <tr>
-                                                <th className="p-3.5 text-slate-500 font-bold w-10 text-center">No</th>
-                                                <th className="p-3.5 text-slate-500 font-bold">Bulan / Periode</th>
-                                                <th className="p-3.5 text-slate-500 font-bold text-center">Total Jumlah Jam Lembur</th>
-                                                <th className="p-3.5 text-slate-500 font-bold text-right">Total Nilai Lembur (Rp)</th>
-                                                <th className="p-3.5 text-slate-500 font-bold text-center w-36">Lampiran Berkas</th>
-                                                {isAdmin && <th className="p-3.5 text-slate-500 font-bold text-center w-20">Aksi</th>}
+                                                <th className="p-2 font-bold text-slate-800 border-r border-slate-300">FUNGSI</th>
+                                                <th className="p-2 font-bold text-slate-800 text-right border-r border-slate-300">BIAYA LEMBUR</th>
+                                                <th className="p-2 font-bold text-slate-800 text-center">JUMLAH PERSONEL</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {groupedLemburList.map((item, idx) => (
-                                                <tr key={item.periode} className="hover:bg-slate-50/30 transition-colors">
-                                                    <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
-                                                    <td className="p-3.5 font-bold text-slate-800">{item.periode}</td>
-                                                    <td className="p-3.5 text-center font-extrabold text-slate-700">{item.totalJam.toFixed(1)} Jam</td>
-                                                    <td className="p-3.5 text-right font-mono font-bold text-green-600">{formatCurrency(item.totalNilai)}</td>
-                                                    <td className="p-3.5 text-center">
-                                                        <a
-                                                            href={findFileForPeriod(item.periode)}
-                                                            download
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-[10px] font-bold cursor-pointer transition-all"
-                                                            onClick={(e) => {
-                                                                if (findFileForPeriod(item.periode) === '#') {
-                                                                    e.preventDefault();
-                                                                    alert('Lampiran dokumen fisik untuk periode ini belum diunggah atau dihasilkan secara virtual.');
-                                                                }
-                                                            }}
-                                                        >
-                                                            <Download className="w-3 h-3" /> View/Download Excel
-                                                        </a>
-                                                    </td>
-                                                    {isAdmin && (
-                                                        <td className="p-3.5 text-center">
-                                                            <button
-                                                                onClick={() => handleDeleteLemburByPeriode(item.periode)}
-                                                                className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 cursor-pointer transition-colors"
-                                                                title="Hapus Rekap Periode Ini"
-                                                            >
-                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        </td>
-                                                    )}
+                                        <tbody className="divide-y divide-slate-200">
+                                            {lemburFungsiData.details.map((item, idx) => (
+                                                <tr key={idx} className="bg-white">
+                                                    <td className="p-2 font-semibold text-slate-700 border-r border-slate-200">{item.name}</td>
+                                                    <td className="p-2 font-mono font-medium text-slate-600 text-right border-r border-slate-200">{item.value.toLocaleString('id-ID')}</td>
+                                                    <td className="p-2 text-center font-medium text-slate-700">{item.personilCount}</td>
                                                 </tr>
                                             ))}
-                                            {groupedLemburList.length === 0 && (
-                                                <tr>
-                                                    <td colSpan={isAdmin ? 6 : 5} className="p-8 text-center text-slate-400 font-medium">
-                                                        Tidak ada rekap bulanan data lembur TAD.
-                                                    </td>
-                                                </tr>
-                                            )}
+                                            <tr className="bg-slate-100 font-bold text-slate-800">
+                                                <td className="p-2 border-r border-slate-300">TOTAL</td>
+                                                <td className="p-2 text-right font-mono border-r border-slate-300">{lemburFungsiData.totalBiaya.toLocaleString('id-ID')}</td>
+                                                <td className="p-2 text-center">{lemburFungsiData.totalPersonil}</td>
+                                            </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                                <div className="mt-2 text-right">
+                                    <p className="text-[9px] font-bold text-slate-400 italic">*Data per {lemburChartData[lemburChartData.length-1]?.periode || 'saat ini'}</p>
                                 </div>
                             </div>
                         </div>

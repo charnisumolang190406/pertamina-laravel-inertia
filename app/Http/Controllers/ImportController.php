@@ -16,6 +16,9 @@ use App\Models\Asset;
 use App\Models\Arsip;
 use App\Models\UploadArchive;
 use App\Models\Mom;
+use App\Models\HcTad;
+use App\Models\HcRetired;
+use App\Models\Employee;
 
 class ImportController extends Controller
 {
@@ -37,9 +40,20 @@ class ImportController extends Controller
         DB::beginTransaction();
         try {
             $insertedCount = 0;
+            $baseId = (int)(microtime(true) * 1000) * 1000; // Shift to avoid overlap with existing ids, leaving room for sequential addition
+
+            // Jika tipe datanya adalah MASTER, kita bersihkan dulu tabel lamanya agar menimpa data baru
+            // Menggunakan delete() alih-alih truncate() karena truncate() memutus DB::beginTransaction() di MySQL
+            if ($type === 'master_organik') {
+                Employee::query()->delete();
+            } elseif ($type === 'master_tad') {
+                HcTad::query()->delete();
+            } elseif ($type === 'master_pensiun') {
+                HcRetired::query()->delete();
+            }
 
             foreach ($rows as $row) {
-                $uniqueId = (int)(microtime(true) * 1000) + $insertedCount + rand(100, 999);
+                $uniqueId = $baseId + $insertedCount;
                 switch ($type) {
                     case 'scm':
                         Scm::create([
@@ -71,15 +85,20 @@ class ImportController extends Controller
                         break;
 
                     case 'lembur_tad':
+                        $upah = intval($row['upah'] ?? 0);
+                        $jamLembur = floatval($row['jamLembur'] ?? $row['jam_lembur'] ?? 0);
+                        // Hitung nilai lembur secara otomatis (Rumus baku: (Upah / 173) * Jam Lembur)
+                        $calculatedLemburVal = round(($upah / 173) * $jamLembur);
+
                         LemburTad::create([
                             'id' => $uniqueId,
                             'nopok' => $row['nopok'] ?? '-',
                             'nama' => $row['nama'] ?? 'Pekerja TAD',
                             'jabatan' => $row['jabatan'] ?? 'Staff',
                             'fungsi' => $row['fungsi'] ?? 'BUSINESS SUPPORT',
-                            'upah' => intval($row['upah'] ?? 0),
-                            'jamLembur' => floatval($row['jamLembur'] ?? $row['jam_lembur'] ?? 0),
-                            'lemburVal' => intval($row['lemburVal'] ?? $row['lembur_val'] ?? 0),
+                            'upah' => $upah,
+                            'jamLembur' => $jamLembur,
+                            'lemburVal' => $calculatedLemburVal,
                             'periode' => $row['periode'] ?? date('F Y'),
                         ]);
                         $insertedCount++;
@@ -177,6 +196,43 @@ class ImportController extends Controller
                         ]);
                         $insertedCount++;
                         break;
+
+                    case 'master_organik':
+                        Employee::create([
+                            'employee_id' => $row['nopok'] ?? ('EMP-' . rand(1000, 9999)),
+                            'name' => $row['nama'] ?? 'Pegawai Baru',
+                            'gender' => $row['gender'] ?? 'Laki-laki',
+                            'position' => $row['jabatan'] ?? 'Staff',
+                            'department' => $row['fungsi'] ?? 'Operasi',
+                            'status' => 'Aktif',
+                            'age' => intval($row['umur'] ?? 30)
+                        ]);
+                        $insertedCount++;
+                        break;
+
+                    case 'master_tad':
+                        HcTad::create([
+                            'id' => $uniqueId,
+                            'nama' => $row['nama'] ?? 'Pekerja TAD',
+                            'peran' => $row['peran'] ?? 'Staff',
+                            'vendor' => $row['vendor'] ?? 'PT Vendor',
+                            'status' => $row['status'] ?? 'Aktif',
+                        ]);
+                        $insertedCount++;
+                        break;
+
+                    case 'master_pensiun':
+                        HcRetired::create([
+                            'id' => $uniqueId,
+                            'nama' => $row['nama'] ?? 'Pegawai',
+                            'jabatan' => $row['jabatan'] ?? 'Staff',
+                            'umur_pensiun' => intval($row['umur'] ?? 56),
+                            'tahun' => intval($row['tahun'] ?? date('Y')),
+                            'tanggal' => $row['tanggal'] ?? date('Y-m-d'),
+                            'keterangan' => $row['keterangan'] ?? '-',
+                        ]);
+                        $insertedCount++;
+                        break;
                 }
             }
 
@@ -189,6 +245,8 @@ class ImportController extends Controller
                 $archiveCategory = 'MOM Rapat';
             } elseif (in_array($type, ['hc', 'lembur_tad', 'tad_mutation'])) {
                 $archiveCategory = 'Laporan Bulanan';
+            } elseif (in_array($type, ['master_organik', 'master_tad', 'master_pensiun'])) {
+                $archiveCategory = 'Master Data';
             }
 
             Arsip::create([
