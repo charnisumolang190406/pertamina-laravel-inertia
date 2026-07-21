@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import {
     LayoutDashboard, Calculator, Users, Package, FileSignature,
-    FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound
+    FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound, ChevronDown, ChevronRight
 } from 'lucide-react';
 
 import MainDashboard from './Pilar/MainDashboard';
@@ -31,6 +31,21 @@ export default function Dashboard(props) {
     };
 
     const [activeTab, setActiveTab] = useState(() => getDefaultTab(currentUser.role));
+    const [activeSubMenu, setActiveSubMenu] = useState('');
+    const [expandedMenus, setExpandedMenus] = useState({
+        'view-budget': true,
+        'view-hc': true,
+        'organik': true,
+        'tad': true,
+        'view-logistik': true,
+        'view-arsip': true
+    });
+
+    const toggleMenu = (menuId, e) => {
+        if (e) e.stopPropagation();
+        setExpandedMenus(prev => ({ ...prev, [menuId]: !prev[menuId] }));
+    };
+
     const [notifications, setNotifications] = useState([
         { id: 1, text: "Manager / Kepala memberikan feedback baru di MOM SCM.", read: false },
         { id: 2, text: "Kontrak Driver PGE Lahendong tersisa 6 bulan lagi.", read: false }
@@ -52,12 +67,52 @@ export default function Dashboard(props) {
 
     const menuItems = [
         { id: 'view-main', title: 'Main Dashboard', label: 'Executive Recast', icon: LayoutDashboard },
-        { id: 'view-budget', title: 'Budgeting', label: 'ABI & ABO Monitor', icon: Calculator },
-        { id: 'view-hc', title: 'Human Capital', label: 'SDM & Organik PGE', icon: Users },
-        { id: 'view-logistik', title: 'Facility Management', label: 'Logistik & SCM', icon: Package },
+        { 
+            id: 'view-budget', title: 'Budgeting', label: 'ABI & ABO Monitor', icon: Calculator,
+            children: [
+                { id: 'ringkasan', title: 'Ringkasan Anggaran (ABO/ABI)' },
+                { id: 'abo', title: 'Cost Center (ABO)' },
+                { id: 'abi', title: 'WBS Element (ABI)' },
+                { id: 'realisasi-abo', title: 'Trend Realisasi ABO' }
+            ]
+        },
+        { 
+            id: 'view-hc', title: 'Human Capital', label: 'SDM & Organik PGE', icon: Users,
+            children: [
+                { 
+                    id: 'organik', title: 'SDM Organik', 
+                    children: [
+                        { id: 'organik-mutasi', title: 'Mutasi & Pergerakan SDM' },
+                        { id: 'organik-retired', title: 'Proyeksi Pensiun 3 Tahun' }
+                    ]
+                },
+                { 
+                    id: 'tad', title: 'Tenaga Alih Daya',
+                    children: [
+                        { id: 'tad-tad', title: 'Daftar TAD' },
+                        { id: 'tad-lembur', title: 'Monitoring Lembur' },
+                        { id: 'tad-mutasi', title: 'Mutasi TAD' }
+                    ]
+                }
+            ]
+        },
+        { 
+            id: 'view-logistik', title: 'Facility Management', label: 'Logistik & SCM', icon: Package,
+            children: [
+                { id: 'perbaikan', title: 'Perbaikan Rumah Dinas' },
+                { id: 'alat_berat', title: 'Alat Berat & Aset LHD' },
+                { id: 'bbm', title: 'Laporan Pemakaian BBM' }
+            ]
+        },
         { id: 'view-it-asset', title: 'IT Asset Area', label: 'Server & Workstation', icon: Laptop },
         { id: 'view-scm', title: 'Kontrak', label: 'Monitoring Vendor', icon: FileSignature },
-        { id: 'view-arsip', title: 'Arsip Dokumen', label: 'Digital Library', icon: FolderOpen },
+        { 
+            id: 'view-arsip', title: 'Arsip Dokumen', label: 'Digital Library', icon: FolderOpen,
+            children: [
+                { id: 'dokumen', title: 'Digital Document Library' },
+                { id: 'history', title: 'Riwayat Unggahan Berkas' }
+            ]
+        },
         { id: 'view-calendar', title: 'Kalender Kegiatan', label: 'Kalender Kegiatan', icon: Calendar }
     ];
 
@@ -111,7 +166,6 @@ export default function Dashboard(props) {
                     />
                 </div>
 
-                {/* Sidebar Navigation */}
                 <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
                     {menuItems.map(item => {
                         const Icon = item.icon;
@@ -119,6 +173,8 @@ export default function Dashboard(props) {
                         if (!isAllowed) return null;
 
                         const isMain = item.id === 'view-main';
+                        const hasChildren = item.children && item.children.length > 0;
+                        const isExpanded = expandedMenus[item.id];
 
                         return (
                             <React.Fragment key={item.id}>
@@ -127,19 +183,91 @@ export default function Dashboard(props) {
                                         Pillar / Function
                                     </div>
                                 )}
-                                <button
-                                    onClick={() => setActiveTab(item.id)}
-                                    className={`flex items-center gap-3.5 py-2.5 px-4 my-1 rounded-r-full mr-4 transition-all cursor-pointer border border-transparent ${!isMain ? 'w-[calc(100%-1rem)] ml-4' : 'w-full'
-                                        } ${activeTab === item.id
-                                            ? 'bg-pertamina-green text-white shadow-md shadow-pertamina-green/30'
-                                            : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                                        }`}
-                                >
-                                    <Icon className="w-4 h-4 shrink-0" />
-                                    <div className="text-left">
-                                        <div className="leading-none text-[13px]">{item.title}</div>
-                                    </div>
-                                </button>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab(item.id);
+                                            if (hasChildren && !isExpanded) toggleMenu(item.id);
+                                        }}
+                                        className={`flex items-center justify-between py-2.5 px-4 my-1 rounded-r-full mr-4 transition-all cursor-pointer border border-transparent ${!isMain ? 'w-[calc(100%-1rem)] ml-4' : 'w-full'
+                                            } ${activeTab === item.id
+                                                ? 'bg-pertamina-blue/10 text-pertamina-blue font-semibold'
+                                                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50 font-medium'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-3.5">
+                                            <Icon className={`w-4 h-4 shrink-0 ${activeTab === item.id ? 'text-pertamina-blue' : 'text-slate-400'}`} />
+                                            <div className="text-left leading-none text-[13px]">{item.title}</div>
+                                        </div>
+                                        {hasChildren && (
+                                            <div 
+                                                onClick={(e) => toggleMenu(item.id, e)} 
+                                                className="p-1 rounded-full hover:bg-slate-200/50"
+                                            >
+                                                {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
+                                            </div>
+                                        )}
+                                    </button>
+                                    
+                                    {/* Render Submenus */}
+                                    {hasChildren && isExpanded && (
+                                        <div className="ml-11 mt-1 mb-2 space-y-1">
+                                            {item.children.map(child => {
+                                                const hasSubChildren = child.children && child.children.length > 0;
+                                                const isChildExpanded = expandedMenus[child.id];
+                                                
+                                                return (
+                                                    <React.Fragment key={child.id}>
+                                                        <button
+                                                            onClick={() => {
+                                                                setActiveTab(item.id);
+                                                                setActiveSubMenu(child.id);
+                                                                if (hasSubChildren && !isChildExpanded) toggleMenu(child.id);
+                                                            }}
+                                                            className={`flex items-center justify-between w-[calc(100%-1rem)] py-2 px-3 text-left rounded-lg transition-colors cursor-pointer ${
+                                                                activeSubMenu === child.id && activeTab === item.id
+                                                                    ? 'bg-slate-100 text-pertamina-blue font-semibold shadow-sm'
+                                                                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                                                            }`}
+                                                        >
+                                                            <span className="text-[12px] truncate">{child.title}</span>
+                                                            {hasSubChildren && (
+                                                                <div 
+                                                                    onClick={(e) => toggleMenu(child.id, e)} 
+                                                                    className="p-1 rounded-full hover:bg-slate-200/50"
+                                                                >
+                                                                    {isChildExpanded ? <ChevronDown className="w-3 h-3 text-slate-400" /> : <ChevronRight className="w-3 h-3 text-slate-400" />}
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                        
+                                                        {/* Render 3rd Level Menus */}
+                                                        {hasSubChildren && isChildExpanded && (
+                                                            <div className="ml-3 mt-1 mb-1 space-y-0.5 border-l border-slate-200 pl-2">
+                                                                {child.children.map(subChild => (
+                                                                    <button
+                                                                        key={subChild.id}
+                                                                        onClick={() => {
+                                                                            setActiveTab(item.id);
+                                                                            setActiveSubMenu(subChild.id);
+                                                                        }}
+                                                                        className={`w-[calc(100%-0.5rem)] py-1.5 px-3 text-left rounded-lg transition-colors cursor-pointer ${
+                                                                            activeSubMenu === subChild.id && activeTab === item.id
+                                                                                ? 'text-pertamina-blue font-bold bg-slate-50'
+                                                                                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50/50'
+                                                                        }`}
+                                                                    >
+                                                                        <span className="text-[11px] truncate">{subChild.title}</span>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
                             </React.Fragment>
                         );
                     })}
@@ -248,12 +376,12 @@ export default function Dashboard(props) {
 
                     {/* Rendering Tab Views */}
                     {activeTab === 'view-main' && <MainDashboard {...props} onOpenFeedback={openFeedback} />}
-                    {activeTab === 'view-budget' && <Budgeting {...props} onOpenFeedback={openFeedback} />}
-                    {activeTab === 'view-hc' && <HumanCapital {...props} onOpenFeedback={openFeedback} />}
-                    {activeTab === 'view-logistik' && <Logistik {...props} onOpenFeedback={openFeedback} />}
-                    {activeTab === 'view-scm' && <Scm {...props} onOpenFeedback={openFeedback} />}
-                    {activeTab === 'view-arsip' && <Arsip {...props} onOpenFeedback={openFeedback} />}
-                    {activeTab === 'view-it-asset' && <ItAsset {...props} onOpenFeedback={openFeedback} />}
+                    {activeTab === 'view-budget' && <Budgeting {...props} activeSubMenu={activeSubMenu} onOpenFeedback={openFeedback} />}
+                    {activeTab === 'view-hc' && <HumanCapital {...props} activeSubMenu={activeSubMenu} onOpenFeedback={openFeedback} />}
+                    {activeTab === 'view-logistik' && <Logistik {...props} activeSubMenu={activeSubMenu} onOpenFeedback={openFeedback} />}
+                    {activeTab === 'view-scm' && <Scm {...props} activeSubMenu={activeSubMenu} onOpenFeedback={openFeedback} />}
+                    {activeTab === 'view-arsip' && <Arsip {...props} activeSubMenu={activeSubMenu} onOpenFeedback={openFeedback} />}
+                    {activeTab === 'view-it-asset' && <ItAsset {...props} activeSubMenu={activeSubMenu} onOpenFeedback={openFeedback} />}
                     {activeTab === 'view-calendar' && <CalendarTab {...props} />}
                 </main>
 

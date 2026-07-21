@@ -75,7 +75,7 @@ export default function HumanCapital(props) {
     const {
         hcMutations, retiredWorkers, genderStats, momList, auth, onOpenFeedback,
         tadWorkers = [], lemburTadList = [], tadMutations = [], arsipList = [],
-        organikWorkers = []
+        organikWorkers = [], activeSubMenu
     } = props;
     const currentUser = auth.user;
     const isAdmin = currentUser?.role?.startsWith('Admin');
@@ -83,6 +83,22 @@ export default function HumanCapital(props) {
     const [masterView, setMasterView] = useState('organik'); // 'organik' | 'tad'
     const [activeSubTabOrganik, setActiveSubTabOrganik] = useState('mutasi');
     const [activeSubTabTad, setActiveSubTabTad] = useState('tad');
+
+    React.useEffect(() => {
+        if (activeSubMenu) {
+            if (activeSubMenu.startsWith('organik')) {
+                setMasterView('organik');
+                if (activeSubMenu.includes('-')) {
+                    setActiveSubTabOrganik(activeSubMenu.split('-')[1]);
+                }
+            } else if (activeSubMenu.startsWith('tad')) {
+                setMasterView('tad');
+                if (activeSubMenu.includes('-')) {
+                    setActiveSubTabTad(activeSubMenu.split('-')[1]);
+                }
+            }
+        }
+    }, [activeSubMenu]);
 
     // === ORGANIK LOGIC ===
     const totalMutations = hcMutations?.length || 0;

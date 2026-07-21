@@ -4,10 +4,16 @@ import { Folder, Database, Search, Download, Trash2, FileText, UploadCloud } fro
 import MomTable from '../../Components/MomTable';
 
 export default function Arsip(props) {
-    const { arsipList, uploadArchive, momList, auth, onOpenFeedback } = props;
+    const { arsipList, uploadArchive, momList, auth, onOpenFeedback, activeSubMenu } = props;
     const currentUser = auth.user;
 
     const [activeSubTab, setActiveSubTab] = useState('dokumen');
+
+    React.useEffect(() => {
+        if (activeSubMenu) {
+            setActiveSubTab(activeSubMenu);
+        }
+    }, [activeSubMenu]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterKategori, setFilterKategori] = useState('Semua');
 

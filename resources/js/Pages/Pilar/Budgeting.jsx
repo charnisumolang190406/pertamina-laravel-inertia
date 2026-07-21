@@ -168,11 +168,17 @@ function RingkasanBarChart({ chartData, formatCurrency }) {
 }
 
 export default function Budgeting(props) {
-    const { budgetDetailsList, momList, auth, onOpenFeedback } = props;
+    const { budgetDetailsList, momList, auth, onOpenFeedback, activeSubMenu } = props;
     const currentUser = auth.user;
 
     const [filterKategori, setFilterKategori] = useState('Semua');
     const [activeBudgetSubTab, setActiveBudgetSubTab] = useState('ringkasan');
+
+    React.useEffect(() => {
+        if (activeSubMenu) {
+            setActiveBudgetSubTab(activeSubMenu);
+        }
+    }, [activeSubMenu]);
     const [budgetSearch, setBudgetSearch] = useState('');
 
     // Aggregate budgets

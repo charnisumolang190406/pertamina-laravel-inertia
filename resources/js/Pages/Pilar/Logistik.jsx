@@ -7,10 +7,16 @@ import KpiCard from '../../Components/KpiCard';
 import MomTable from '../../Components/MomTable';
 
 export default function Logistik(props) {
-    const { stokList, alatBeratList, perbaikanList, momList, bbmList = [], auth, onOpenFeedback } = props;
+    const { stokList, alatBeratList, perbaikanList, momList, bbmList = [], auth, onOpenFeedback, activeSubMenu } = props;
     const currentUser = auth.user;
 
     const [activeSubTab, setActiveSubTab] = useState('perbaikan');
+
+    React.useEffect(() => {
+        if (activeSubMenu) {
+            setActiveSubTab(activeSubMenu);
+        }
+    }, [activeSubMenu]);
 
     const totalStockItems = stokList.length;
     const totalJenisMaterial = new Set(stokList.map(item => item.nama)).size;
