@@ -131,6 +131,8 @@ export default function UploadWizardModal({ isOpen, onClose }) {
                     // Find index in headers matching label or key name
                     const idx = sheetHeaders.findIndex(h => {
                         const hLower = h.toLowerCase();
+                        if (key === 'lembur_val' && hLower.includes('lembur') && !hLower.includes('jam')) return true;
+                        if (key === 'jam_lembur' && (hLower.includes('jam') || hLower.includes('hour'))) return true;
                         return hLower.includes(label) || label.includes(hLower) || hLower.includes(keyLower) || keyLower.includes(hLower);
                     });
 
@@ -162,13 +164,35 @@ export default function UploadWizardModal({ isOpen, onClose }) {
         setIsProcessing(true);
 
         const cleanInt = (v) => {
-            if (v === undefined || v === null) return 0;
-            return parseInt(String(v).replace(/[^0-9-]/g, '')) || 0;
+            if (v === undefined || v === null || v === '') return 0;
+            if (typeof v === 'number') return Math.round(v);
+            let str = String(v).trim().replace(/[Rp$\s]/gi, '');
+            if (str.includes(',') && str.includes('.')) {
+                if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+                    str = str.replace(/\./g, '').replace(',', '.');
+                } else {
+                    str = str.replace(/,/g, '');
+                }
+            } else if (str.includes(',')) {
+                str = str.replace(/,/g, '.');
+            }
+            return Math.round(parseFloat(str.replace(/[^0-9.-]/g, '')) || 0);
         };
 
         const cleanFloat = (v) => {
-            if (v === undefined || v === null) return 0;
-            return parseFloat(String(v).replace(/[^0-9.-]/g, '')) || 0;
+            if (v === undefined || v === null || v === '') return 0;
+            if (typeof v === 'number') return parseFloat(v.toFixed(2));
+            let str = String(v).trim().replace(/[Rp$\s]/gi, '');
+            if (str.includes(',') && str.includes('.')) {
+                if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+                    str = str.replace(/\./g, '').replace(',', '.');
+                } else {
+                    str = str.replace(/,/g, '');
+                }
+            } else if (str.includes(',')) {
+                str = str.replace(/,/g, '.');
+            }
+            return parseFloat((parseFloat(str.replace(/[^0-9.-]/g, '')) || 0).toFixed(2));
         };
 
         const cleanString = (v) => {

@@ -5,7 +5,6 @@ import {
   Users, Package, DollarSign, Filter
 } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
-import MomTable from '../../Components/MomTable';
 
 // Fungsi pillar definitions
 const FUNGSI_OPTIONS = [
@@ -111,18 +110,6 @@ export default function Scm(props) {
         }
     };
 
-    const handleResetScmData = (mode) => {
-        if (mode === 'clear') {
-            if (confirm('Apakah Anda yakin ingin menghapus SEMUA data kontrak monitoring?')) {
-                router.post('/scm/clear');
-            }
-        } else if (mode === 'default') {
-            if (confirm('Apakah Anda yakin ingin mengembalikan data kontrak ke data default awal?')) {
-                router.post('/scm/reset');
-            }
-        }
-    };
-
     const isAdmin = currentUser?.role?.startsWith('Admin');
 
     return (
@@ -206,26 +193,12 @@ export default function Scm(props) {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex gap-2 text-xs font-bold flex-wrap">
                     {isAdmin && (
-                        <>
-                            <button
-                                onClick={() => setShowAddModal(true)}
-                                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl shadow-md shadow-blue-500/10 cursor-pointer transition-all active:scale-95"
-                            >
-                                <Plus className="w-4 h-4" /> Tambah Kontrak
-                            </button>
-                            <button
-                                onClick={() => handleResetScmData('clear')}
-                                className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-xl border border-red-200 cursor-pointer transition-all active:scale-95"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" /> Kosongkan Kontrak
-                            </button>
-                            <button
-                                onClick={() => handleResetScmData('default')}
-                                className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl border border-slate-200 cursor-pointer transition-all active:scale-95"
-                            >
-                                <Database className="w-3.5 h-3.5" /> Reset Default
-                            </button>
-                        </>
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl shadow-md shadow-blue-500/10 cursor-pointer transition-all active:scale-95"
+                        >
+                            <Plus className="w-4 h-4" /> Tambah Kontrak
+                        </button>
                     )}
                 </div>
 
@@ -475,14 +448,6 @@ export default function Scm(props) {
                     </div>
                 </div>
             )}
-
-            {/* MOM TABLE AT BOTTOM */}
-            <MomTable 
-                momList={momList} 
-                fungsi="SCM" 
-                currentUser={currentUser} 
-                onOpenFeedback={onOpenFeedback} 
-            />
         </div>
     );
 }

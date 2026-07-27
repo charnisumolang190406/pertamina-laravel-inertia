@@ -11,6 +11,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ArsipController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\ActivityLogController;
 
 // Public Guest Routes
 Route::middleware('guest')->group(function () {
@@ -70,4 +71,7 @@ Route::middleware('auth')->group(function () {
 
     // Import Excel Wizard Route
     Route::post('/import', [ImportController::class, 'import'])->name('import');
+
+    // Activity Log Route
+    Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity.log');
 });

@@ -87,20 +87,39 @@ class ImportController extends Controller
                     case 'lembur_tad':
                         $upah = intval($row['upah'] ?? 0);
                         $jamLembur = floatval($row['jamLembur'] ?? $row['jam_lembur'] ?? 0);
-                        // Hitung nilai lembur secara otomatis (Rumus baku: (Upah / 173) * Jam Lembur)
-                        $calculatedLemburVal = round(($upah / 173) * $jamLembur);
+                        $customVal = intval($row['lembur_val'] ?? $row['lemburVal'] ?? 0);
+                        // Hitung nilai lembur secara otomatis jika tidak disediakan di Excel (Rumus baku: (Upah / 173) * Jam Lembur)
+                        $calculatedLemburVal = $customVal > 0 ? $customVal : round(($upah / 173) * $jamLembur);
+                        $nopok = trim($row['nopok'] ?? '-');
+                        $nama = trim($row['nama'] ?? 'Pekerja TAD');
+                        $periode = trim($row['periode'] ?? date('F Y'));
 
-                        LemburTad::create([
-                            'id' => $uniqueId,
-                            'nopok' => $row['nopok'] ?? '-',
-                            'nama' => $row['nama'] ?? 'Pekerja TAD',
-                            'jabatan' => $row['jabatan'] ?? 'Staff',
-                            'fungsi' => $row['fungsi'] ?? 'BUSINESS SUPPORT',
-                            'upah' => $upah,
-                            'jamLembur' => $jamLembur,
-                            'lemburVal' => $calculatedLemburVal,
-                            'periode' => $row['periode'] ?? date('F Y'),
-                        ]);
+                        $existing = ($nopok !== '-' && !empty($nopok))
+                            ? LemburTad::where('nopok', $nopok)->where('periode', $periode)->first()
+                            : LemburTad::where('nama', $nama)->where('periode', $periode)->first();
+
+                        if ($existing) {
+                            $existing->update([
+                                'nama' => $nama,
+                                'jabatan' => $row['jabatan'] ?? 'Staff',
+                                'fungsi' => $row['fungsi'] ?? 'BUSINESS SUPPORT',
+                                'upah' => $upah,
+                                'jamLembur' => $jamLembur,
+                                'lemburVal' => $calculatedLemburVal,
+                            ]);
+                        } else {
+                            LemburTad::create([
+                                'id' => $uniqueId,
+                                'nopok' => $nopok,
+                                'nama' => $nama,
+                                'jabatan' => $row['jabatan'] ?? 'Staff',
+                                'fungsi' => $row['fungsi'] ?? 'BUSINESS SUPPORT',
+                                'upah' => $upah,
+                                'jamLembur' => $jamLembur,
+                                'lemburVal' => $calculatedLemburVal,
+                                'periode' => $periode,
+                            ]);
+                        }
                         $insertedCount++;
                         break;
 

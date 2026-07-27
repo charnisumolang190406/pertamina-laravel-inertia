@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, Link } from '@inertiajs/react';
 import {
     LayoutDashboard, Calculator, Users, Package, FileSignature,
-    FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound, ChevronDown, ChevronRight
+    FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound, ChevronDown, ChevronRight, Activity
 } from 'lucide-react';
 
 import MainDashboard from './Pilar/MainDashboard';
@@ -316,6 +316,15 @@ export default function Dashboard(props) {
                                 <UploadCloud className="w-4 h-4 animate-[pulse_2s_infinite]" /> Upload Laporan
                             </button>
                         )}
+                        
+                        {/* Activity Log Link */}
+                        <Link
+                            href="/activity-log"
+                            className="flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-3.5 py-2 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95 shrink-0"
+                        >
+                            <Activity className="w-4 h-4 text-blue-500" /> Log Aktivitas
+                        </Link>
+
                         {/* Notification Bell */}
                         <div className="relative">
                             <button

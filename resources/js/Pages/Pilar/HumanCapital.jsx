@@ -15,15 +15,33 @@ import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
 const GENDER_COLORS = ['#3b82f6', '#ec4899'];
 
 const MONTH_ORDER = {
-    januari: 1, februari: 2, maret: 3, april: 4, mei: 5, juni: 6,
-    juli: 7, agustus: 8, september: 9, oktober: 10, november: 11, desember: 12,
+    januari: 1, january: 1, jan: 1,
+    februari: 2, february: 2, feb: 2,
+    maret: 3, march: 3, mar: 3,
+    april: 4, apr: 4,
+    mei: 5, may: 5,
+    juni: 6, june: 6, jun: 6,
+    juli: 7, july: 7, jul: 7,
+    agustus: 8, august: 8, agu: 8, aug: 8,
+    september: 9, sep: 9, sept: 9,
+    oktober: 10, october: 10, okt: 10, oct: 10,
+    november: 11, nov: 11,
+    desember: 12, december: 12, des: 12, dec: 12,
 };
 
 function sortByPeriod(a, b) {
     const parsePeriod = (period) => {
-        const parts = (period || '').toLowerCase().split(' ');
-        const month = MONTH_ORDER[parts[0]] || 0;
-        const year = parseInt(parts[1], 10) || 0;
+        if (!period) return 0;
+        const str = period.toLowerCase().replace(/[^a-z0-9]/g, ' ').trim();
+        const parts = str.split(/\s+/);
+        let month = 0;
+        let year = 0;
+        parts.forEach(p => {
+            if (/^\d{4}$/.test(p)) year = parseInt(p, 10);
+            else if (/^\d{1,2}$/.test(p) && !month) month = parseInt(p, 10);
+            else if (MONTH_ORDER[p]) month = MONTH_ORDER[p];
+        });
+        if (!year) year = 2026;
         return year * 100 + month;
     };
     return parsePeriod(a) - parsePeriod(b);

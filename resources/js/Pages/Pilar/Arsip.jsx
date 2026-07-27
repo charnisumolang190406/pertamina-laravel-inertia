@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { Folder, Database, Search, Download, Trash2, FileText, UploadCloud } from 'lucide-react';
-import MomTable from '../../Components/MomTable';
 
 export default function Arsip(props) {
     const { arsipList, uploadArchive, momList, auth, onOpenFeedback, activeSubMenu } = props;
@@ -231,14 +230,6 @@ export default function Arsip(props) {
                     </div>
                 </div>
             )}
-
-            {/* MOM TABLE AT BOTTOM */}
-            <MomTable 
-                momList={momList} 
-                fungsi="BS" 
-                currentUser={currentUser} 
-                onOpenFeedback={onOpenFeedback} 
-            />
         </div>
     );
 }
