@@ -90,8 +90,7 @@ export default function Dashboard(props) {
                     id: 'tad', title: 'Tenaga Alih Daya',
                     children: [
                         { id: 'tad-tad', title: 'Daftar TAD' },
-                        { id: 'tad-lembur', title: 'Monitoring Lembur' },
-                        { id: 'tad-mutasi', title: 'Mutasi TAD' }
+                        { id: 'tad-lembur', title: 'Monitoring Lembur' }
                     ]
                 }
             ]

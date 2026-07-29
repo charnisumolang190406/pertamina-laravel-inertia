@@ -6,7 +6,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ScmController;
 use App\Http\Controllers\LogistikController;
 use App\Http\Controllers\HcController;
-use App\Http\Controllers\MomController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ArsipController;
 use App\Http\Controllers\ImportController;
@@ -53,12 +52,6 @@ Route::middleware('auth')->group(function () {
     // HC - Lembur TAD Routes
     Route::delete('/hc/lembur/{id}', [HcController::class, 'destroyLemburTad'])->name('hc.lembur.destroy');
     Route::post('/hc/lembur/delete-periode', [HcController::class, 'destroyLemburTadByPeriode'])->name('hc.lembur.destroy_periode');
-
-    // MOM Routes
-    Route::post('/mom', [MomController::class, 'store'])->name('mom.store');
-    Route::put('/mom/{id}', [MomController::class, 'update'])->name('mom.update');
-    Route::delete('/mom/{id}', [MomController::class, 'destroy'])->name('mom.destroy');
-    Route::post('/mom/{id}/feedback', [MomController::class, 'feedback'])->name('mom.feedback');
 
     // Calendar Routes
     Route::post('/calendar', [CalendarController::class, 'store'])->name('calendar.store');

@@ -32,24 +32,37 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'scmList' => Scm::orderBy('id', 'desc')->get(),
-            'momList' => Mom::all(),
             'calendarEvents' => CalendarEvent::all(),
             'hcMutations' => HcMutation::orderBy('id', 'desc')->get(),
             'tadWorkers' => HcTad::all(),
-            'tadMutations' => TadMutation::orderBy('id', 'desc')->get(),
-            'retiredWorkers' => Employee::where('age', '>=', 53)
-                ->get()
+            'retiredWorkers' => Employee::all()
                 ->map(function ($emp) use ($currentYear) {
-                    $tahunPensiun = $currentYear + (56 - $emp->age);
-                    return [
-                        'id' => $emp->id,
-                        'nama' => $emp->name,
-                        'jabatan' => $emp->position,
-                        'umur_pensiun' => 56,
-                        'tahun' => $tahunPensiun,
-                        'tanggal' => $tahunPensiun . '-12-31', // Estimasi akhir tahun karena tidak ada data tanggal lahir lengkap
-                        'keterangan' => 'Proyeksi Otomatis dari Master Data (Umur saat ini: ' . $emp->age . ' Tahun)',
-                    ];
+                    if (!empty($emp->tanggal_lahir)) {
+                        $dob = \Carbon\Carbon::parse($emp->tanggal_lahir);
+                        $retirementDate = $dob->copy()->addYears(56);
+                        $tahunPensiun = $retirementDate->year;
+                        
+                        return [
+                            'id' => $emp->id,
+                            'nama' => $emp->name,
+                            'jabatan' => $emp->position,
+                            'umur_pensiun' => 56,
+                            'tahun' => $tahunPensiun,
+                            'tanggal' => $retirementDate->format('Y-m-d'),
+                            'keterangan' => 'Sesuai Ulang Tahun (' . $dob->format('d M Y') . ')',
+                        ];
+                    } else {
+                        $tahunPensiun = $currentYear + (56 - $emp->age);
+                        return [
+                            'id' => $emp->id,
+                            'nama' => $emp->name,
+                            'jabatan' => $emp->position,
+                            'umur_pensiun' => 56,
+                            'tahun' => $tahunPensiun,
+                            'tanggal' => $tahunPensiun . '-12-31',
+                            'keterangan' => 'Estimasi akhir tahun berdasarkan umur',
+                        ];
+                    }
                 })
                 ->filter(function ($emp) use ($currentYear) {
                     return $emp['tahun'] >= $currentYear && $emp['tahun'] <= $currentYear + 3;

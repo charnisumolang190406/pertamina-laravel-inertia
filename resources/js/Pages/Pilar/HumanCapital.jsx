@@ -9,7 +9,6 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Customized
 } from 'recharts';
 import KpiCard from '../../Components/KpiCard';
-import MomTable from '../../Components/MomTable';
 import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
 
 const GENDER_COLORS = ['#3b82f6', '#ec4899'];
@@ -108,11 +107,13 @@ export default function HumanCapital(props) {
                 setMasterView('organik');
                 if (activeSubMenu.includes('-')) {
                     setActiveSubTabOrganik(activeSubMenu.split('-')[1]);
+                    setTimeout(() => document.getElementById('organik-subtabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
                 }
             } else if (activeSubMenu.startsWith('tad')) {
                 setMasterView('tad');
                 if (activeSubMenu.includes('-')) {
                     setActiveSubTabTad(activeSubMenu.split('-')[1]);
+                    setTimeout(() => document.getElementById('tad-subtabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
                 }
             }
         }
@@ -121,6 +122,7 @@ export default function HumanCapital(props) {
     // === ORGANIK LOGIC ===
     const totalMutations = hcMutations?.length || 0;
     const totalRetired = retiredWorkers?.length || 0;
+    const totalTad = tadWorkers?.length || 0;
     const totalMale = genderStats?.male ?? 0;
     const totalFemale = genderStats?.female ?? 0;
     const totalOrganik = genderStats?.total ?? (totalMale + totalFemale);
@@ -167,9 +169,8 @@ export default function HumanCapital(props) {
     const currentYear = new Date().getFullYear();
 
     // === TAD LOGIC ===
-    const totalTad = tadWorkers?.length || 0;
+    const totalTadCount = tadWorkers?.length || 0;
     const totalLemburVal = lemburTadList?.reduce((acc, c) => acc + c.lemburVal, 0) || 0;
-    const totalTadMutasi = tadMutations?.length || 0;
 
     const formatCurrency = (val) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
@@ -248,22 +249,6 @@ export default function HumanCapital(props) {
             totalPersonil: totalAllPersonil.size
         };
     }, [lemburTadList]);
-
-    const mutationChartData = useMemo(() => {
-        const grouped = (tadMutations || []).reduce((acc, curr) => {
-            const bulan = curr.bulan || 'Lainnya';
-            if (!acc[bulan]) {
-                acc[bulan] = { bulan, masuk: 0, keluar: 0 };
-            }
-            if (curr.jenis === 'Masuk') {
-                acc[bulan].masuk += 1;
-            } else {
-                acc[bulan].keluar += 1;
-            }
-            return acc;
-        }, {});
-        return Object.values(grouped).sort((a, b) => sortByPeriod(a.bulan, b.bulan));
-    }, [tadMutations]);
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto animate-[fadeIn_0.3s_ease-in-out] font-sans text-slate-800">
@@ -447,9 +432,12 @@ export default function HumanCapital(props) {
                     </div>
 
                     {/* SUB TAB NAV */}
-                    <div className="flex border-b border-slate-200 bg-white p-2 rounded-2xl shadow-2xs">
+                    <div id="organik-subtabs" className="flex border-b border-slate-200 bg-white p-2 rounded-2xl shadow-2xs">
                         <button
-                            onClick={() => setActiveSubTabOrganik('mutasi')}
+                            onClick={() => {
+                                setActiveSubTabOrganik('mutasi');
+                                setTimeout(() => document.getElementById('organik-subtabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+                            }}
                             className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabOrganik === 'mutasi' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
@@ -457,7 +445,10 @@ export default function HumanCapital(props) {
                             Mutasi & Pergerakan SDM ({totalMutations})
                         </button>
                         <button
-                            onClick={() => setActiveSubTabOrganik('retired')}
+                            onClick={() => {
+                                setActiveSubTabOrganik('retired');
+                                setTimeout(() => document.getElementById('organik-subtabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+                            }}
                             className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabOrganik === 'retired' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
@@ -562,7 +553,7 @@ export default function HumanCapital(props) {
             {masterView === 'tad' && (
                 <div className="space-y-6 animate-[fadeIn_0.3s_ease-in-out]">
                     {/* KPI CARDS */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <KpiCard
                             title="Tenaga Alih Daya (TAD)"
                             value={`${totalTad} Orang`}
@@ -579,38 +570,29 @@ export default function HumanCapital(props) {
                             colorClass="text-green-600"
                             bgClass="bg-green-50"
                         />
-                        <KpiCard
-                            title="Mutasi TAD Bulanan"
-                            value={`${totalTadMutasi} Pergerakan`}
-                            subtitle="Staff masuk & keluar"
-                            icon={TrendingUp}
-                            colorClass="text-indigo-600"
-                            bgClass="bg-indigo-50"
-                        />
                     </div>
 
                     {/* SUB TAB NAV */}
-                    <div className="flex flex-wrap border-b border-slate-200 bg-white p-2 rounded-2xl shadow-2xs gap-1">
+                    <div id="tad-subtabs" className="flex flex-wrap border-b border-slate-200 bg-white p-2 rounded-2xl shadow-2xs gap-1">
                         <button
-                            onClick={() => setActiveSubTabTad('tad')}
+                            onClick={() => {
+                                setActiveSubTabTad('tad');
+                                setTimeout(() => document.getElementById('tad-subtabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+                            }}
                             className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabTad === 'tad' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             Daftar TAD ({totalTad})
                         </button>
                         <button
-                            onClick={() => setActiveSubTabTad('lembur')}
+                            onClick={() => {
+                                setActiveSubTabTad('lembur');
+                                setTimeout(() => document.getElementById('tad-subtabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+                            }}
                             className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabTad === 'lembur' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             Monitoring Lembur ({groupedLemburList.length})
-                        </button>
-                        <button
-                            onClick={() => setActiveSubTabTad('mutasi')}
-                            className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTabTad === 'mutasi' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
-                                }`}
-                        >
-                            Mutasi TAD ({totalTadMutasi})
                         </button>
                     </div>
 
@@ -755,85 +737,9 @@ export default function HumanCapital(props) {
                             </div>
                         </div>
                     )}
-
-                    {/* SUB-TAB 3: TAD MUTATIONS */}
-                    {activeSubTabTad === 'mutasi' && (
-                        <div className="space-y-4">
-                            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5">
-                                <div className="mb-4">
-                                    <h3 className="font-extrabold text-slate-800 text-sm">Grafik Mutasi TAD per Bulan</h3>
-                                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">Pergerakan staff TAD masuk dan keluar per periode.</p>
-                                </div>
-                                {mutationChartData.length > 0 ? (
-                                    <div className="h-64">
-                                        <MutationBarChart mutationChartData={mutationChartData} />
-                                    </div>
-                                ) : (
-                                    <div className="h-48 flex items-center justify-center text-slate-400 text-xs font-medium">
-                                        Belum ada data mutasi TAD. Unggah data mutasi melalui menu Upload.
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-                                <div className="p-5 border-b border-slate-100 bg-slate-50/30">
-                                    <h3 className="font-extrabold text-slate-800 text-sm">Riwayat Mutasi Tenaga Alih Daya</h3>
-                                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">Monitoring pergerakan keluar-masuk staff TAD per bulan.</p>
-                                </div>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-xs whitespace-nowrap">
-                                        <thead className="bg-slate-50 border-b border-slate-200">
-                                            <tr>
-                                                <th className="p-3.5 text-slate-500 font-bold w-10 text-center">No</th>
-                                                <th className="p-3.5 text-slate-500 font-bold">Bulan Mutasi</th>
-                                                <th className="p-3.5 text-slate-500 font-bold">Nama Staff TAD</th>
-                                                <th className="p-3.5 text-slate-500 font-bold">Jenis Pergerakan</th>
-                                                <th className="p-3.5 text-slate-500 font-bold">Peran Kerja</th>
-                                                <th className="p-3.5 text-slate-500 font-bold">Vendor Penyedia</th>
-                                                <th className="p-3.5 text-slate-500 font-bold max-w-xs text-wrap">Keterangan</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {(tadMutations || []).map((item, idx) => (
-                                                <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                                    <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
-                                                    <td className="p-3.5 font-bold text-slate-700">{item.bulan}</td>
-                                                    <td className="p-3.5 font-bold text-slate-800">{item.nama}</td>
-                                                    <td className="p-3.5">
-                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${item.jenis === 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                            {item.jenis === 'Masuk' ? <UserPlus className="w-3 h-3" /> : <UserMinus className="w-3 h-3" />}
-                                                            {item.jenis}
-                                                        </span>
-                                                    </td>
-                                                    <td className="p-3.5 text-slate-600 font-semibold">{item.peran}</td>
-                                                    <td className="p-3.5 text-slate-600 font-medium">{item.vendor}</td>
-                                                    <td className="p-3.5 max-w-xs text-wrap text-slate-500 font-medium leading-relaxed">{item.keterangan}</td>
-                                                </tr>
-                                            ))}
-                                            {(!tadMutations || tadMutations.length === 0) && (
-                                                <tr>
-                                                    <td colSpan={7} className="p-8 text-center text-slate-400 font-medium">
-                                                        Tidak ada data mutasi TAD.
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             )}
 
-            {/* MOM TABLE (Shown for both views since it's global to HC function) */}
-            <MomTable
-                momList={momList}
-                fungsi="HC"
-                currentUser={currentUser}
-                onOpenFeedback={onOpenFeedback}
-            />
         </div>
     );
 }

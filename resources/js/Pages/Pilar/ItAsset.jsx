@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Laptop, Cpu, CheckCircle, AlertCircle, Trash2, Plus, UploadCloud } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
-import MomTable from '../../Components/MomTable';
-
 export default function ItAsset(props) {
     const { assetList, momList, auth, onOpenFeedback } = props;
     const currentUser = auth.user;
@@ -115,14 +113,6 @@ export default function ItAsset(props) {
                     </table>
                 </div>
             </div>
-
-            {/* MOM TABLE AT BOTTOM */}
-            <MomTable 
-                momList={momList} 
-                fungsi="IT" 
-                currentUser={currentUser} 
-                onOpenFeedback={onOpenFeedback} 
-            />
         </div>
     );
 }

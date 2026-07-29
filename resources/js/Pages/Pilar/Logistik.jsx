@@ -4,8 +4,6 @@ import {
   Package, Laptop, Folder, Trash2, Database, AlertCircle, CheckCircle, Droplet
 } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
-import MomTable from '../../Components/MomTable';
-
 export default function Logistik(props) {
     const { stokList, alatBeratList, perbaikanList, momList, bbmList = [], auth, onOpenFeedback, activeSubMenu } = props;
     const currentUser = auth.user;
@@ -341,13 +339,7 @@ export default function Logistik(props) {
                 </div>
             )}
 
-            {/* MOM TABLE AT BOTTOM */}
-            <MomTable 
-                momList={momList} 
-                fungsi="LOG" 
-                currentUser={currentUser} 
-                onOpenFeedback={onOpenFeedback} 
-            />
+
         </div>
     );
 }

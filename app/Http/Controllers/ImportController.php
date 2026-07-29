@@ -177,18 +177,7 @@ class ImportController extends Controller
                         $insertedCount++;
                         break;
 
-                    case 'tad_mutation':
-                        TadMutation::create([
-                            'id' => $uniqueId,
-                            'bulan' => $row['bulan'] ?? date('F Y'),
-                            'nama' => $row['nama'] ?? 'Pegawai TAD',
-                            'jenis' => $row['jenis'] ?? 'Masuk',
-                            'peran' => $row['peran'] ?? 'Staff',
-                            'vendor' => $row['vendor'] ?? '-',
-                            'keterangan' => $row['keterangan'] ?? '-',
-                        ]);
-                        $insertedCount++;
-                        break;
+
 
                     case 'it_asset':
                         Asset::create([
@@ -203,29 +192,42 @@ class ImportController extends Controller
                         $insertedCount++;
                         break;
 
-                    case 'mom':
-                        Mom::create([
-                            'id' => $uniqueId,
-                            'fungsi' => $row['fungsi'] ?? 'BS',
-                            'isu' => $row['isu'] ?? 'Isu Baru',
-                            'tindak_lanjut' => $row['tindak_lanjut'] ?? 'Rencana Tindak Lanjut',
-                            'status' => 'Menunggu Review',
-                            'statusColor' => 'bg-yellow-100 text-yellow-800',
-                            'feedback' => null,
-                        ]);
-                        $insertedCount++;
-                        break;
+
 
                     case 'master_organik':
-                        Employee::create([
-                            'employee_id' => $row['nopok'] ?? ('EMP-' . rand(1000, 9999)),
-                            'name' => $row['nama'] ?? 'Pegawai Baru',
-                            'gender' => $row['gender'] ?? 'Laki-laki',
-                            'position' => $row['jabatan'] ?? 'Staff',
-                            'department' => $row['fungsi'] ?? 'Operasi',
-                            'status' => 'Aktif',
-                            'age' => intval($row['umur'] ?? 30)
-                        ]);
+                        $tanggalLahir = null;
+                        if (!empty($row['tanggal_lahir'])) {
+                            try {
+                                // Assume date might be a string or excel numeric
+                                if (is_numeric($row['tanggal_lahir'])) {
+                                    $unixDate = ($row['tanggal_lahir'] - 25569) * 86400;
+                                    $tanggalLahir = gmdate("Y-m-d", $unixDate);
+                                } else {
+                                    $tanggalLahir = \Carbon\Carbon::parse($row['tanggal_lahir'])->format('Y-m-d');
+                                }
+                            } catch (\Exception $e) {
+                                $tanggalLahir = null;
+                            }
+                        }
+                        
+                        $umur = intval($row['umur'] ?? 0);
+                        if ($umur === 0 && $tanggalLahir) {
+                            $umur = \Carbon\Carbon::parse($tanggalLahir)->age;
+                        }
+
+                        $empId = $row['nopok'] ?? ('EMP-' . rand(1000, 9999));
+                        Employee::updateOrCreate(
+                            ['employee_id' => $empId],
+                            [
+                                'name' => $row['nama'] ?? 'Pegawai Baru',
+                                'gender' => $row['gender'] ?? 'Laki-laki',
+                                'position' => $row['jabatan'] ?? 'Staff',
+                                'department' => $row['fungsi'] ?? 'Operasi',
+                                'status' => 'Aktif',
+                                'age' => $umur > 0 ? $umur : 30,
+                                'tanggal_lahir' => $tanggalLahir
+                            ]
+                        );
                         $insertedCount++;
                         break;
 
@@ -241,15 +243,18 @@ class ImportController extends Controller
                         break;
 
                     case 'master_pensiun':
-                        HcRetired::create([
-                            'id' => $uniqueId,
-                            'nama' => $row['nama'] ?? 'Pegawai',
-                            'jabatan' => $row['jabatan'] ?? 'Staff',
-                            'umur_pensiun' => intval($row['umur'] ?? 56),
-                            'tahun' => intval($row['tahun'] ?? date('Y')),
-                            'tanggal' => $row['tanggal'] ?? date('Y-m-d'),
-                            'keterangan' => $row['keterangan'] ?? '-',
-                        ]);
+                        $nama = $row['nama'] ?? 'Pegawai';
+                        HcRetired::updateOrCreate(
+                            ['nama' => $nama],
+                            [
+                                'jabatan' => $row['jabatan'] ?? 'Staff',
+                                'umur_pensiun' => intval($row['umur'] ?? 56),
+                                'tahun' => intval($row['tahun'] ?? date('Y')),
+                                'tanggal' => $row['tanggal'] ?? date('Y-m-d'),
+                                'keterangan' => $row['keterangan'] ?? '-',
+                                'id' => \Illuminate\Support\Facades\DB::raw("IFNULL(id, '$uniqueId')")
+                            ]
+                        );
                         $insertedCount++;
                         break;
                 }
@@ -262,7 +267,7 @@ class ImportController extends Controller
                 $archiveCategory = 'Kontrak & SCM';
             } elseif ($type === 'mom') {
                 $archiveCategory = 'MOM Rapat';
-            } elseif (in_array($type, ['hc', 'lembur_tad', 'tad_mutation'])) {
+            } elseif (in_array($type, ['hc', 'lembur_tad'])) {
                 $archiveCategory = 'Laporan Bulanan';
             } elseif (in_array($type, ['master_organik', 'master_tad', 'master_pensiun'])) {
                 $archiveCategory = 'Master Data';

@@ -11,10 +11,8 @@ const MAPPING_SPECS = {
     alat_berat: { jenis: 'Jenis Alat', nopol: 'Nomor Polisi', expired_kir: 'KIR Expired', expired_stnk: 'STNK Expired', expired_sio: 'SIO Expired', expired_sia: 'SIA Expired', status: 'Status' },
     perbaikan_rumdin: { nomor_rumah: 'Nomor Rumah', estimasi: 'Estimasi Biaya', realisasi: 'Realisasi Biaya', progress: 'Progress (%)', keterangan: 'Keterangan' },
     hc: { bulan: 'Periode', nama: 'Nama Pegawai', jenis: 'Jenis Mutasi', fungsi: 'Fungsi Tujuan', keterangan: 'Keterangan' },
-    tad_mutation: { bulan: 'Periode', nama: 'Nama TAD', jenis: 'Jenis Mutasi', peran: 'Peran Kerja', vendor: 'Vendor Penyedia', keterangan: 'Keterangan' },
     it_asset: { nomor_seri: 'Nomor Seri / Tag', jenis: 'Jenis Aset', merek: 'Merek/Model', user: 'Pengguna', fungsi: 'Fungsi', status: 'Status' },
-    mom: { fungsi: 'Fungsi', isu: 'Isu / Detail Laporan', tindak_lanjut: 'Rencana Tindak Lanjut' },
-    master_organik: { nopok: 'No. Pegawai', nama: 'Nama Pegawai', gender: 'Jenis Kelamin', umur: 'Umur', jabatan: 'Jabatan', fungsi: 'Fungsi/Departemen' },
+    master_organik: { nopok: 'No. Pegawai', nama: 'Nama Pegawai', gender: 'Jenis Kelamin', umur: 'Umur', tanggal_lahir: 'Tanggal Lahir', jabatan: 'Jabatan', fungsi: 'Fungsi/Departemen' },
     master_tad: { nama: 'Nama Lengkap', peran: 'Peran Kerja', vendor: 'Vendor Penyedia', status: 'Status Kontrak' },
     master_pensiun: { nama: 'Nama Karyawan', jabatan: 'Jabatan Terakhir', umur: 'Umur Pensiun', tahun: 'Tahun Pensiun', tanggal: 'Tanggal Efektif', keterangan: 'Keterangan' }
 };
@@ -27,10 +25,8 @@ const MAPPING_DEFAULTS = {
     alat_berat: { jenis: 'Forklift', nopol: '-', expired_kir: '', expired_stnk: '', expired_sio: '', expired_sia: '', status: 'Optimal' },
     perbaikan_rumdin: { nomor_rumah: 'N-00', estimasi: 0, realisasi: 0, progress: 0, keterangan: '' },
     hc: { bulan: '', nama: 'Nama Karyawan', jenis: 'Masuk', fungsi: 'BS', keterangan: '' },
-    tad_mutation: { bulan: '', nama: 'Nama TAD', jenis: 'Masuk', peran: 'Staff', vendor: 'PT Vendor', keterangan: '' },
     it_asset: { nomor_seri: '', jenis: 'PC', merek: 'HP', user: 'Staff', fungsi: 'BS', status: 'Optimal' },
-    mom: { fungsi: 'BS', isu: 'Isu Laporan', tindak_lanjut: 'Segera diproses' },
-    master_organik: { nopok: '-', nama: 'Nama Pegawai', gender: 'Laki-laki', umur: 30, jabatan: 'Staff', fungsi: 'Operasi' },
+    master_organik: { nopok: '-', nama: 'Nama Pegawai', gender: 'Laki-laki', umur: 30, tanggal_lahir: '1990-01-01', jabatan: 'Staff', fungsi: 'Operasi' },
     master_tad: { nama: 'Nama TAD', peran: 'Security', vendor: 'PT Daya', status: 'Aktif' },
     master_pensiun: { nama: 'Nama Pensiun', jabatan: 'Staff', umur: 56, tahun: 2026, tanggal: '2026-01-01', keterangan: 'Pensiun Normal' }
 };
@@ -52,8 +48,8 @@ export default function UploadWizardModal({ isOpen, onClose }) {
         'Human Capital (HC)': [
             { id: 'master_organik', label: 'Master Data Pegawai Organik (Demografi & Gender)' },
             { id: 'master_tad', label: 'Master Data Tenaga Alih Daya (Daftar Aktif TAD)' },
+            { id: 'master_pensiun', label: 'Master Data Proyeksi Pensiun Organik' },
             { id: 'hc', label: 'Mutasi Organik (HC)' },
-            { id: 'tad_mutation', label: 'Mutasi Tenaga Alih Daya (TAD)' },
             { id: 'lembur_tad', label: 'Data Lembur TAD (Human Capital)' },
         ],
         'Logistik': [

@@ -9,8 +9,6 @@ import {
   FileSpreadsheet, Database, Search, PieChart as PieIcon
 } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
-import MomTable from '../../Components/MomTable';
-
 const PERTAMINA_BLUE = '#00529C';
 const PERTAMINA_GREEN = '#8DC63F';
 const PERTAMINA_YELLOW = '#F59E0B';
@@ -672,14 +670,6 @@ export default function Budgeting(props) {
 
             {/* Subtab 4: Realisasi ABO */}
             {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo />}
-
-            {/* MOM TABLE AT BOTTOM (SHOWS MTC AND BS) */}
-            <MomTable 
-                momList={momList} 
-                fungsi="BUDGET" 
-                currentUser={currentUser} 
-                onOpenFeedback={onOpenFeedback} 
-            />
         </div>
     );
 }
