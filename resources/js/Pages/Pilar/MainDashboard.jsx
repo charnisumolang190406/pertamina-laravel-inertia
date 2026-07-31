@@ -524,11 +524,10 @@ export default function MainDashboard(props) {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <KpiCard title="Produksi 2025" value="109,63 GWh" subtitle="Realisasi produksi tahunan" icon={Zap} colorClass="text-blue-600" bgClass="bg-blue-50" />
                 <KpiCard title="Total Plafon Budget" value={formatShortCurrency(totalBudget)} subtitle={`Realisasi: ${formatShortCurrency(totalActual)}`} icon={Calculator} colorClass="text-green-600" bgClass="bg-green-50" />
                 <KpiCard title="EAF 2025" value="94,61%" subtitle="Equivalent Availability Factor" icon={TrendingUp} colorClass="text-indigo-600" bgClass="bg-indigo-50" />
-                <KpiCard title="Total Kontrak SCM" value={`${totalScmContracts} Kontrak`} subtitle={formatShortCurrency(totalScmValue)} icon={FileSignature} colorClass="text-purple-600" bgClass="bg-purple-50" />
             </div>
 
             {/* Sub-tab Navigation */}
