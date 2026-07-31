@@ -21,42 +21,36 @@ export default function CalendarWidget({ events, currentUser }) {
   const categoryColors = {
     BS: 'bg-blue-500 text-white border-blue-600',
     HC: 'bg-emerald-500 text-white border-emerald-600',
-    LOG: 'bg-purple-500 text-white border-purple-600',
-    SCM: 'bg-orange-500 text-white border-orange-600',
-    IT: 'bg-cyan-500 text-white border-cyan-600'
+    FM: 'bg-purple-500 text-white border-purple-600'
   };
 
   const categoryLabels = {
     BS: 'Budgeting (BS)',
     HC: 'Human Capital (HC)',
-    LOG: 'Logistik (LOG)',
-    SCM: 'SCM & Kontrak',
-    IT: 'IT Asset'
+    FM: 'Facility Management (FM)'
   };
 
   // Check if current user has permission to manage events for a specific category
   const canManage = (category) => {
-    if (currentUser.role.startsWith('Admin') && !currentUser.role.startsWith('Admin Bisnis') && !currentUser.role.startsWith('Admin HC') && !currentUser.role.startsWith('Admin SCM') && !currentUser.role.startsWith('Admin Logistik')) return true; // Global Admin
+    if (currentUser.role.startsWith('Admin') && !currentUser.role.startsWith('Admin Bisnis') && !currentUser.role.startsWith('Admin HC') && !currentUser.role.startsWith('Admin FM')) return true; // Global Admin
     if (currentUser.role === 'Manager BS' || currentUser.role.startsWith('Kepala') || currentUser.role === 'Management Executive') return true;
     
     if (currentUser.role === 'Admin Bisnis Planning and Budgeting' && category === 'BS') return true;
     if (currentUser.role === 'Admin HC' && category === 'HC') return true;
-    if (currentUser.role === 'Admin SCM' && category === 'SCM') return true;
-    if (currentUser.role === 'Admin Logistik' && category === 'LOG') return true;
+    if (currentUser.role === 'Admin FM' && category === 'FM') return true;
     
     return false;
   };
 
   const canManageAny = () => {
-    return ['BS', 'HC', 'LOG', 'SCM', 'IT'].some(cat => canManage(cat));
+    return ['BS', 'HC', 'FM'].some(cat => canManage(cat));
   };
 
   const getDefaultCategory = () => {
     if (currentUser.role === 'Manager BS' || currentUser.role.startsWith('Kepala')) return 'BS';
     if (currentUser.role === 'Admin Bisnis Planning and Budgeting') return 'BS';
     if (currentUser.role === 'Admin HC') return 'HC';
-    if (currentUser.role === 'Admin SCM') return 'SCM';
-    if (currentUser.role === 'Admin Logistik') return 'LOG';
+    if (currentUser.role === 'Admin FM') return 'FM';
     return 'BS';
   };
 
