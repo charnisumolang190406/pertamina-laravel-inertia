@@ -428,21 +428,22 @@ function getRiskLevelInfo(prob, dampak) {
     return { label: 'HIGH RISK' };
 }
 
-function getBadgeStyle(peringkat = '') {
+function getBadgeTdStyle(peringkat = '') {
     const pUpper = String(peringkat).toUpperCase();
+    const base = 'p-3 text-center font-extrabold text-[11px] uppercase leading-tight';
     if (pUpper.includes('HIGH RISK') && !pUpper.includes('MODERATE TO HIGH')) {
-        return 'bg-[#ff0000] text-white font-extrabold px-2.5 py-1 rounded text-[11px] inline-block text-center shadow-2xs';
+        return `${base} bg-[#ff0000] text-white border-r border-red-600`;
     }
     if (pUpper.includes('MODERATE TO HIGH') || pUpper.includes('MODERATE-TO-HIGH')) {
-        return 'bg-[#ff9900] text-white font-extrabold px-2.5 py-1 rounded text-[11px] inline-block text-center shadow-2xs';
+        return `${base} bg-[#ff9900] text-white border-r border-orange-500`;
     }
     if (pUpper.includes('MODERATE RISK') || pUpper === 'MODERATE') {
-        return 'bg-[#ffff00] text-slate-900 font-extrabold px-2.5 py-1 rounded text-[11px] inline-block text-center shadow-2xs';
+        return `${base} bg-[#ffff00] text-slate-900 border-r border-yellow-400`;
     }
     if (pUpper.includes('LOW TO MODERATE') || pUpper.includes('LOW-TO-MODERATE')) {
-        return 'bg-[#99cc33] text-slate-900 font-extrabold px-2.5 py-1 rounded text-[11px] inline-block text-center shadow-2xs';
+        return `${base} bg-[#99cc33] text-slate-900 border-r border-lime-500`;
     }
-    return 'bg-[#009944] text-white font-extrabold px-2.5 py-1 rounded text-[11px] inline-block text-center shadow-2xs';
+    return `${base} bg-[#009944] text-white border-r border-green-700`;
 }
 
 function parseLevelFromText(text) {
@@ -1278,16 +1279,12 @@ function TabRiskRegister({ auth }) {
                                             <td className="p-3 border-r border-slate-200 text-center font-bold">{item.probInherent}</td>
                                             <td className="p-3 border-r border-slate-200 text-center font-bold">{item.dampakInherent}</td>
                                             <td className="p-3 border-r border-slate-200 text-center font-extrabold text-blue-700">{item.bobotInherent}</td>
-                                            <td className="p-3 border-r border-slate-200 text-center">
-                                                <span className={getBadgeStyle(item.peringkatInherent)}>
-                                                    {item.peringkatInherent}
-                                                </span>
+                                            <td className={getBadgeTdStyle(item.peringkatInherent)}>
+                                                {item.peringkatInherent}
                                             </td>
                                             <td className="p-3 border-r border-slate-200 text-center font-extrabold text-slate-700">{item.strategi}</td>
-                                            <td className="p-3 text-center">
-                                                <span className={getBadgeStyle(item.peringkatResidual)}>
-                                                    {item.peringkatResidual}
-                                                </span>
+                                            <td className={getBadgeTdStyle(item.peringkatResidual).replace('border-r', '')}>
+                                                {item.peringkatResidual}
                                             </td>
                                         </tr>
                                     );
