@@ -56,7 +56,7 @@ const aboMonthly2026 = [
     { bulan: '12', rkap: 3.0, realisasi: 3.3 },
 ];
 
-const aboPerFungsi = [
+const dummyAboPerFungsi = [
     { fungsi: 'Operation', budget: 12.5, actual: 12.4, variance: -0.8 },
     { fungsi: 'Maintenance', budget: 10.2, actual: 10.1, variance: -1.0 },
     { fungsi: 'GM', budget: 5.8, actual: 5.7, variance: -1.7 },
@@ -76,9 +76,55 @@ function ChartCard({ title, subtitle, children, className = '' }) {
     );
 }
 
-function TabRealisasiAbo() {
+function TabRealisasiAbo({ budgetDetailsList }) {
     const aboYearlyHover = useBarHover();
     const aboFungsiHover = useBarHover();
+
+    const dynamicAboPerFungsi = React.useMemo(() => {
+        const aboList = budgetDetailsList.filter(b => b.kategori === 'ABO');
+        
+        const getClassifiedFunction = (name = '') => {
+            const nameLower = name.toLowerCase();
+            if (nameLower.includes('maint') || nameLower.includes('perbaikan') || nameLower.includes('investasi pipe') || nameLower.includes('maintenance')) {
+                return 'Maintenance';
+            }
+            if (nameLower.includes('steam') || nameLower.includes('drill') || nameLower.includes('operation') || nameLower.includes('ops') || nameLower.includes('produksi')) {
+                return 'Operation';
+            }
+            if (nameLower.includes('hsse') || nameLower.includes('safety') || nameLower.includes('lingkungan') || nameLower.includes('hydrant')) {
+                return 'HSSE';
+            }
+            return 'Business Support';
+        };
+
+        const groupedMap = aboList.reduce((acc, curr) => {
+            const funcName = getClassifiedFunction(curr.name);
+            if (!acc[funcName]) {
+                acc[funcName] = { fungsi: funcName, budget: 0, actual: 0 };
+            }
+            acc[funcName].budget += curr.budget;
+            acc[funcName].actual += curr.actual;
+            return acc;
+        }, {});
+
+        const result = Object.values(groupedMap).map(item => ({
+            fungsi: item.fungsi,
+            budget: Number((item.budget / 1000000000).toFixed(2)),
+            actual: Number((item.actual / 1000000000).toFixed(2)),
+            variance: Number(((item.actual - item.budget) / 1000000000).toFixed(2))
+        }));
+
+        if (result.length === 0) {
+            // Fallback empty data if nothing uploaded yet
+            return [
+                { fungsi: 'Operation', budget: 0, actual: 0, variance: 0 },
+                { fungsi: 'Maintenance', budget: 0, actual: 0, variance: 0 },
+                { fungsi: 'HSSE', budget: 0, actual: 0, variance: 0 },
+                { fungsi: 'Bus. Support', budget: 0, actual: 0, variance: 0 }
+            ];
+        }
+        return result;
+    }, [budgetDetailsList]);
 
     return (
         <div className="space-y-4 animate-[fadeIn_0.3s_ease-in-out]">
@@ -130,7 +176,7 @@ function TabRealisasiAbo() {
 
                 <ChartCard title="Rincian Realisasi ABO per Fungsi" subtitle="Budget vs Actual per fungsi — Area Lahendong 2026 (IDR Miliar)" className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={aboPerFungsi} margin={{ top: 10, right: 60, left: -10, bottom: 5 }} {...aboFungsiHover.barChartProps}>
+                        <BarChart data={dynamicAboPerFungsi} margin={{ top: 10, right: 60, left: -10, bottom: 5 }} {...aboFungsiHover.barChartProps}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                             <XAxis dataKey="fungsi" tickLine={false} axisLine={false} tick={{ fontSize: 9 }} />
                             <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
@@ -669,7 +715,7 @@ export default function Budgeting(props) {
             )}
 
             {/* Subtab 4: Realisasi ABO */}
-            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo />}
+            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo budgetDetailsList={budgetDetailsList} />}
         </div>
     );
 }

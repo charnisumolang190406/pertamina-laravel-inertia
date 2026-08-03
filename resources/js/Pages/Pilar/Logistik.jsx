@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { 
-  Package, Laptop, Folder, Trash2, Database, AlertCircle, CheckCircle, Droplet
+  Package, Laptop, Folder, Trash2, Database, AlertCircle, CheckCircle, Droplet, Plus, Download
 } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
 export default function Logistik(props) {
@@ -137,20 +137,20 @@ export default function Logistik(props) {
                 </button>
             </div>
 
-            {/* RESET / CLEAR BUTTONS */}
+            {/* ACTION BUTTONS */}
             {isAdmin && activeSubTab !== 'bbm' && (
                 <div className="flex justify-end gap-2 text-xs font-bold">
                     <button
-                        onClick={() => handleClearOrReset('clear')}
-                        className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl border border-red-200 cursor-pointer transition-all active:scale-95"
+                        onClick={() => alert('Fitur Tambah Data sedang dalam tahap pengembangan.')}
+                        className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-xl border border-blue-700 cursor-pointer transition-all active:scale-95 shadow-sm"
                     >
-                        <Trash2 className="w-3.5 h-3.5" /> Kosongkan Data {activeSubTab.replace('_', ' ')}
+                        <Plus className="w-3.5 h-3.5" /> Tambah Data {activeSubTab.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </button>
                     <button
-                        onClick={() => handleClearOrReset('reset')}
-                        className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl border border-slate-200 cursor-pointer transition-all active:scale-95"
+                        onClick={() => alert('Fitur Unduh Laporan sedang dalam tahap pengembangan.')}
+                        className="flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 px-4 py-1.5 rounded-xl border border-slate-300 cursor-pointer transition-all active:scale-95 shadow-sm"
                     >
-                        <Database className="w-3.5 h-3.5" /> Reset Default {activeSubTab.replace('_', ' ')}
+                        <Download className="w-3.5 h-3.5" /> Unduh Laporan
                     </button>
                 </div>
             )}

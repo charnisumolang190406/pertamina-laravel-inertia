@@ -7,7 +7,8 @@ const MAPPING_SPECS = {
     scm: { nomor: 'Nomor Kontrak', nama: 'Nama Pekerjaan', vendor: 'Mitra/Vendor', nilai: 'Nilai Kontrak', mulai: 'Tgl Mulai', selesai: 'Tgl Selesai', progres: 'Progres (%)', status: 'Status', fungsi: 'Fungsi' },
     logistik: { item_number: 'Item Number', deskripsi: 'Deskripsi', uom: 'UoM', stok: 'Jumlah Stok', kategori: 'Kategori', lokasi: 'Lokasi' },
     lembur_tad: { nopok: 'Nopek/Nopok', nama: 'Nama TAD', jabatan: 'Jabatan', fungsi: 'Fungsi', upah: 'Upah Pokok', jam_lembur: 'Jam Lembur', lembur_val: 'Nilai Lembur (Rp)', periode: 'Periode (Bulan Tahun)' },
-    budget_detail: { fundCent: 'Fund Center', name: 'Deskripsi Cost Center', commitItem: 'Commitment Item', text: 'Nama Pos Anggaran', budget: 'Target RKAP', consumed: 'Consumed', actual: 'Realisasi Pemakaian', available: 'Sisa Anggaran', kategori: 'Kategori (ABI/ABO)' },
+    budget_abo: { fundCent: 'Fund Cent', name: 'Name', commitItem: 'Commitment Ite', text: 'Text', budget: 'Consumable Budget(IDR)', consumed: 'Consumed Budget(IDR)', actual: 'Actual(IDR)', available: 'Available(IDR)' },
+    budget_abi: { fundCent: 'No WBS', name: 'Pekerjaan', commitItem: 'PIC', text: 'Keterangan', budget: 'Anggaran Eq IDR', consumed: 'Commitment Ekv IDR', actual: 'Realisasi Ekv IDR', available: 'Available Ekv IDR' },
     alat_berat: { jenis: 'Jenis Alat', nopol: 'Nomor Polisi', expired_kir: 'KIR Expired', expired_stnk: 'STNK Expired', expired_sio: 'SIO Expired', expired_sia: 'SIA Expired', status: 'Status' },
     perbaikan_rumdin: { nomor_rumah: 'Nomor Rumah', estimasi: 'Estimasi Biaya', realisasi: 'Realisasi Biaya', progress: 'Progress (%)', keterangan: 'Keterangan' },
     hc: { bulan: 'Periode', nama: 'Nama Pegawai', jenis: 'Jenis Mutasi', fungsi: 'Fungsi Tujuan', keterangan: 'Keterangan' },
@@ -21,7 +22,8 @@ const MAPPING_DEFAULTS = {
     scm: { nomor: '', nama: 'Kontrak Baru', vendor: 'PT Vendor', nilai: 0, mulai: '', selesai: '', progres: 0, status: 'Aktif', fungsi: 'BS' },
     logistik: { item_number: '', deskripsi: 'Item Baru', uom: 'PCS', stok: 0, kategori: 'Fast Moving', lokasi: 'Gudang LHD' },
     lembur_tad: { nopok: '-', nama: 'Pekerja TAD', jabatan: 'Staff', fungsi: 'BUSINESS SUPPORT', upah: 0, jam_lembur: 0, lembur_val: 0, periode: '' },
-    budget_detail: { fundCent: '', name: 'Pos Anggaran', commitItem: '500000', text: '', budget: 0, consumed: 0, actual: 0, available: 0, kategori: 'ABO' },
+    budget_abo: { fundCent: '', name: 'Pos Anggaran', commitItem: '500000', text: '', budget: 0, consumed: 0, actual: 0, available: 0, kategori: 'ABO' },
+    budget_abi: { fundCent: '', name: 'Pos Anggaran', commitItem: '500000', text: '', budget: 0, consumed: 0, actual: 0, available: 0, kategori: 'ABI' },
     alat_berat: { jenis: 'Forklift', nopol: '-', expired_kir: '', expired_stnk: '', expired_sio: '', expired_sia: '', status: 'Optimal' },
     perbaikan_rumdin: { nomor_rumah: 'N-00', estimasi: 0, realisasi: 0, progress: 0, keterangan: '' },
     hc: { bulan: '', nama: 'Nama Karyawan', jenis: 'Masuk', fungsi: 'BS', keterangan: '' },
@@ -40,6 +42,7 @@ export default function UploadWizardModal({ isOpen, onClose }) {
     const [headers, setHeaders] = useState([]);
     const [rawRows, setRawRows] = useState([]);
     const [mappings, setMappings] = useState({});
+    const [showAdvancedMapping, setShowAdvancedMapping] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
     const fileInputRef = useRef(null);
@@ -52,18 +55,21 @@ export default function UploadWizardModal({ isOpen, onClose }) {
             { id: 'hc', label: 'Mutasi Organik (HC)' },
             { id: 'lembur_tad', label: 'Data Lembur TAD (Human Capital)' },
         ],
-        'Logistik': [
-            { id: 'logistik', label: 'Stok Material Gudang (Logistik)' },
-            { id: 'alat_berat', label: 'Aset Alat Berat & KIR (Logistik)' },
-            { id: 'perbaikan_rumdin', label: 'Perbaikan Rumah Dinas (Logistik)' },
+        'Facility Management (FM)': [
+            { id: 'logistik', label: 'Stok Material Gudang (FM)' },
+            { id: 'alat_berat', label: 'Aset Alat Berat & KIR (FM)' },
+            { id: 'perbaikan_rumdin', label: 'Perbaikan Rumah Dinas (FM)' },
+            { id: 'bbm', label: 'Laporan Pemakaian BBM (FM)' },
         ],
-        'Budgeting & SCM': [
-            { id: 'budget_detail', label: 'Data Detail Budget ABI/ABO (Budgeting)' },
-            { id: 'scm', label: 'Data Monitoring Kontrak (SCM)' },
+        'Budgeting': [
+            { id: 'budget_abo', label: 'Data Detail Budget ABO (Overhead/Operasi)' },
+            { id: 'budget_abi', label: 'Data Detail Budget ABI (Investasi/Proyek)' },
+        ],
+        'Manajemen Kontrak (Semua Fungsi)': [
+            { id: 'scm', label: 'Data Monitoring Kontrak' },
         ],
         'Lainnya': [
-            { id: 'it_asset', label: 'Aset Perangkat IT (IT Asset)' },
-            { id: 'mom', label: 'Agenda Feedback Loop & Review (MOM)' }
+            { id: 'it_asset', label: 'Aset Perangkat IT (IT Asset)' }
         ]
     };
 
@@ -108,7 +114,12 @@ export default function UploadWizardModal({ isOpen, onClose }) {
                     }
                 }
 
-                const sheetHeaders = Array.from(json[headerIdx] || []).map(h => String(h || '').trim());
+                const sheetHeaders = Array.from(json[headerIdx] || []).map((h, idx) => {
+                    const colLetter = String.fromCharCode(65 + (idx % 26));
+                    const prefix = idx >= 26 ? String.fromCharCode(64 + Math.floor(idx / 26)) + colLetter : colLetter;
+                    const val = String(h || '').trim();
+                    return `Kolom ${prefix}${val ? ` : ${val.substring(0, 40)}` : ' (Kosong)'}`;
+                });
                 const parsedRows = json.slice(headerIdx + 1)
                     .map(row => Array.isArray(row) ? row.map(cell => cell === null || cell === undefined ? '' : String(cell).trim()) : [])
                     .filter(row => row.length > 0 && row.some(c => c.length > 0));
@@ -132,7 +143,18 @@ export default function UploadWizardModal({ isOpen, onClose }) {
                         return hLower.includes(label) || label.includes(hLower) || hLower.includes(keyLower) || keyLower.includes(hLower);
                     });
 
-                    initialMappings[key] = idx !== -1 ? idx : 0; // Default to first column if no match
+                    // Fallback to exact column index for standard Pertamina SAP formats
+                    let defaultIdx = 0;
+                    if (dataType === 'budget_abi') {
+                        // Updated hardcoded map based on the specific ABI Excel layout (with merged/hidden columns)
+                        const abiMap = { fundCent: 3, name: 2, commitItem: 4, text: 18, budget: 5, consumed: 11, actual: 9, available: 13 };
+                        if (abiMap[key] !== undefined) defaultIdx = abiMap[key];
+                    } else if (dataType === 'budget_abo') {
+                        const aboMap = { fundCent: 0, name: 1, commitItem: 2, text: 3, budget: 4, consumed: 5, actual: 7, available: 8 };
+                        if (aboMap[key] !== undefined) defaultIdx = aboMap[key];
+                    }
+
+                    initialMappings[key] = idx !== -1 ? idx : defaultIdx;
                 });
 
                 setMappings(initialMappings);
@@ -218,12 +240,22 @@ export default function UploadWizardModal({ isOpen, onClose }) {
                     item[key] = cleanString(rawVal) || defaults[key];
                 }
             });
+
+            // Inject missing defaults that are not in specs (e.g. hardcoded kategori)
+            Object.keys(defaults).forEach(defKey => {
+                if (item[defKey] === undefined) {
+                    item[defKey] = defaults[defKey];
+                }
+            });
+            
             return item;
         });
 
         // Submit to Laravel backend via Inertia post
+        const submitType = dataType.startsWith('budget_') ? 'budget_detail' : dataType;
+        
         router.post('/import', {
-            type: dataType,
+            type: submitType,
             rows: formattedRows,
             filename: file.name,
             fileSize: `${(file.size / 1024).toFixed(1)} KB`
@@ -243,6 +275,7 @@ export default function UploadWizardModal({ isOpen, onClose }) {
         setHeaders([]);
         setRawRows([]);
         setMappings({});
+        setShowAdvancedMapping(false);
     };
 
     return (
@@ -356,30 +389,48 @@ export default function UploadWizardModal({ isOpen, onClose }) {
                                 </button>
                             </div>
 
-                            {/* COLUMN MAPPING SECTION */}
-                            <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-3">
-                                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                                    <Table className="w-3.5 h-3.5" /> Konfigurasi Pemetaan Kolom Excel
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {Object.keys(MAPPING_SPECS[dataType]).map(key => (
-                                        <div key={key} className="flex flex-col gap-1.5">
-                                            <span className="text-[10px] font-bold text-slate-600 flex justify-between">
-                                                <span>{MAPPING_SPECS[dataType][key]}</span>
-                                                <span className="font-mono text-slate-400 font-semibold">{key}</span>
-                                            </span>
-                                            <select
-                                                value={mappings[key] ?? 0}
-                                                onChange={(e) => handleMappingChange(key, e.target.value)}
-                                                className="w-full p-2 border border-slate-250 bg-white rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-500"
-                                            >
-                                                {headers.map((h, i) => (
-                                                    <option key={i} value={i}>Kolom {i+1}: {h || `(Kolom Kosong)`}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    ))}
+                            {/* MAPPING DROPDOWNS (Hidden by default) */}
+                            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                        <Table className="w-4 h-4 text-blue-500" />
+                                        Auto-Mapping Sukses!
+                                    </h4>
+                                    <button 
+                                        onClick={() => setShowAdvancedMapping(!showAdvancedMapping)}
+                                        className="text-xs font-bold text-blue-600 hover:text-blue-700 underline"
+                                    >
+                                        {showAdvancedMapping ? 'Sembunyikan Pemetaan Kolom' : 'Sesuaikan Kolom Manual (Advanced)'}
+                                    </button>
                                 </div>
+                                
+                                {!showAdvancedMapping && (
+                                    <p className="text-xs text-slate-500 mb-2">
+                                        Sistem telah mendeteksi kolom secara otomatis. Jika tabel Preview di bawah terlihat benar, Anda bisa langsung klik <b>Simpan & Auto-Archive</b>.
+                                    </p>
+                                )}
+
+                                {showAdvancedMapping && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-200">
+                                        {Object.keys(MAPPING_SPECS[dataType]).map(key => (
+                                            <div key={key} className="flex flex-col gap-1.5">
+                                                <span className="text-[11px] font-black text-slate-600 uppercase flex items-center justify-between">
+                                                    <span>{MAPPING_SPECS[dataType][key]}</span>
+                                                    <span className="font-mono text-slate-400 font-semibold">{key}</span>
+                                                </span>
+                                                <select
+                                                    value={mappings[key] ?? 0}
+                                                    onChange={(e) => handleMappingChange(key, e.target.value)}
+                                                    className="w-full p-2 border border-slate-250 bg-white rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-500"
+                                                >
+                                                    {headers.map((h, i) => (
+                                                        <option key={i} value={i}>{h || `Kolom ${i+1} (Kosong)`}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* EXCEL PREVIEW TABLE */}
