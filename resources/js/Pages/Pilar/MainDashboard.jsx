@@ -571,6 +571,12 @@ function RiskMapGrid({ riskData, title, onSelectRisk }) {
                     </div>
                 ))}
             </div>
+            {/* X-Axis Title: DAMPAK */}
+            <div className="flex" style={{ marginLeft: 100, width: 'calc(100% - 100px)' }}>
+                <div className="flex-1 text-center pt-1">
+                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">DAMPAK</span>
+                </div>
+            </div>
         </div>
     );
 }
@@ -1122,18 +1128,10 @@ function TabRiskRegister({ auth }) {
         <div className="space-y-6">
             {/* PETA RISIKO MAPS */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
-                <div className="flex items-stretch gap-2">
+                <div className="flex flex-col md:flex-row gap-6">
                     {/* Inherent Risk Map */}
                     <div className="flex-1 min-w-0">
                         <RiskMapGrid riskData={inherentRisks} title="Peta Risiko — Inherent" onSelectRisk={handleSelectRisk} />
-                    </div>
-
-                    {/* Center DAMPAK Label */}
-                    <div className="flex flex-col items-center justify-center shrink-0 px-2" style={{ minWidth: 40 }}>
-                        <div style={{ writingMode: 'vertical-rl', transform: 'rotate(0deg)' }}>
-                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-[0.25em]">DAMPAK</span>
-                        </div>
-                        <div className="w-px flex-1 bg-slate-200 mt-2" />
                     </div>
 
                     {/* Residual Risk Map */}
