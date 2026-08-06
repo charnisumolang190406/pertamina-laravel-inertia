@@ -756,6 +756,7 @@ function RiskPieChartCard({ title, data, total }) {
                                 ))}
                             </Pie>
                             <RechartsTooltip
+                                wrapperStyle={{ zIndex: 50 }}
                                 formatter={(val, name) => [
                                     `${val} Risiko (${total > 0 ? ((val / total) * 100).toFixed(1) : 0}%)`,
                                     name
@@ -764,7 +765,7 @@ function RiskPieChartCard({ title, data, total }) {
                             />
                         </PieChart>
                     </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
                         <span className="text-xl font-black text-slate-800 leading-none">{total}</span>
                         <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Risiko</span>
                     </div>
