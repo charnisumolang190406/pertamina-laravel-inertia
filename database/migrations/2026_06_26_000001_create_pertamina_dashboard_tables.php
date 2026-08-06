@@ -142,9 +142,9 @@ return new class extends Migration
             $table->string('name', 200)->nullable();
             $table->string('commitItem', 50)->nullable();
             $table->text('text')->nullable();
-            $table->unsignedBigInteger('budget')->default(0);
-            $table->unsignedBigInteger('consumed')->default(0);
-            $table->unsignedBigInteger('actual')->default(0);
+            $table->bigInteger('budget')->default(0);
+            $table->bigInteger('consumed')->default(0);
+            $table->bigInteger('actual')->default(0);
             $table->bigInteger('available')->default(0);
             $table->string('kategori', 50)->nullable();
             $table->timestamps();
