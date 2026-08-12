@@ -135,11 +135,10 @@ const PERTAMINA_RED = '#E52B2D';
 function ChartCard({ title, subtitle, children, className = '', onClick }) {
     const isClickable = !!onClick;
     return (
-        <div 
+        <div
             onClick={onClick}
-            className={`bg-white p-5 rounded-3xl border border-slate-200 shadow-xs flex flex-col transition-all duration-300 relative group ${
-                isClickable ? 'hover:shadow-md hover:border-slate-350 cursor-pointer' : ''
-            } ${className}`}
+            className={`bg-white p-5 rounded-3xl border border-slate-200 shadow-xs flex flex-col transition-all duration-300 relative group ${isClickable ? 'hover:shadow-md hover:border-slate-350 cursor-pointer' : ''
+                } ${className}`}
         >
             <div className="mb-3 flex justify-between items-start">
                 <div className="min-w-0">
@@ -182,9 +181,9 @@ function TabOperasi({ onChartClick }) {
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard 
-                    title="Produksi (GWh)" 
-                    subtitle="Trend produksi tahunan Area Lahendong 2018–2026 (forecast)" 
+                <ChartCard
+                    title="Produksi (GWh)"
+                    subtitle="Trend produksi tahunan Area Lahendong 2018–2026 (forecast)"
                     className="h-72"
                     onClick={() => onChartClick('produksi-gwh')}
                 >
@@ -199,9 +198,9 @@ function TabOperasi({ onChartClick }) {
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard 
-                    title="Realisasi Produksi 2025 (GWh)" 
-                    subtitle="RKAP vs Realisasi bulanan & kumulatif — Total: 109,63 GWh" 
+                <ChartCard
+                    title="Realisasi Produksi 2025 (GWh)"
+                    subtitle="RKAP vs Realisasi bulanan & kumulatif — Total: 109,63 GWh"
                     className="h-72"
                     onClick={() => onChartClick('realisasi-produksi-2025')}
                 >
@@ -224,33 +223,33 @@ function TabOperasi({ onChartClick }) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <ChartCard 
-                    title="EAF (%)" 
-                    subtitle="Equivalent Availability Factor — Higher is better" 
+                <ChartCard
+                    title="EAF (%)"
+                    subtitle="Equivalent Availability Factor — Higher is better"
                     className="h-56"
                     onClick={() => onChartClick('eaf')}
                 >
                     <ReliabilityLineChart data={eafData} dataKey="nilai" unit="%" color={PERTAMINA_GREEN} domain={[80, 100]} />
                 </ChartCard>
-                <ChartCard 
-                    title="MTBF (Day)" 
-                    subtitle="Mean Time Between Failures" 
+                <ChartCard
+                    title="MTBF (Day)"
+                    subtitle="Mean Time Between Failures"
                     className="h-56"
                     onClick={() => onChartClick('mtbf')}
                 >
                     <ReliabilityLineChart data={mtbfData} dataKey="nilai" unit="hari" color={PERTAMINA_BLUE} />
                 </ChartCard>
-                <ChartCard 
-                    title="EFOR (%)" 
-                    subtitle="Equivalent Forced Outage Rate — Lower is better" 
+                <ChartCard
+                    title="EFOR (%)"
+                    subtitle="Equivalent Forced Outage Rate — Lower is better"
                     className="h-56"
                     onClick={() => onChartClick('efor')}
                 >
                     <ReliabilityLineChart data={eforData} dataKey="nilai" unit="%" color={PERTAMINA_YELLOW} domain={[0, 10]} />
                 </ChartCard>
-                <ChartCard 
-                    title="MTTR (Hour)" 
-                    subtitle="Mean Time To Repair — Lower is better" 
+                <ChartCard
+                    title="MTTR (Hour)"
+                    subtitle="Mean Time To Repair — Lower is better"
                     className="h-56"
                     onClick={() => onChartClick('mttr')}
                 >
@@ -266,9 +265,9 @@ function TabFinancial({ onChartClick }) {
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard 
-                    title="Revenue, Cost & Profit/Loss (Juta USD)" 
-                    subtitle="Trend finansial tahunan Area Lahendong" 
+                <ChartCard
+                    title="Revenue, Cost & Profit/Loss (Juta USD)"
+                    subtitle="Trend finansial tahunan Area Lahendong"
                     className="h-80"
                     onClick={() => onChartClick('financial-trend')}
                 >
@@ -287,9 +286,9 @@ function TabFinancial({ onChartClick }) {
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard 
-                    title="Production vs Cost per kWh" 
-                    subtitle="Korelasi produksi (GWh) dan biaya per kWh (cent USD)" 
+                <ChartCard
+                    title="Production vs Cost per kWh"
+                    subtitle="Korelasi produksi (GWh) dan biaya per kWh (cent USD)"
                     className="h-80"
                     onClick={() => onChartClick('production-cost-scatter')}
                 >
@@ -306,9 +305,9 @@ function TabFinancial({ onChartClick }) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard 
-                    title="Cost/kWh (cent USD)" 
-                    subtitle="Biaya produksi per kWh — 2025: 20,23 cent USD" 
+                <ChartCard
+                    title="Cost/kWh (cent USD)"
+                    subtitle="Biaya produksi per kWh — 2025: 20,23 cent USD"
                     className="h-64"
                     onClick={() => onChartClick('cost-kwh')}
                 >
@@ -323,9 +322,9 @@ function TabFinancial({ onChartClick }) {
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard 
-                    title="EBITDA (Juta USD)" 
-                    subtitle="Earnings Before Interest, Taxes, Depreciation & Amortization" 
+                <ChartCard
+                    title="EBITDA (Juta USD)"
+                    subtitle="Earnings Before Interest, Taxes, Depreciation & Amortization"
                     className="h-64"
                     onClick={() => onChartClick('ebitda')}
                 >
@@ -1126,292 +1125,289 @@ function TabRiskRegister({ auth }) {
 
     return (
         <>
-        <div className="space-y-6">
-            {/* PETA RISIKO MAPS */}
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
-                <div className="flex flex-col md:flex-row gap-6">
-                    {/* Inherent Risk Map */}
-                    <div className="flex-1 min-w-0">
-                        <RiskMapGrid riskData={inherentRisks} title="Peta Risiko — Inherent" onSelectRisk={handleSelectRisk} />
+            <div className="space-y-6">
+                {/* PETA RISIKO MAPS */}
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
+                    <div className="flex flex-col md:flex-row gap-6">
+                        {/* Inherent Risk Map */}
+                        <div className="flex-1 min-w-0">
+                            <RiskMapGrid riskData={inherentRisks} title="Peta Risiko — Inherent" onSelectRisk={handleSelectRisk} />
+                        </div>
+
+                        {/* Residual Risk Map */}
+                        <div className="flex-1 min-w-0">
+                            <RiskMapGrid riskData={residualRisks} title="Peta Risiko — Residual" onSelectRisk={handleSelectRisk} />
+                        </div>
                     </div>
 
-                    {/* Residual Risk Map */}
-                    <div className="flex-1 min-w-0">
-                        <RiskMapGrid riskData={residualRisks} title="Peta Risiko — Residual" onSelectRisk={handleSelectRisk} />
+                    {/* Shared Legend */}
+                    <div className="mt-6 pt-4 border-t border-slate-100">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-500 mb-2">Keterangan Matriks Risiko:</p>
+                                <div className="flex flex-wrap gap-x-6 gap-y-2">
+                                    {[
+                                        { color: '#009944', label: 'Low Risk' },
+                                        { color: '#99cc33', label: 'Low to Moderate Risk' },
+                                        { color: '#ffff00', label: 'Moderate Risk' },
+                                        { color: '#ff9900', label: 'Moderate to High Risk' },
+                                        { color: '#ff0000', label: 'High Risk' },
+                                    ].map(l => (
+                                        <div key={l.label} className="flex items-center gap-2">
+                                            <div className="w-7 h-3.5 rounded shrink-0 border border-black/10" style={{ backgroundColor: l.color }} />
+                                            <span className="text-[10px] text-slate-700 font-bold">{l.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="text-[10px] bg-blue-50 text-blue-700 font-semibold px-3 py-1.5 rounded-xl border border-blue-100 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
+                                Klik bulatan nomor pada peta untuk navigasi langsung ke baris tabel
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Shared Legend */}
-                <div className="mt-6 pt-4 border-t border-slate-100">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                {/* DIAGRAM PIE / PROPORSI PERINGKAT RISIKO */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <RiskPieChartCard
+                        title="Proporsi Peringkat Risiko — Inherent"
+                        data={inherentPieData}
+                        total={tableData.length}
+                    />
+                    <RiskPieChartCard
+                        title="Proporsi Peringkat Risiko — Residual"
+                        data={residualPieData}
+                        total={tableData.length}
+                    />
+                </div>
+
+                {/* DETAIL RISK REGISTER TABLE & EXCEL UPLOAD */}
+                <div ref={tableRef} className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-4">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
                         <div>
-                            <p className="text-[10px] font-bold text-slate-500 mb-2">Keterangan Matriks Risiko:</p>
-                            <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                {[
-                                    { color: '#009944', label: 'Low Risk' },
-                                    { color: '#99cc33', label: 'Low to Moderate Risk' },
-                                    { color: '#ffff00', label: 'Moderate Risk' },
-                                    { color: '#ff9900', label: 'Moderate to High Risk' },
-                                    { color: '#ff0000', label: 'High Risk' },
-                                ].map(l => (
-                                    <div key={l.label} className="flex items-center gap-2">
-                                        <div className="w-7 h-3.5 rounded shrink-0 border border-black/10" style={{ backgroundColor: l.color }} />
-                                        <span className="text-[10px] text-slate-700 font-bold">{l.label}</span>
-                                    </div>
+                            <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                <FileSpreadsheet className="w-4 h-4 text-pertamina-blue" />
+                                Detail Data Risk Register ({tableData.length} Risiko)
+                            </h3>
+                            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                                Daftar rincian risiko PGE Area Lahendong beserta mitigasi & peringkat risiko residual.
+                            </p>
+                        </div>
+
+                        {/* Upload & Action Controls */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="relative">
+                                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <input
+                                    type="text"
+                                    placeholder="Cari risiko / kode..."
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setCurrentPage(1);
+                                    }}
+                                    className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-44"
+                                />
+                            </div>
+
+                            <label className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white px-3.5 py-1.5 rounded-xl text-[11px] font-bold shadow-xs cursor-pointer transition-all active:scale-95">
+                                <UploadCloud className="w-3.5 h-3.5" /> Upload Excel (.xlsx)
+                                <input
+                                    type="file"
+                                    accept=".xlsx, .xls, .csv"
+                                    onChange={handleExcelUpload}
+                                    className="hidden"
+                                />
+                            </label>
+
+                            {tableData.length > 0 && (
+                                <button
+                                    onClick={() => setShowClearConfirm(true)}
+                                    className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer active:scale-95"
+                                    title="Hapus seluruh data Risk Register"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" /> Hapus Semua Data
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* TABLE CONTAINER */}
+                    <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                        <table className="w-full text-left text-[11px] border-collapse">
+                            <thead>
+                                <tr className="bg-slate-100/80 text-slate-700 font-extrabold border-b border-slate-200 uppercase tracking-tight text-[10px]">
+                                    <th className="p-3 border-r border-slate-200 text-center w-28">Kode Risiko</th>
+                                    <th className="p-3 border-r border-slate-200 text-center w-10">No</th>
+                                    <th className="p-3 border-r border-slate-200 min-w-[200px]">Deskripsi atau Kejadian Risiko</th>
+                                    <th className="p-3 border-r border-slate-200 min-w-[220px]">Akar Penyebab</th>
+                                    <th className="p-3 border-r border-slate-200 text-center w-14">Prob (P)</th>
+                                    <th className="p-3 border-r border-slate-200 text-center w-14">Dampak (I)</th>
+                                    <th className="p-3 border-r border-slate-200 text-center w-16">Bobot (W)</th>
+                                    <th className="p-3 border-r border-slate-200 text-center min-w-[140px]">Peringkat Risiko Inherent</th>
+                                    <th className="p-3 border-r border-slate-200 text-center w-24">Strategi</th>
+                                    <th className="p-3 text-center min-w-[140px]">Peringkat Risiko Residual</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 font-medium text-slate-800 bg-white">
+                                {paginatedData.length > 0 ? (
+                                    paginatedData.map((item) => {
+                                        const isHighlighted = Number(item.no) === Number(highlightedNo);
+                                        return (
+                                            <tr
+                                                key={item.kode}
+                                                className={`transition-all duration-300 ${isHighlighted
+                                                    ? 'bg-blue-100/90 ring-2 ring-blue-500 font-extrabold text-blue-900 shadow-md scale-[1.002]'
+                                                    : 'hover:bg-slate-50/80'
+                                                    }`}
+                                            >
+                                                <td className="p-3 border-r border-slate-200 font-bold text-slate-700 text-center font-mono">{item.kode}</td>
+                                                <td className="p-3 border-r border-slate-200 text-center font-bold">
+                                                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-black ${isHighlighted ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700'
+                                                        }`}>
+                                                        {item.no}
+                                                    </span>
+                                                </td>
+                                                <td className="p-3 border-r border-slate-200 font-semibold">{item.deskripsi}</td>
+                                                <td className="p-3 border-r border-slate-200 whitespace-pre-line text-[10.5px] leading-relaxed text-slate-600">{item.akar}</td>
+                                                <td className="p-3 border-r border-slate-200 text-center font-bold">{item.probInherent}</td>
+                                                <td className="p-3 border-r border-slate-200 text-center font-bold">{item.dampakInherent}</td>
+                                                <td className="p-3 border-r border-slate-200 text-center font-extrabold text-blue-700">{item.bobotInherent}</td>
+                                                <td className={getBadgeTdStyle(item.peringkatInherent)}>
+                                                    {item.peringkatInherent}
+                                                </td>
+                                                <td className="p-3 border-r border-slate-200 text-center font-extrabold text-slate-700">{item.strategi}</td>
+                                                <td className={getBadgeTdStyle(item.peringkatResidual).replace('border-r', '')}>
+                                                    {item.peringkatResidual}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan={10} className="p-10 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-2">
+                                                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+                                                    <FileSpreadsheet className="w-6 h-6" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-bold text-slate-700">Belum Ada Data Risk Register</p>
+                                                    <p className="text-[11px] text-slate-400 mt-0.5">Silakan unggah file Excel (.xlsx) untuk menampilkan data & Peta Risiko.</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* PAGINATION CONTROLS */}
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-3">
+                        <div className="text-[11px] text-slate-500 font-semibold">
+                            Menampilkan <span className="font-bold text-slate-800">{filteredData.length > 0 ? startIndex + 1 : 0}</span> - <span className="font-bold text-slate-800">{Math.min(startIndex + itemsPerPage, filteredData.length)}</span> dari <span className="font-bold text-slate-800">{filteredData.length}</span> data
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            {/* Prev Button */}
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="w-8 h-8 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-white transition-all cursor-pointer disabled:cursor-not-allowed"
+                                title="Halaman Sebelumnya"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+
+                            {/* Page Numbers */}
+                            <div className="flex items-center gap-1">
+                                {getPageNumbers(currentPage, totalPages).map((p, idx) => (
+                                    p === '...' ? (
+                                        <span key={`dots-${idx}`} className="px-1.5 text-slate-400 font-bold text-xs">...</span>
+                                    ) : (
+                                        <button
+                                            key={`page-${p}`}
+                                            onClick={() => setCurrentPage(p)}
+                                            className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${currentPage === p
+                                                ? 'bg-pertamina-blue text-white shadow-xs'
+                                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                                                }`}
+                                        >
+                                            {p}
+                                        </button>
+                                    )
                                 ))}
+                            </div>
+
+                            {/* Next Button */}
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages || totalPages === 0}
+                                className="w-8 h-8 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-white transition-all cursor-pointer disabled:cursor-not-allowed"
+                                title="Halaman Berikutnya"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+
+                            {/* Jump Input & Go Button */}
+                            <div className="flex items-center gap-1.5 ml-2">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max={totalPages}
+                                    placeholder=""
+                                    value={gotoInput}
+                                    onChange={(e) => setGotoInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleGoToPage()}
+                                    className="w-14 h-8 px-2 border border-slate-200 bg-slate-50 rounded-xl text-center text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                />
+                                <button
+                                    onClick={handleGoToPage}
+                                    className="h-8 bg-pertamina-blue hover:bg-blue-800 text-white px-3.5 rounded-xl text-xs font-extrabold flex items-center gap-1 shadow-xs transition-all active:scale-95 cursor-pointer"
+                                >
+                                    <CornerDownLeft className="w-3.5 h-3.5" /> Go
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* CLEAR DATA CONFIRMATION MODAL */}
+            {showClearConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-[fadeIn_0.15s_ease-in-out]">
+                    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm mx-4 p-6 space-y-4">
+                        <div className="flex flex-col items-center text-center gap-3">
+                            <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center">
+                                <Trash2 className="w-7 h-7 text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-base font-black text-slate-800">Hapus Semua Data?</h3>
+                                <p className="text-[12px] text-slate-500 font-medium mt-1 leading-relaxed">
+                                    Seluruh <span className="font-bold text-slate-700">{tableData.length} data Risk Register</span> akan dihapus secara permanen dan tidak dapat dikembalikan. Peta Risiko akan kosong setelahnya.
+                                </p>
                             </div>
                         </div>
 
-                        <div className="text-[10px] bg-blue-50 text-blue-700 font-semibold px-3 py-1.5 rounded-xl border border-blue-100 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
-                            Klik bulatan nomor pada peta untuk navigasi langsung ke baris tabel
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* DIAGRAM PIE / PROPORSI PERINGKAT RISIKO */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <RiskPieChartCard
-                    title="Proporsi Peringkat Risiko — Inherent"
-                    data={inherentPieData}
-                    total={tableData.length}
-                />
-                <RiskPieChartCard
-                    title="Proporsi Peringkat Risiko — Residual"
-                    data={residualPieData}
-                    total={tableData.length}
-                />
-            </div>
-
-            {/* DETAIL RISK REGISTER TABLE & EXCEL UPLOAD */}
-            <div ref={tableRef} className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-4">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
-                    <div>
-                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                            <FileSpreadsheet className="w-4 h-4 text-pertamina-blue" />
-                            Detail Data Risk Register ({tableData.length} Risiko)
-                        </h3>
-                        <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                            Daftar rincian risiko PGE Area Lahendong beserta mitigasi & peringkat risiko residual.
-                        </p>
-                    </div>
-
-                    {/* Upload & Action Controls */}
-                    <div className="flex flex-wrap items-center gap-2">
-                        <div className="relative">
-                            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                            <input
-                                type="text"
-                                placeholder="Cari risiko / kode..."
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    setSearchTerm(e.target.value);
-                                    setCurrentPage(1);
-                                }}
-                                className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-44"
-                            />
-                        </div>
-
-                        <label className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white px-3.5 py-1.5 rounded-xl text-[11px] font-bold shadow-xs cursor-pointer transition-all active:scale-95">
-                            <UploadCloud className="w-3.5 h-3.5" /> Upload Excel (.xlsx)
-                            <input
-                                type="file"
-                                accept=".xlsx, .xls, .csv"
-                                onChange={handleExcelUpload}
-                                className="hidden"
-                            />
-                        </label>
-
-                        {tableData.length > 0 && (
+                        <div className="flex gap-3 pt-2">
                             <button
-                                onClick={() => setShowClearConfirm(true)}
-                                className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer active:scale-95"
-                                title="Hapus seluruh data Risk Register"
+                                onClick={() => setShowClearConfirm(false)}
+                                className="flex-1 py-2.5 rounded-2xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-all cursor-pointer"
                             >
-                                <Trash2 className="w-3.5 h-3.5" /> Hapus Semua Data
+                                Batal
                             </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* TABLE CONTAINER */}
-                <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                    <table className="w-full text-left text-[11px] border-collapse">
-                        <thead>
-                            <tr className="bg-slate-100/80 text-slate-700 font-extrabold border-b border-slate-200 uppercase tracking-tight text-[10px]">
-                                <th className="p-3 border-r border-slate-200 text-center w-28">Kode Risiko</th>
-                                <th className="p-3 border-r border-slate-200 text-center w-10">No</th>
-                                <th className="p-3 border-r border-slate-200 min-w-[200px]">Deskripsi atau Kejadian Risiko</th>
-                                <th className="p-3 border-r border-slate-200 min-w-[220px]">Akar Penyebab</th>
-                                <th className="p-3 border-r border-slate-200 text-center w-14">Prob (P)</th>
-                                <th className="p-3 border-r border-slate-200 text-center w-14">Dampak (I)</th>
-                                <th className="p-3 border-r border-slate-200 text-center w-16">Bobot (W)</th>
-                                <th className="p-3 border-r border-slate-200 text-center min-w-[140px]">Peringkat Risiko Inherent</th>
-                                <th className="p-3 border-r border-slate-200 text-center w-24">Strategi</th>
-                                <th className="p-3 text-center min-w-[140px]">Peringkat Risiko Residual</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200 font-medium text-slate-800 bg-white">
-                            {paginatedData.length > 0 ? (
-                                paginatedData.map((item) => {
-                                    const isHighlighted = Number(item.no) === Number(highlightedNo);
-                                    return (
-                                        <tr
-                                            key={item.kode}
-                                            className={`transition-all duration-300 ${
-                                                isHighlighted
-                                                    ? 'bg-blue-100/90 ring-2 ring-blue-500 font-extrabold text-blue-900 shadow-md scale-[1.002]'
-                                                    : 'hover:bg-slate-50/80'
-                                            }`}
-                                        >
-                                            <td className="p-3 border-r border-slate-200 font-bold text-slate-700 text-center font-mono">{item.kode}</td>
-                                            <td className="p-3 border-r border-slate-200 text-center font-bold">
-                                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-black ${
-                                                    isHighlighted ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700'
-                                                }`}>
-                                                    {item.no}
-                                                </span>
-                                            </td>
-                                            <td className="p-3 border-r border-slate-200 font-semibold">{item.deskripsi}</td>
-                                            <td className="p-3 border-r border-slate-200 whitespace-pre-line text-[10.5px] leading-relaxed text-slate-600">{item.akar}</td>
-                                            <td className="p-3 border-r border-slate-200 text-center font-bold">{item.probInherent}</td>
-                                            <td className="p-3 border-r border-slate-200 text-center font-bold">{item.dampakInherent}</td>
-                                            <td className="p-3 border-r border-slate-200 text-center font-extrabold text-blue-700">{item.bobotInherent}</td>
-                                            <td className={getBadgeTdStyle(item.peringkatInherent)}>
-                                                {item.peringkatInherent}
-                                            </td>
-                                            <td className="p-3 border-r border-slate-200 text-center font-extrabold text-slate-700">{item.strategi}</td>
-                                            <td className={getBadgeTdStyle(item.peringkatResidual).replace('border-r', '')}>
-                                                {item.peringkatResidual}
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            ) : (
-                                <tr>
-                                    <td colSpan={10} className="p-10 text-center">
-                                        <div className="flex flex-col items-center justify-center gap-2">
-                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
-                                                <FileSpreadsheet className="w-6 h-6" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-bold text-slate-700">Belum Ada Data Risk Register</p>
-                                                <p className="text-[11px] text-slate-400 mt-0.5">Silakan unggah file Excel (.xlsx) untuk menampilkan data & Peta Risiko.</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* PAGINATION CONTROLS */}
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-3">
-                    <div className="text-[11px] text-slate-500 font-semibold">
-                        Menampilkan <span className="font-bold text-slate-800">{filteredData.length > 0 ? startIndex + 1 : 0}</span> - <span className="font-bold text-slate-800">{Math.min(startIndex + itemsPerPage, filteredData.length)}</span> dari <span className="font-bold text-slate-800">{filteredData.length}</span> data
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                        {/* Prev Button */}
-                        <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className="w-8 h-8 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-white transition-all cursor-pointer disabled:cursor-not-allowed"
-                            title="Halaman Sebelumnya"
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                        </button>
-
-                        {/* Page Numbers */}
-                        <div className="flex items-center gap-1">
-                            {getPageNumbers(currentPage, totalPages).map((p, idx) => (
-                                p === '...' ? (
-                                    <span key={`dots-${idx}`} className="px-1.5 text-slate-400 font-bold text-xs">...</span>
-                                ) : (
-                                    <button
-                                        key={`page-${p}`}
-                                        onClick={() => setCurrentPage(p)}
-                                        className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                                            currentPage === p
-                                                ? 'bg-pertamina-blue text-white shadow-xs'
-                                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-                                        }`}
-                                    >
-                                        {p}
-                                    </button>
-                                )
-                            ))}
-                        </div>
-
-                        {/* Next Button */}
-                        <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages || totalPages === 0}
-                            className="w-8 h-8 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-white transition-all cursor-pointer disabled:cursor-not-allowed"
-                            title="Halaman Berikutnya"
-                        >
-                            <ChevronRight className="w-4 h-4" />
-                        </button>
-
-                        {/* Jump Input & Go Button */}
-                        <div className="flex items-center gap-1.5 ml-2">
-                            <input
-                                type="number"
-                                min="1"
-                                max={totalPages}
-                                placeholder=""
-                                value={gotoInput}
-                                onChange={(e) => setGotoInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleGoToPage()}
-                                className="w-14 h-8 px-2 border border-slate-200 bg-slate-50 rounded-xl text-center text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                            />
                             <button
-                                onClick={handleGoToPage}
-                                className="h-8 bg-pertamina-blue hover:bg-blue-800 text-white px-3.5 rounded-xl text-xs font-extrabold flex items-center gap-1 shadow-xs transition-all active:scale-95 cursor-pointer"
+                                onClick={handleClearData}
+                                className="flex-1 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
                             >
-                                <CornerDownLeft className="w-3.5 h-3.5" /> Go
+                                <Trash2 className="w-3.5 h-3.5" /> Ya, Hapus Semua
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        {/* CLEAR DATA CONFIRMATION MODAL */}
-        {showClearConfirm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-[fadeIn_0.15s_ease-in-out]">
-                <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm mx-4 p-6 space-y-4">
-                    <div className="flex flex-col items-center text-center gap-3">
-                        <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center">
-                            <Trash2 className="w-7 h-7 text-red-600" />
-                        </div>
-                        <div>
-                            <h3 className="text-base font-black text-slate-800">Hapus Semua Data?</h3>
-                            <p className="text-[12px] text-slate-500 font-medium mt-1 leading-relaxed">
-                                Seluruh <span className="font-bold text-slate-700">{tableData.length} data Risk Register</span> akan dihapus secara permanen dan tidak dapat dikembalikan. Peta Risiko akan kosong setelahnya.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                        <button
-                            onClick={() => setShowClearConfirm(false)}
-                            className="flex-1 py-2.5 rounded-2xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-all cursor-pointer"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            onClick={handleClearData}
-                            className="flex-1 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" /> Ya, Hapus Semua
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )}
+            )}
         </>
     );
 }
@@ -1613,11 +1609,10 @@ export default function MainDashboard(props) {
                         <button
                             key={tab.id}
                             onClick={() => setActiveSubTab(tab.id)}
-                            className={`flex-1 min-w-[180px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                activeSubTab === tab.id
-                                    ? 'bg-blue-600 text-white shadow-xs'
-                                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                            }`}
+                            className={`flex-1 min-w-[180px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeSubTab === tab.id
+                                ? 'bg-blue-600 text-white shadow-xs'
+                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                                }`}
                         >
                             <Icon className="w-3.5 h-3.5" />
                             {tab.label}
