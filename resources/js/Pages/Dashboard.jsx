@@ -70,7 +70,6 @@ export default function Dashboard(props) {
         { 
             id: 'view-budget', title: 'Budgeting', label: 'ABI & ABO Monitor', icon: Calculator,
             children: [
-                { id: 'ringkasan', title: 'Ringkasan Anggaran (ABO/ABI)' },
                 { id: 'abo', title: 'Cost Center (ABO)' },
                 { id: 'abi', title: 'WBS Element (ABI)' },
                 { id: 'realisasi-abo', title: 'Trend Realisasi ABO' }

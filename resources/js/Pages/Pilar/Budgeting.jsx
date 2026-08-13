@@ -211,12 +211,68 @@ function RingkasanBarChart({ chartData, formatCurrency }) {
     );
 }
 
+
+function RingkasanVisualization({ chartData, formatCurrency, formatShortCurrency, getFunctionIcon, titleSuffix }) {
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-[fadeIn_0.3s_ease-in-out] mb-6">
+            <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col h-96">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 className="font-extrabold text-slate-800 text-sm">Visualisasi Anggaran Per Fungsi {titleSuffix}</h3>
+                        <p className="text-[11px] text-slate-500 font-medium mt-0.5">Komparasi RKAP Plafon (Target) vs Realisasi Pemakaian Aktual.</p>
+                    </div>
+                </div>
+                <div className="flex-1 w-full min-h-0 text-[10px]">
+                    <RingkasanBarChart chartData={chartData} formatCurrency={formatCurrency} />
+                </div>
+            </div>
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div>
+                    <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-4">Rincian Anggaran Per Fungsi</h4>
+                    <div className="space-y-4">
+                        {chartData.map(item => {
+                            const serapPercent = item.budget > 0 ? (item.actual / item.budget) * 100 : 0;
+                            return (
+                                <div key={item.name} className="flex items-start justify-between gap-3 pb-3.5 border-b border-slate-100 last:border-b-0">
+                                    <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 shrink-0">
+                                        {getFunctionIcon(item.name)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h5 className="text-xs font-bold text-slate-855 truncate">{item.name}</h5>
+                                        <span className="text-[10px] text-slate-400 block font-semibold mt-0.5">
+                                            Realisasi: {formatShortCurrency(item.actual)}
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                                            serapPercent >= 90 ? 'bg-red-50 text-red-700' :
+                                            serapPercent >= 50 ? 'bg-yellow-50 text-yellow-700' : 'bg-green-50 text-green-700'
+                                        }`}>
+                                            {serapPercent.toFixed(0)}%
+                                        </span>
+                                        <span className="text-[9px] text-slate-400 block font-bold mt-1">
+                                            Target: {formatShortCurrency(item.budget)}
+                                        </span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+                <div className="pt-4 border-t border-slate-100 text-[10px] font-bold text-slate-400 text-center leading-relaxed">
+                    Data diringkas secara real-time dari {titleSuffix === '(ABO)' ? 'Cost Center' : 'WBS Element'} terkait.
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function Budgeting(props) {
     const { budgetDetailsList, momList, auth, onOpenFeedback, activeSubMenu } = props;
     const currentUser = auth.user;
 
-    const [filterKategori, setFilterKategori] = useState('Semua');
-    const [activeBudgetSubTab, setActiveBudgetSubTab] = useState('ringkasan');
+    
+    const [activeBudgetSubTab, setActiveBudgetSubTab] = useState('abo');
 
     React.useEffect(() => {
         if (activeSubMenu) {
@@ -265,25 +321,35 @@ export default function Budgeting(props) {
         return 'Business Support';
     };
 
-    // Filter list if needed (ABI / ABO)
-    const filteredBudgetDetails = filterKategori === 'Semua' 
-        ? budgetDetailsList 
-        : budgetDetailsList.filter(b => b.kategori === filterKategori);
+    // Helper to calculate chart data for a specific category
+    const getChartDataForCategory = (kategori) => {
+        const filteredList = budgetDetailsList.filter(b => b.kategori === kategori);
+        const groupedDataMap = filteredList.reduce((acc, curr) => {
+            const funcName = getClassifiedFunction(curr.name);
+            if (!acc[funcName]) {
+                acc[funcName] = { name: funcName, budget: 0, consumed: 0, actual: 0 };
+            }
+            acc[funcName].budget += curr.budget;
+            acc[funcName].consumed += curr.consumed;
+            acc[funcName].actual += curr.actual;
+            return acc;
+        }, {});
+        const orderedFunctions = ['HSSE', 'Operation', 'Maintenance', 'Business Support'];
+        return orderedFunctions.map(func => groupedDataMap[func] || { name: func, budget: 0, consumed: 0, actual: 0 });
+    };
 
-    // Group items into HSSE, Operation, Maintenance, Business Support
-    const groupedDataMap = filteredBudgetDetails.reduce((acc, curr) => {
-        const funcName = getClassifiedFunction(curr.name);
-        if (!acc[funcName]) {
-            acc[funcName] = { name: funcName, budget: 0, consumed: 0, actual: 0 };
-        }
-        acc[funcName].budget += curr.budget;
-        acc[funcName].consumed += curr.consumed;
-        acc[funcName].actual += curr.actual;
-        return acc;
-    }, {});
-
-    const orderedFunctions = ['HSSE', 'Operation', 'Maintenance', 'Business Support'];
-    const chartData = orderedFunctions.map(func => groupedDataMap[func] || { name: func, budget: 0, consumed: 0, actual: 0 });
+    const chartDataAbo = getChartDataForCategory('ABO');
+    const chartDataAbi = getChartDataForCategory('ABI');
+    
+    const searchFilteredBudgetDetails = budgetDetailsList.filter(item => {
+        const query = budgetSearch.toLowerCase().trim();
+        return (
+            (item.fundCent && item.fundCent.toLowerCase().includes(query)) ||
+            (item.name && item.name.toLowerCase().includes(query)) ||
+            (item.commitItem && item.commitItem.toLowerCase().includes(query)) ||
+            (item.text && item.text.toLowerCase().includes(query))
+        );
+    });
 
     const getFunctionIcon = (name) => {
         switch (name) {
@@ -314,16 +380,7 @@ export default function Budgeting(props) {
 
     const isAdmin = currentUser?.role?.startsWith('Admin');
 
-    // Filter budget details by search query
-    const searchFilteredBudgetDetails = filteredBudgetDetails.filter(item => {
-        const query = budgetSearch.toLowerCase().trim();
-        return (
-            (item.fundCent && item.fundCent.toLowerCase().includes(query)) ||
-            (item.name && item.name.toLowerCase().includes(query)) ||
-            (item.commitItem && item.commitItem.toLowerCase().includes(query)) ||
-            (item.text && item.text.toLowerCase().includes(query))
-        );
-    });
+    // Filter logic moved up
 
     const sumBudget = searchFilteredBudgetDetails.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
     const sumConsumed = searchFilteredBudgetDetails.reduce((acc, curr) => acc + (Number(curr.consumed) || 0), 0);
@@ -371,14 +428,6 @@ export default function Budgeting(props) {
             {/* Subtab Navigation */}
             <div className="flex border-b border-slate-200 bg-white p-2 rounded-2xl border shadow-2xs">
                 <button
-                    onClick={() => setActiveBudgetSubTab('ringkasan')}
-                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                        activeBudgetSubTab === 'ringkasan' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                >
-                    <PieIcon className="w-4 h-4" /> Ringkasan Anggaran (ABO/ABI)
-                </button>
-                <button
                     onClick={() => setActiveBudgetSubTab('abo')}
                     className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         activeBudgetSubTab === 'abo' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
@@ -422,80 +471,6 @@ export default function Budgeting(props) {
                 </div>
             )}
 
-            {/* Subtab 1: Ringkasan Anggaran (ABO/ABI) */}
-            {activeBudgetSubTab === 'ringkasan' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-[fadeIn_0.3s_ease-in-out]">
-                    {/* Recharts Bar Chart (Left/Center) */}
-                    <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col h-96">
-                        <div className="flex justify-between items-center mb-4">
-                            <div>
-                                <h3 className="font-extrabold text-slate-800 text-sm">Visualisasi Anggaran Per Fungsi</h3>
-                                <p className="text-[11px] text-slate-500 font-medium mt-0.5">Komparasi RKAP Plafon (Target) vs Realisasi Pemakaian Aktual.</p>
-                            </div>
-                            <div className="flex gap-2 text-[10px] font-bold">
-                                {['Semua', 'ABI', 'ABO'].map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => setFilterKategori(cat)}
-                                        className={`px-3 py-1.5 rounded-xl cursor-pointer border transition-all ${
-                                            filterKategori === cat 
-                                                ? 'bg-blue-600 text-white border-transparent' 
-                                                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-350'
-                                        }`}
-                                    >
-                                        {cat === 'Semua' ? 'Semua Tipe' : cat}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="flex-1 w-full min-h-0 text-[10px]">
-                            <RingkasanBarChart chartData={chartData} formatCurrency={formatCurrency} />
-                        </div>
-                    </div>
-
-                    {/* Table Summary Per Fungsi (Right) */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between">
-                        <div>
-                            <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-4">Rincian Anggaran Per Fungsi</h4>
-                            <div className="space-y-4">
-                                {chartData.map(item => {
-                                    const serapPercent = item.budget > 0 ? (item.actual / item.budget) * 100 : 0;
-                                    return (
-                                        <div key={item.name} className="flex items-start justify-between gap-3 pb-3.5 border-b border-slate-100 last:border-b-0">
-                                            <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 shrink-0">
-                                                {getFunctionIcon(item.name)}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h5 className="text-xs font-bold text-slate-855 truncate">{item.name}</h5>
-                                                <span className="text-[10px] text-slate-400 block font-semibold mt-0.5">
-                                                    Realisasi: {formatShortCurrency(item.actual)}
-                                                </span>
-                                            </div>
-                                            <div className="text-right">
-                                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                                                    serapPercent >= 90 ? 'bg-red-50 text-red-700' :
-                                                    serapPercent >= 50 ? 'bg-yellow-50 text-yellow-700' : 'bg-green-50 text-green-700'
-                                                }`}>
-                                                    {serapPercent.toFixed(0)}%
-                                                </span>
-                                                <span className="text-[9px] text-slate-400 block font-bold mt-1">
-                                                    Target: {formatShortCurrency(item.budget)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-slate-100 text-[10px] font-bold text-slate-400 text-center leading-relaxed">
-                            Data diringkas secara real-time dari Cost Center terkait.
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Subtab 2: Cost Center (ABO) */}
             {activeBudgetSubTab === 'abo' && (() => {
                 const aboGroupMap = {};
@@ -521,6 +496,7 @@ export default function Budgeting(props) {
 
                 return (
                     <div className="space-y-4 animate-[fadeIn_0.3s_ease-in-out]">
+                        <RingkasanVisualization chartData={chartDataAbo} formatCurrency={formatCurrency} formatShortCurrency={formatShortCurrency} getFunctionIcon={getFunctionIcon} titleSuffix="(ABO)" />
                         <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
                             {/* Table Controls */}
                             <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
@@ -611,6 +587,7 @@ export default function Budgeting(props) {
             {/* Subtab 3: WBS Element (ABI) */}
             {activeBudgetSubTab === 'abi' && (
                 <div className="space-y-4 animate-[fadeIn_0.3s_ease-in-out]">
+                    <RingkasanVisualization chartData={chartDataAbi} formatCurrency={formatCurrency} formatShortCurrency={formatShortCurrency} getFunctionIcon={getFunctionIcon} titleSuffix="(ABI)" />
                     <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
                         {/* Table Controls */}
                         <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
