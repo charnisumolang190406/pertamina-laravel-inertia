@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
 import ChartDetailModal from '../../Components/ChartDetailModal';
+import Pagination from '../../Components/Pagination';
 import { 
   Calculator, TrendingUp, CheckCircle, AlertCircle, Plus, Trash2, Check, X, ShieldAlert, Activity, Wrench, Users2,
   FileSpreadsheet, Database, Search, PieChart as PieIcon, Maximize2
@@ -324,6 +325,10 @@ export default function Budgeting(props) {
     const currentUser = auth.user;
 
     const [activeBudgetSubTab, setActiveBudgetSubTab] = useState('abo');
+    const [aboViewMode, setAboViewMode] = useState('detail'); // 'detail' | 'grouped'
+    const [aboDetailPage, setAboDetailPage] = useState(1);
+    const [aboGroupedPage, setAboGroupedPage] = useState(1);
+    const [abiPage, setAbiPage] = useState(1);
     const [selectedChart, setSelectedChart] = useState(null);
     const [isChartModalOpen, setIsChartModalOpen] = useState(false);
 
@@ -333,6 +338,12 @@ export default function Budgeting(props) {
         }
     }, [activeSubMenu]);
     const [budgetSearch, setBudgetSearch] = useState('');
+
+    React.useEffect(() => {
+        setAboDetailPage(1);
+        setAboGroupedPage(1);
+        setAbiPage(1);
+    }, [budgetSearch, aboViewMode]);
 
     // Aggregate budgets
     const totalBudget = budgetDetailsList.reduce((acc, b) => acc + b.budget, 0);
@@ -360,8 +371,17 @@ export default function Budgeting(props) {
     };
 
     // Classify each Cost Center / WBS item into one of the 4 functions
-    const getClassifiedFunction = (name = '') => {
-        const nameLower = name.toLowerCase();
+    const getClassifiedFunction = (name = '', fungsi = '') => {
+        if (fungsi && String(fungsi).trim() !== '') {
+            const fLower = String(fungsi).trim().toLowerCase();
+            if (fLower.includes('maint')) return 'Maintenance';
+            if (fLower.includes('op') || fLower.includes('prod') || fLower.includes('steam')) return 'Operation';
+            if (fLower.includes('hsse') || fLower.includes('safe') || fLower.includes('lingk')) return 'HSSE';
+            if (fLower.includes('bus') || fLower.includes('support') || fLower.includes('bs')) return 'Business Support';
+            if (fLower.includes('gpr')) return 'GPR';
+            return fungsi;
+        }
+        const nameLower = (name || '').toLowerCase();
         if (nameLower.includes('maint') || nameLower.includes('perbaikan') || nameLower.includes('investasi pipe') || nameLower.includes('maintenance')) {
             return 'Maintenance';
         }
@@ -378,7 +398,7 @@ export default function Budgeting(props) {
     const getChartDataForCategory = (kategori) => {
         const filteredList = budgetDetailsList.filter(b => b.kategori === kategori);
         const groupedDataMap = filteredList.reduce((acc, curr) => {
-            const funcName = getClassifiedFunction(curr.name);
+            const funcName = getClassifiedFunction(curr.name, curr.fungsi);
             if (!acc[funcName]) {
                 acc[funcName] = { name: funcName, budget: 0, consumed: 0, actual: 0 };
             }
@@ -398,6 +418,7 @@ export default function Budgeting(props) {
         const query = budgetSearch.toLowerCase().trim();
         return (
             (item.fundCent && item.fundCent.toLowerCase().includes(query)) ||
+            (item.fungsi && item.fungsi.toLowerCase().includes(query)) ||
             (item.name && item.name.toLowerCase().includes(query)) ||
             (item.commitItem && item.commitItem.toLowerCase().includes(query)) ||
             (item.text && item.text.toLowerCase().includes(query))
@@ -417,7 +438,7 @@ export default function Budgeting(props) {
     const dynamicAboPerFungsi = React.useMemo(() => {
         const aboList = budgetDetailsList.filter(b => b.kategori === 'ABO');
         const groupedMap = aboList.reduce((acc, curr) => {
-            const funcName = getClassifiedFunction(curr.name);
+            const funcName = getClassifiedFunction(curr.name, curr.fungsi);
             if (!acc[funcName]) {
                 acc[funcName] = { fungsi: funcName, budget: 0, actual: 0 };
             }
@@ -643,22 +664,26 @@ export default function Budgeting(props) {
 
             {/* Subtab 2: Cost Center (ABO) */}
             {activeBudgetSubTab === 'abo' && (() => {
+                const aboDetailsList = searchFilteredBudgetDetails.filter(i => i.kategori === 'ABO');
                 const aboGroupMap = {};
-                searchFilteredBudgetDetails.filter(i => i.kategori === 'ABO').forEach(item => {
+                aboDetailsList.forEach(item => {
                     const key = item.fundCent || item.name || 'Unassigned';
                     if (!aboGroupMap[key]) {
                         aboGroupMap[key] = {
                             fundCent: item.fundCent,
                             name: item.name,
+                            fungsi: item.fungsi,
                             kategori: 'ABO',
                             budget: 0,
                             consumed: 0,
+                            commitment: 0,
                             actual: 0,
                             available: 0
                         };
                     }
                     aboGroupMap[key].budget += (Number(item.budget) || 0);
                     aboGroupMap[key].consumed += (Number(item.consumed) || 0);
+                    aboGroupMap[key].commitment += (Number(item.commitment) || 0);
                     aboGroupMap[key].actual += (Number(item.actual) || 0);
                     aboGroupMap[key].available += (Number(item.available) || 0);
                 });
@@ -668,87 +693,212 @@ export default function Budgeting(props) {
                     <div className="space-y-4 animate-[fadeIn_0.3s_ease-in-out]">
                         <RingkasanVisualization chartData={chartDataAbo} formatCurrency={formatCurrency} formatShortCurrency={formatShortCurrency} getFunctionIcon={getFunctionIcon} titleSuffix="(ABO)" onChartClick={handleChartClick} chartId="budget-ringkasan-abo" />
                         <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-                            {/* Table Controls */}
+                            {/* Table Controls & View Mode Toggle */}
                             <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
                                 <div className="relative flex-1 max-w-md">
                                     <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
                                     <input
                                         type="text"
-                                        placeholder="Cari Cost Center atau Nama..."
+                                        placeholder="Cari Fund Cen, Fungsi, Name, Commit Item, Text..."
                                         value={budgetSearch}
                                         onChange={(e) => setBudgetSearch(e.target.value)}
                                         className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-slate-700 font-semibold"
                                     />
                                 </div>
-                                <div className="text-xs text-slate-500 font-bold self-center">
-                                    Menampilkan {aboGroupedList.length} ringkasan Cost Center (ABO)
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-slate-200/80 p-1 rounded-xl flex text-[11px] font-bold text-slate-600">
+                                        <button
+                                            onClick={() => setAboViewMode('detail')}
+                                            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                                                aboViewMode === 'detail' ? 'bg-white text-blue-600 shadow-xs' : 'hover:text-slate-800'
+                                            }`}
+                                        >
+                                            Rincian Item ({aboDetailsList.length})
+                                        </button>
+                                        <button
+                                            onClick={() => setAboViewMode('grouped')}
+                                            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                                                aboViewMode === 'grouped' ? 'bg-white text-blue-600 shadow-xs' : 'hover:text-slate-800'
+                                            }`}
+                                        >
+                                            Ringkasan Cost Center ({aboGroupedList.length})
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Detail Table */}
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left text-xs whitespace-nowrap">
-                                    <thead className="bg-slate-50 border-b border-slate-200">
-                                        <tr>
-                                            <th className="p-4 text-slate-500 font-bold w-10 text-center">No</th>
-                                            <th className="p-4 text-slate-500 font-bold">Fund Center</th>
-                                            <th className="p-4 text-slate-500 font-bold">Nama Cost Center</th>
-                                            <th className="p-4 text-slate-500 font-bold text-center">Fungsi</th>
-                                            <th className="p-4 text-slate-500 font-bold text-right">Consumable Budget</th>
-                                            <th className="p-4 text-slate-500 font-bold text-right">Consumed (PR/PO)</th>
-                                            <th className="p-4 text-slate-500 font-bold text-right">Actual (Realisasi)</th>
-                                            <th className="p-4 text-slate-500 font-bold text-right">Available (Sisa)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {aboGroupedList.map((item, idx) => {
-                                            const fungsiName = getClassifiedFunction(item.name);
-                                            return (
-                                                <tr key={item.fundCent || idx} className="hover:bg-slate-50/70 transition-colors">
-                                                    <td className="p-4 text-slate-500 text-center font-semibold">{idx + 1}</td>
-                                                    <td className="p-4 font-mono text-xs font-extrabold text-slate-700">{item.fundCent || '-'}</td>
-                                                    <td className="p-4 font-bold text-slate-800">{item.name}</td>
-                                                    <td className="p-4 text-center">
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                                            fungsiName === 'HSSE' ? 'bg-red-50 text-red-700 border border-red-200' :
-                                                            fungsiName === 'Operation' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                                                            fungsiName === 'Maintenance' ? 'bg-green-50 text-green-700 border border-green-200' :
-                                                            'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                                                        }`}>
-                                                            {fungsiName}
-                                                        </span>
+                            {/* Detailed 10-column Table */}
+                            {aboViewMode === 'detail' && (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs whitespace-nowrap">
+                                        <thead className="bg-slate-50 border-b border-slate-200">
+                                            <tr>
+                                                <th className="p-4 text-slate-500 font-bold w-10 text-center">No</th>
+                                                <th className="p-4 text-slate-500 font-bold">Fund Cen</th>
+                                                <th className="p-4 text-slate-500 font-bold text-center">Fungsi</th>
+                                                <th className="p-4 text-slate-500 font-bold">Name</th>
+                                                <th className="p-4 text-slate-500 font-bold">Commitment Item</th>
+                                                <th className="p-4 text-slate-500 font-bold max-w-xs text-wrap">Text</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Consumable Budget(IDR)</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Consumed Budget(IDR)</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Commitment(IDR)</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Actual(IDR)</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Available(IDR)</th>
+                                                {isAdmin && <th className="p-4 text-slate-500 font-bold text-center w-16">Aksi</th>}
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {aboDetailsList.slice((aboDetailPage - 1) * 10, aboDetailPage * 10).map((item, idx) => {
+                                                const actualIdx = (aboDetailPage - 1) * 10 + idx;
+                                                const fungsiName = getClassifiedFunction(item.name, item.fungsi);
+                                                return (
+                                                    <tr key={item.id || actualIdx} className="hover:bg-slate-50/70 transition-colors">
+                                                        <td className="p-4 text-slate-500 text-center font-semibold">{actualIdx + 1}</td>
+                                                        <td className="p-4 font-mono text-xs font-extrabold text-slate-700">{item.fundCent || '-'}</td>
+                                                        <td className="p-4 text-center">
+                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                                fungsiName === 'HSSE' ? 'bg-red-50 text-red-700 border border-red-200' :
+                                                                fungsiName === 'Operation' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                                                fungsiName === 'Maintenance' ? 'bg-green-50 text-green-700 border border-green-200' :
+                                                                fungsiName === 'GPR' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                                                'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                                            }`}>
+                                                                {fungsiName}
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-4 font-bold text-slate-800">{item.name}</td>
+                                                        <td className="p-4 font-mono text-[11px] text-slate-500 font-bold">{item.commitItem || '-'}</td>
+                                                        <td className="p-4 max-w-xs text-wrap font-medium text-slate-700 leading-relaxed">{item.text || '-'}</td>
+                                                        <td className="p-4 text-right font-mono text-slate-700 font-bold">{formatCurrency(item.budget)}</td>
+                                                        <td className="p-4 text-right font-mono text-amber-600 font-bold">{formatCurrency(item.consumed)}</td>
+                                                        <td className="p-4 text-right font-mono text-indigo-600 font-bold">{formatCurrency(item.commitment || 0)}</td>
+                                                        <td className="p-4 text-right font-mono text-blue-600 font-bold">{formatCurrency(item.actual)}</td>
+                                                        <td className={`p-4 text-right font-mono font-extrabold ${item.available >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                            {formatCurrency(item.available)}
+                                                        </td>
+                                                        {isAdmin && (
+                                                            <td className="p-4 text-center">
+                                                                <button
+                                                                    onClick={() => handleDeleteRow(item.id)}
+                                                                    className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 cursor-pointer transition-all active:scale-90"
+                                                                    title="Hapus Baris"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </td>
+                                                        )}
+                                                    </tr>
+                                                );
+                                            })}
+                                            {/* Total Accumulation Row */}
+                                            {aboDetailsList.length > 0 && (
+                                                <tr className="bg-slate-50/80 font-bold border-t-2 border-slate-200">
+                                                    <td colSpan={6} className="p-4 text-slate-700 text-right uppercase tracking-wider text-[10px]">Total Akumulasi Terfilter</td>
+                                                    <td className="p-4 text-right font-mono text-slate-900 font-extrabold">{formatCurrency(aboDetailsList.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0))}</td>
+                                                    <td className="p-4 text-right font-mono text-amber-700 font-extrabold">{formatCurrency(aboDetailsList.reduce((acc, curr) => acc + (Number(curr.consumed) || 0), 0))}</td>
+                                                    <td className="p-4 text-right font-mono text-indigo-700 font-extrabold">{formatCurrency(aboDetailsList.reduce((acc, curr) => acc + (Number(curr.commitment) || 0), 0))}</td>
+                                                    <td className="p-4 text-right font-mono text-blue-700 font-extrabold">{formatCurrency(aboDetailsList.reduce((acc, curr) => acc + (Number(curr.actual) || 0), 0))}</td>
+                                                    <td className={`p-4 text-right font-mono font-extrabold ${aboDetailsList.reduce((acc, curr) => acc + (Number(curr.available) || 0), 0) >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                                                        {formatCurrency(aboDetailsList.reduce((acc, curr) => acc + (Number(curr.available) || 0), 0))}
                                                     </td>
-                                                    <td className="p-4 text-right font-mono text-slate-700 font-bold">{formatCurrency(item.budget)}</td>
-                                                    <td className="p-4 text-right font-mono text-amber-600 font-bold">{formatCurrency(item.consumed)}</td>
-                                                    <td className="p-4 text-right font-mono text-blue-600 font-bold">{formatCurrency(item.actual)}</td>
-                                                    <td className={`p-4 text-right font-mono font-extrabold ${item.available >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                        {formatCurrency(item.available)}
+                                                    {isAdmin && <td className="p-4"></td>}
+                                                </tr>
+                                            )}
+                                            {aboDetailsList.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={isAdmin ? 12 : 11} className="p-12 text-center text-slate-400 font-medium">
+                                                        Tidak ada rincian transaksi ABO yang ditemukan.
                                                     </td>
                                                 </tr>
-                                            );
-                                        })}
-                                        {/* Total Accumulation Row */}
-                                        {aboGroupedList.length > 0 && (
-                                            <tr className="bg-slate-50/80 font-bold border-t-2 border-slate-200">
-                                                <td colSpan={4} className="p-4 text-slate-700 text-right uppercase tracking-wider text-[10px]">Total Akumulasi Terfilter</td>
-                                                <td className="p-4 text-right font-mono text-slate-900 font-extrabold">{formatCurrency(aboGroupedList.reduce((acc, curr) => acc + curr.budget, 0))}</td>
-                                                <td className="p-4 text-right font-mono text-amber-700 font-extrabold">{formatCurrency(aboGroupedList.reduce((acc, curr) => acc + curr.consumed, 0))}</td>
-                                                <td className="p-4 text-right font-mono text-blue-700 font-extrabold">{formatCurrency(aboGroupedList.reduce((acc, curr) => acc + curr.actual, 0))}</td>
-                                                <td className={`p-4 text-right font-mono font-extrabold ${aboGroupedList.reduce((acc, curr) => acc + curr.available, 0) >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                                                    {formatCurrency(aboGroupedList.reduce((acc, curr) => acc + curr.available, 0))}
-                                                </td>
-                                            </tr>
-                                        )}
-                                        {aboGroupedList.length === 0 && (
+                                            )}
+                                        </tbody>
+                                    </table>
+                                    <Pagination
+                                        currentPage={aboDetailPage}
+                                        totalItems={aboDetailsList.length}
+                                        itemsPerPage={10}
+                                        onPageChange={setAboDetailPage}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Grouped Cost Center Table */}
+                            {aboViewMode === 'grouped' && (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs whitespace-nowrap">
+                                        <thead className="bg-slate-50 border-b border-slate-200">
                                             <tr>
-                                                <td colSpan={8} className="p-12 text-center text-slate-400 font-medium">
-                                                    Tidak ada detail Cost Center (ABO) yang ditemukan.
-                                                </td>
+                                                <th className="p-4 text-slate-500 font-bold w-10 text-center">No</th>
+                                                <th className="p-4 text-slate-500 font-bold">Fund Center</th>
+                                                <th className="p-4 text-slate-500 font-bold">Nama Cost Center</th>
+                                                <th className="p-4 text-slate-500 font-bold text-center">Fungsi</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Consumable Budget</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Consumed (PR/PO)</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Commitment</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Actual (Realisasi)</th>
+                                                <th className="p-4 text-slate-500 font-bold text-right">Available (Sisa)</th>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {aboGroupedList.slice((aboGroupedPage - 1) * 10, aboGroupedPage * 10).map((item, idx) => {
+                                                const actualIdx = (aboGroupedPage - 1) * 10 + idx;
+                                                const fungsiName = getClassifiedFunction(item.name, item.fungsi);
+                                                return (
+                                                    <tr key={item.fundCent || actualIdx} className="hover:bg-slate-50/70 transition-colors">
+                                                        <td className="p-4 text-slate-500 text-center font-semibold">{actualIdx + 1}</td>
+                                                        <td className="p-4 font-mono text-xs font-extrabold text-slate-700">{item.fundCent || '-'}</td>
+                                                        <td className="p-4 font-bold text-slate-800">{item.name}</td>
+                                                        <td className="p-4 text-center">
+                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                                fungsiName === 'HSSE' ? 'bg-red-50 text-red-700 border border-red-200' :
+                                                                fungsiName === 'Operation' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                                                fungsiName === 'Maintenance' ? 'bg-green-50 text-green-700 border border-green-200' :
+                                                                fungsiName === 'GPR' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                                                'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                                            }`}>
+                                                                {fungsiName}
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-4 text-right font-mono text-slate-700 font-bold">{formatCurrency(item.budget)}</td>
+                                                        <td className="p-4 text-right font-mono text-amber-600 font-bold">{formatCurrency(item.consumed)}</td>
+                                                        <td className="p-4 text-right font-mono text-indigo-600 font-bold">{formatCurrency(item.commitment)}</td>
+                                                        <td className="p-4 text-right font-mono text-blue-600 font-bold">{formatCurrency(item.actual)}</td>
+                                                        <td className={`p-4 text-right font-mono font-extrabold ${item.available >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                            {formatCurrency(item.available)}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {/* Total Accumulation Row */}
+                                            {aboGroupedList.length > 0 && (
+                                                <tr className="bg-slate-50/80 font-bold border-t-2 border-slate-200">
+                                                    <td colSpan={4} className="p-4 text-slate-700 text-right uppercase tracking-wider text-[10px]">Total Akumulasi Terfilter</td>
+                                                    <td className="p-4 text-right font-mono text-slate-900 font-extrabold">{formatCurrency(aboGroupedList.reduce((acc, curr) => acc + curr.budget, 0))}</td>
+                                                    <td className="p-4 text-right font-mono text-amber-700 font-extrabold">{formatCurrency(aboGroupedList.reduce((acc, curr) => acc + curr.consumed, 0))}</td>
+                                                    <td className="p-4 text-right font-mono text-indigo-700 font-extrabold">{formatCurrency(aboGroupedList.reduce((acc, curr) => acc + curr.commitment, 0))}</td>
+                                                    <td className="p-4 text-right font-mono text-blue-700 font-extrabold">{formatCurrency(aboGroupedList.reduce((acc, curr) => acc + curr.actual, 0))}</td>
+                                                    <td className={`p-4 text-right font-mono font-extrabold ${aboGroupedList.reduce((acc, curr) => acc + curr.available, 0) >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                                                        {formatCurrency(aboGroupedList.reduce((acc, curr) => acc + curr.available, 0))}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            {aboGroupedList.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={9} className="p-12 text-center text-slate-400 font-medium">
+                                                        Tidak ada ringkasan Cost Center (ABO) yang ditemukan.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                    <Pagination
+                                        currentPage={aboGroupedPage}
+                                        totalItems={aboGroupedList.length}
+                                        itemsPerPage={10}
+                                        onPageChange={setAboGroupedPage}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 );
@@ -795,11 +945,12 @@ export default function Budgeting(props) {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {searchFilteredBudgetDetails.filter(i => i.kategori === 'ABI').map((item, idx) => {
+                                    {searchFilteredBudgetDetails.filter(i => i.kategori === 'ABI').slice((abiPage - 1) * 10, abiPage * 10).map((item, idx) => {
+                                        const actualIdx = (abiPage - 1) * 10 + idx;
                                         const fungsiName = getClassifiedFunction(item.name);
                                         return (
                                             <tr key={item.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                                                <td className="p-4 text-slate-500 text-center font-semibold">{idx + 1}</td>
+                                                <td className="p-4 text-slate-500 text-center font-semibold">{actualIdx + 1}</td>
                                                 <td className="p-4 font-mono text-xs font-extrabold text-slate-700">{item.fundCent || '-'}</td>
                                                 <td className="p-4 font-bold text-slate-800">{item.name}</td>
                                                 <td className="p-4 font-mono text-[11px] text-slate-500 font-bold">{item.commitItem}</td>
@@ -856,6 +1007,12 @@ export default function Budgeting(props) {
                                     )}
                                 </tbody>
                             </table>
+                            <Pagination
+                                currentPage={abiPage}
+                                totalItems={searchFilteredBudgetDetails.filter(i => i.kategori === 'ABI').length}
+                                itemsPerPage={10}
+                                onPageChange={setAbiPage}
+                            />
                         </div>
                     </div>
                 </div>

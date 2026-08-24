@@ -7,7 +7,7 @@ const MAPPING_SPECS = {
     scm: { nomor: 'Nomor Kontrak', nama: 'Nama Pekerjaan', vendor: 'Mitra/Vendor', nilai: 'Nilai Kontrak', mulai: 'Tgl Mulai', selesai: 'Tgl Selesai', progres: 'Progres (%)', status: 'Status', fungsi: 'Fungsi' },
     logistik: { item_number: 'Item Number', deskripsi: 'Deskripsi', uom: 'UoM', stok: 'Jumlah Stok', kategori: 'Kategori', lokasi: 'Lokasi' },
     lembur_tad: { nopok: 'Nopek/Nopok', nama: 'Nama TAD', jabatan: 'Jabatan', fungsi: 'Fungsi', upah: 'Upah Pokok', jam_lembur: 'Jam Lembur', lembur_val: 'Nilai Lembur (Rp)', periode: 'Periode (Bulan Tahun)' },
-    budget_abo: { fundCent: 'Fund Cent', name: 'Name', commitItem: 'Commitment Ite', text: 'Text', budget: 'Consumable Budget(IDR)', consumed: 'Consumed Budget(IDR)', actual: 'Actual(IDR)', available: 'Available(IDR)' },
+    budget_abo: { fundCent: 'Fund Cen', fungsi: 'Fungsi', name: 'Name', commitItem: 'Commitment Item', text: 'Text', budget: 'Consumable Budget(IDR)', consumed: 'Consumed Budget(IDR)', commitment: 'Commitment(IDR)', actual: 'Actual(IDR)', available: 'Available(IDR)' },
     budget_abi: { fundCent: 'No WBS', name: 'Pekerjaan', commitItem: 'PIC', text: 'Keterangan', budget: 'Anggaran Eq IDR', consumed: 'Commitment Ekv IDR', actual: 'Realisasi Ekv IDR', available: 'Available Ekv IDR' },
     alat_berat: { jenis: 'Jenis Alat', nopol: 'Nomor Polisi', expired_kir: 'KIR Expired', expired_stnk: 'STNK Expired', expired_sio: 'SIO Expired', expired_sia: 'SIA Expired', status: 'Status' },
     perbaikan_rumdin: { nomor_rumah: 'Nomor Rumah', estimasi: 'Estimasi Biaya', realisasi: 'Realisasi Biaya', progress: 'Progress (%)', keterangan: 'Keterangan' },
@@ -22,7 +22,7 @@ const MAPPING_DEFAULTS = {
     scm: { nomor: '', nama: 'Kontrak Baru', vendor: 'PT Vendor', nilai: 0, mulai: '', selesai: '', progres: 0, status: 'Aktif', fungsi: 'BS' },
     logistik: { item_number: '', deskripsi: 'Item Baru', uom: 'PCS', stok: 0, kategori: 'Fast Moving', lokasi: 'Gudang LHD' },
     lembur_tad: { nopok: '-', nama: 'Pekerja TAD', jabatan: 'Staff', fungsi: 'BUSINESS SUPPORT', upah: 0, jam_lembur: 0, lembur_val: 0, periode: '' },
-    budget_abo: { fundCent: '', name: 'Pos Anggaran', commitItem: '500000', text: '', budget: 0, consumed: 0, actual: 0, available: 0, kategori: 'ABO' },
+    budget_abo: { fundCent: '', fungsi: 'Business Support', name: 'Pos Anggaran', commitItem: '6001000000', text: '', budget: 0, consumed: 0, commitment: 0, actual: 0, available: 0, kategori: 'ABO' },
     budget_abi: { fundCent: '', name: 'Pos Anggaran', commitItem: '500000', text: '', budget: 0, consumed: 0, actual: 0, available: 0, kategori: 'ABI' },
     alat_berat: { jenis: 'Forklift', nopol: '-', expired_kir: '', expired_stnk: '', expired_sio: '', expired_sia: '', status: 'Optimal' },
     perbaikan_rumdin: { nomor_rumah: 'N-00', estimasi: 0, realisasi: 0, progress: 0, keterangan: '' },
@@ -137,20 +137,33 @@ export default function UploadWizardModal({ isOpen, onClose }) {
 
                     // Find index in headers matching label or key name
                     const idx = sheetHeaders.findIndex(h => {
-                        const hLower = h.toLowerCase();
-                        if (key === 'lembur_val' && hLower.includes('lembur') && !hLower.includes('jam')) return true;
-                        if (key === 'jam_lembur' && (hLower.includes('jam') || hLower.includes('hour'))) return true;
-                        return hLower.includes(label) || label.includes(hLower) || hLower.includes(keyLower) || keyLower.includes(hLower);
+                        const hClean = h.toLowerCase().replace(/kolom\s+[a-z]+\s*:\s*/i, '').trim();
+                        if (key === 'lembur_val' && hClean.includes('lembur') && !hClean.includes('jam')) return true;
+                        if (key === 'jam_lembur' && (hClean.includes('jam') || hClean.includes('hour'))) return true;
+                        if (key === 'fundCent' && (hClean.includes('fund') || hClean.includes('cen'))) return true;
+                        if (key === 'fungsi' && (hClean.includes('fungsi') || hClean.includes('function') || hClean.includes('dept'))) return true;
+                        if (key === 'name' && (hClean === 'name' || hClean.startsWith('name') || hClean.includes('nama'))) return true;
+                        if (key === 'commitItem' && ((hClean.includes('commit') && hClean.includes('item')) || hClean.includes('ite') || hClean.includes('pic'))) return true;
+                        if (key === 'text' && (hClean === 'text' || hClean.includes('deskripsi') || hClean.includes('text') || hClean.includes('keterangan'))) return true;
+                        if (key === 'budget' && (hClean.includes('consumable') || (hClean.includes('budget') && !hClean.includes('consumed')) || hClean.includes('anggaran'))) return true;
+                        if (key === 'consumed' && hClean.includes('consumed')) return true;
+                        if (key === 'commitment' && hClean.includes('commitment') && !hClean.includes('item') && !hClean.includes('ite') && !hClean.includes('consumed')) return true;
+                        if (key === 'actual' && (hClean.includes('actual') || hClean.includes('realisasi'))) return true;
+                        if (key === 'available' && (hClean.includes('available') || hClean.includes('sisa'))) return true;
+                        return hClean.includes(label) || label.includes(hClean) || hClean.includes(keyLower) || keyLower.includes(hClean);
                     });
 
                     // Fallback to exact column index for standard Pertamina SAP formats
                     let defaultIdx = 0;
                     if (dataType === 'budget_abi') {
-                        // Updated hardcoded map based on the specific ABI Excel layout (with merged/hidden columns)
+                        // Hardcoded map based on the specific ABI Excel layout
                         const abiMap = { fundCent: 3, name: 2, commitItem: 4, text: 18, budget: 5, consumed: 11, actual: 9, available: 13 };
                         if (abiMap[key] !== undefined) defaultIdx = abiMap[key];
                     } else if (dataType === 'budget_abo') {
-                        const aboMap = { fundCent: 0, name: 1, commitItem: 2, text: 3, budget: 4, consumed: 5, actual: 7, available: 8 };
+                        // Exact column layout from ABO Excel:
+                        // A(0): Fund Cen, B(1): Fungsi, C(2): Name, D(3): Commitment Item, E(4): Text,
+                        // F(5): Consumable Budget(IDR), G(6): Consumed Budget(IDR), H(7): Commitment(IDR), I(8): Actual(IDR), J(9): Available(IDR)
+                        const aboMap = { fundCent: 0, fungsi: 1, name: 2, commitItem: 3, text: 4, budget: 5, consumed: 6, commitment: 7, actual: 8, available: 9 };
                         if (aboMap[key] !== undefined) defaultIdx = aboMap[key];
                     }
 

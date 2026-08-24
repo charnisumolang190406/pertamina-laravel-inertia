@@ -11,7 +11,7 @@ class ActivityLogController extends Controller
     public function index()
     {
         // Get the latest activity logs with user info
-        $logs = Activity::with('causer')->latest()->paginate(20);
+        $logs = Activity::with('causer')->latest()->paginate(10);
 
         return Inertia::render('ActivityLog/Index', [
             'logs' => $logs

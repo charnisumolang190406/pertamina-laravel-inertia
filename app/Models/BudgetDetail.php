@@ -16,7 +16,7 @@ class BudgetDetail extends Model
     public $incrementing = false;
     protected $primaryKey = 'id';
     protected $fillable = [
-        'id', 'fundCent', 'name', 'commitItem', 'text', 'budget', 'consumed', 'actual', 'available', 'kategori'
+        'id', 'fundCent', 'fungsi', 'name', 'commitItem', 'text', 'budget', 'consumed', 'commitment', 'actual', 'available', 'kategori'
     ];
 
     public function getActivitylogOptions(): LogOptions

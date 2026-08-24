@@ -1,6 +1,7 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Activity } from 'lucide-react';
+import Pagination from '../../Components/Pagination';
 
 export default function Index({ auth, logs }) {
     const formatDate = (dateString) => {
@@ -113,6 +114,12 @@ export default function Index({ auth, logs }) {
                             </div>
                         )}
                     </div>
+                    <Pagination
+                        currentPage={logs.current_page}
+                        totalItems={logs.total}
+                        itemsPerPage={logs.per_page || 10}
+                        onPageChange={(p) => router.get('/activity-logs', { page: p }, { preserveState: true })}
+                    />
                 </div>
             </main>
         </div>

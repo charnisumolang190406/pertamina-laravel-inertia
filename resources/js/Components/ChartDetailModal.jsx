@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { BarDiffOverlay, useBarHover } from './BarDiffOverlay';
 import ProduksiBarChart from './ProduksiBarChart';
+import Pagination from './Pagination';
 
 /**
  * CustomPointLabel — Renders a crisp badge with data values above Line / Dot / Area points
@@ -140,6 +141,9 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
         return [];
     });
 
+    const [tablePage, setTablePage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
     // --- Filter Handlers ---
     const toggleSeries = (key) => {
         setSelectedSeriesKeys(prev => {
@@ -204,6 +208,10 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
             return true;
         });
     }, [rawData, xAxisKey, timeType, startYear, endYear, selectedMonths, selectedItems]);
+
+    React.useEffect(() => {
+        setTablePage(1);
+    }, [startYear, endYear, selectedMonths, selectedItems, selectedSeriesKeys]);
 
     // --- KPI calculations ---
     const kpiSummary = useMemo(() => {
@@ -680,7 +688,7 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100 text-slate-700">
-                                            {filteredData.map((d, index) => (
+                                            {filteredData.slice((tablePage - 1) * ITEMS_PER_PAGE, tablePage * ITEMS_PER_PAGE).map((d, index) => (
                                                 <tr key={index} className="hover:bg-slate-50/50 transition-colors">
                                                     <td className="px-6 py-2.5 font-bold text-slate-800">
                                                         {timeType === 'month' ? getMonthName(d[xAxisKey]) : d[xAxisKey]}
@@ -698,6 +706,12 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                             ))}
                                         </tbody>
                                     </table>
+                                    <Pagination
+                                        currentPage={tablePage}
+                                        totalItems={filteredData.length}
+                                        itemsPerPage={ITEMS_PER_PAGE}
+                                        onPageChange={setTablePage}
+                                    />
                                 </div>
                             </div>
                         ) : (

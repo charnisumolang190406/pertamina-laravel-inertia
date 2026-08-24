@@ -5,6 +5,7 @@ import {
   Users, Package, DollarSign, Filter
 } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
+import Pagination from '../../Components/Pagination';
 
 // Fungsi pillar definitions
 const FUNGSI_OPTIONS = [
@@ -26,6 +27,8 @@ export default function Scm(props) {
     const [showAddModal, setShowAddModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterFungsi, setFilterFungsi] = useState('Semua');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const { data, setData, post, reset, errors } = useForm({
         nomor: '',
@@ -71,6 +74,8 @@ export default function Scm(props) {
         return matchSearch && matchFungsi;
     });
 
+    React.useEffect(() => { setCurrentPage(1); }, [searchQuery, filterFungsi]);
+    const paginatedScm = filteredScm.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
     const totalContracts = contractsWithProgress.length;
     const totalValue = contractsWithProgress.reduce((acc, c) => acc + c.nilai, 0);
     const activeContracts = contractsWithProgress.filter(c => c.calculatedProgress < 100).length;
@@ -255,7 +260,7 @@ export default function Scm(props) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {filteredScm.map(item => {
+                            {paginatedScm.map(item => {
                                 const meta = getFungsiMeta(item.fungsi);
                                 return (
                                     <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
@@ -314,6 +319,7 @@ export default function Scm(props) {
                             )}
                         </tbody>
                     </table>
+                    <Pagination currentPage={currentPage} totalItems={filteredScm.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setCurrentPage} />
                 </div>
             </div>
 

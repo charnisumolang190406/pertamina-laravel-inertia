@@ -4,11 +4,16 @@ import {
   Package, Laptop, Folder, Trash2, Database, AlertCircle, CheckCircle, Droplet, Plus, Download
 } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
+import Pagination from '../../Components/Pagination';
 export default function Logistik(props) {
     const { stokList, alatBeratList, perbaikanList, momList, bbmList = [], auth, onOpenFeedback, activeSubMenu } = props;
     const currentUser = auth.user;
 
     const [activeSubTab, setActiveSubTab] = useState('perbaikan');
+    const [perbaikanPage, setPerbaikanPage] = useState(1);
+    const [alatBeratPage, setAlatBeratPage] = useState(1);
+    const [bbmPage, setBbmPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     React.useEffect(() => {
         if (activeSubMenu) {
@@ -174,9 +179,11 @@ export default function Logistik(props) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {perbaikanList.map((item, idx) => (
+                                {perbaikanList.slice((perbaikanPage - 1) * ITEMS_PER_PAGE, perbaikanPage * ITEMS_PER_PAGE).map((item, idx) => {
+                                    const actualIdx = (perbaikanPage - 1) * ITEMS_PER_PAGE + idx;
+                                    return (
                                     <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                        <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
+                                        <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
                                         <td className="p-3.5 text-slate-600 font-mono text-[11px]">{formatDate(item.created_at)}</td>
                                         <td className="p-3.5 max-w-md text-wrap font-bold text-slate-700">{item.pekerjaan} - {item.lokasi}</td>
                                         <td className="p-3.5">
@@ -197,7 +204,8 @@ export default function Logistik(props) {
                                             </td>
                                         )}
                                     </tr>
-                                ))}
+                                    );
+                                })}
                                 {perbaikanList.length === 0 && (
                                     <tr>
                                         <td colSpan={isAdmin ? 5 : 4} className="p-8 text-center text-slate-400 font-medium">
@@ -207,6 +215,7 @@ export default function Logistik(props) {
                                 )}
                             </tbody>
                         </table>
+                        <Pagination currentPage={perbaikanPage} totalItems={perbaikanList.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setPerbaikanPage} />
                     </div>
                 </div>
             )}
@@ -237,9 +246,11 @@ export default function Logistik(props) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {alatBeratList.map((item, idx) => (
+                                {alatBeratList.slice((alatBeratPage - 1) * ITEMS_PER_PAGE, alatBeratPage * ITEMS_PER_PAGE).map((item, idx) => {
+                                    const actualIdx = (alatBeratPage - 1) * ITEMS_PER_PAGE + idx;
+                                    return (
                                     <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                        <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
+                                        <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
                                         <td className="p-3.5 font-bold text-slate-800">{item.jenis}</td>
                                         <td className="p-3.5 font-semibold text-slate-600">{item.merk}</td>
                                         <td className="p-3.5 font-mono text-slate-600">{item.model}</td>
@@ -273,7 +284,8 @@ export default function Logistik(props) {
                                             </td>
                                         )}
                                     </tr>
-                                ))}
+                                    );
+                                })}
                                 {alatBeratList.length === 0 && (
                                     <tr>
                                         <td colSpan={isAdmin ? 12 : 11} className="p-8 text-center text-slate-400 font-medium">
@@ -283,6 +295,7 @@ export default function Logistik(props) {
                                 )}
                             </tbody>
                         </table>
+                        <Pagination currentPage={alatBeratPage} totalItems={alatBeratList.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setAlatBeratPage} />
                     </div>
                 </div>
             )}
@@ -315,9 +328,11 @@ export default function Logistik(props) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {bbmList.map((item, idx) => (
+                                {bbmList.slice((bbmPage - 1) * ITEMS_PER_PAGE, bbmPage * ITEMS_PER_PAGE).map((item, idx) => {
+                                    const actualIdx = (bbmPage - 1) * ITEMS_PER_PAGE + idx;
+                                    return (
                                     <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                        <td className="p-3 border-r border-slate-100 text-slate-500 text-center font-medium">{idx + 1}</td>
+                                        <td className="p-3 border-r border-slate-100 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
                                         <td className="p-3 border-r border-slate-100 font-bold text-slate-800">{item.bulan}</td>
                                         <td className="p-3 border-r border-slate-100 text-right font-mono text-slate-700">{formatBbm(item.stock_awal_solar)}</td>
                                         <td className="p-3 border-r border-slate-100 text-right font-mono text-green-700 font-bold">{formatBbm(item.penerimaan_solar)}</td>
@@ -325,7 +340,8 @@ export default function Logistik(props) {
                                         <td className="p-3 border-r border-slate-100 text-right font-mono text-slate-600">{formatBbm(item.pengeluaran_proyek_solar)}</td>
                                         <td className="p-3 border-r border-slate-100 text-right font-mono text-blue-700 font-bold">{formatBbm(item.stock_akhir_solar)}</td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                                 {bbmList.length === 0 && (
                                     <tr>
                                         <td colSpan={7} className="p-8 text-center text-slate-400 font-medium">
@@ -335,6 +351,7 @@ export default function Logistik(props) {
                                 )}
                             </tbody>
                         </table>
+                        <Pagination currentPage={bbmPage} totalItems={bbmList.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setBbmPage} />
                     </div>
                 </div>
             )}

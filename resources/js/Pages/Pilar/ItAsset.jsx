@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
 import { Laptop, Cpu, CheckCircle, AlertCircle, Trash2, Plus, UploadCloud } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
+import Pagination from '../../Components/Pagination';
 export default function ItAsset(props) {
     const { assetList, momList, auth, onOpenFeedback } = props;
     const currentUser = auth.user;
 
     const [filterKategori, setFilterKategori] = useState('Semua');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const categories = ['Semua', 'Server & Rack', 'Workstation', 'Laptop', 'Printer / MFP', 'Network Device'];
     
     const filteredAssets = filterKategori === 'Semua' 
         ? assetList 
         : assetList.filter(a => a.kategori === filterKategori);
+
+    React.useEffect(() => { setCurrentPage(1); }, [filterKategori]);
+    const paginatedAssets = filteredAssets.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     const totalAssets = assetList.length;
     const optimalAssets = assetList.filter(a => a.status === 'Optimal').length;
@@ -85,23 +91,26 @@ export default function ItAsset(props) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {filteredAssets.map((asset, idx) => (
-                                <tr key={asset.id} className="hover:bg-slate-50/30 transition-colors">
-                                    <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
-                                    <td className="p-3.5 font-bold text-slate-800">{asset.nama}</td>
-                                    <td className="p-3.5 text-slate-600 font-semibold">{asset.kategori}</td>
-                                    <td className="p-3.5 font-mono text-slate-600">{asset.brand}</td>
-                                    <td className="p-3.5 font-mono text-slate-500">{asset.serial}</td>
-                                    <td className="p-3.5 text-slate-600 font-medium">{asset.lokasi}</td>
-                                    <td className="p-3.5">
-                                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${
-                                            asset.status === 'Optimal' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                        }`}>
-                                            {asset.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
+                            {paginatedAssets.map((asset, idx) => {
+                                const actualIdx = (currentPage - 1) * ITEMS_PER_PAGE + idx;
+                                return (
+                                    <tr key={asset.id} className="hover:bg-slate-50/30 transition-colors">
+                                        <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
+                                        <td className="p-3.5 font-bold text-slate-800">{asset.nama}</td>
+                                        <td className="p-3.5 text-slate-600 font-semibold">{asset.kategori}</td>
+                                        <td className="p-3.5 font-mono text-slate-600">{asset.brand}</td>
+                                        <td className="p-3.5 font-mono text-slate-500">{asset.serial}</td>
+                                        <td className="p-3.5 text-slate-600 font-medium">{asset.lokasi}</td>
+                                        <td className="p-3.5">
+                                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${
+                                                asset.status === 'Optimal' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                            }`}>
+                                                {asset.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                             {filteredAssets.length === 0 && (
                                 <tr>
                                     <td colSpan={7} className="p-8 text-center text-slate-400 font-medium">
@@ -111,6 +120,7 @@ export default function ItAsset(props) {
                             )}
                         </tbody>
                     </table>
+                    <Pagination currentPage={currentPage} totalItems={filteredAssets.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setCurrentPage} />
                 </div>
             </div>
         </div>

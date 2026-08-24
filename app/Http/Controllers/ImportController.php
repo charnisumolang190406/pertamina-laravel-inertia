@@ -127,11 +127,13 @@ class ImportController extends Controller
                         BudgetDetail::create([
                             'id' => $uniqueId,
                             'fundCent' => $row['fundCent'] ?? ('LHD-' . rand(1000, 9999)),
+                            'fungsi' => $row['fungsi'] ?? null,
                             'name' => $row['name'] ?? 'Pos Anggaran Baru',
                             'commitItem' => $row['commitItem'] ?? '500000',
                             'text' => $row['text'] ?? 'Item Deskripsi',
                             'budget' => intval($row['budget'] ?? 0),
                             'consumed' => intval($row['consumed'] ?? 0),
+                            'commitment' => intval($row['commitment'] ?? 0),
                             'actual' => intval($row['actual'] ?? 0),
                             'available' => intval($row['available'] ?? 0),
                             'kategori' => $row['kategori'] ?? 'ABO',

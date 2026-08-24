@@ -11,6 +11,7 @@ import {
 import KpiCard from '../../Components/KpiCard';
 import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
 import ChartDetailModal from '../../Components/ChartDetailModal';
+import Pagination from '../../Components/Pagination';
 
 const GENDER_COLORS = ['#3b82f6', '#ec4899'];
 
@@ -103,6 +104,10 @@ export default function HumanCapital(props) {
     const [activeSubTabTad, setActiveSubTabTad] = useState('tad');
     const [selectedChart, setSelectedChart] = useState(null);
     const [isChartModalOpen, setIsChartModalOpen] = useState(false);
+    const [mutasiPage, setMutasiPage] = useState(1);
+    const [retiredPage, setRetiredPage] = useState(1);
+    const [tadPage, setTadPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     React.useEffect(() => {
         if (activeSubMenu) {
@@ -529,9 +534,11 @@ export default function HumanCapital(props) {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
-                                        {(hcMutations || []).map((item, idx) => (
+                                        {(hcMutations || []).slice((mutasiPage - 1) * ITEMS_PER_PAGE, mutasiPage * ITEMS_PER_PAGE).map((item, idx) => {
+                                            const actualIdx = (mutasiPage - 1) * ITEMS_PER_PAGE + idx;
+                                            return (
                                             <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                                <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
+                                                <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
                                                 <td className="p-3.5 font-bold text-slate-700">{item.bulan}</td>
                                                 <td className="p-3.5 font-bold text-slate-800">{item.nama}</td>
                                                 <td className="p-3.5">
@@ -543,7 +550,8 @@ export default function HumanCapital(props) {
                                                 <td className="p-3.5 text-slate-600 font-semibold">{item.fungsi}</td>
                                                 <td className="p-3.5 max-w-xs text-wrap text-slate-500 font-medium leading-relaxed">{item.keterangan}</td>
                                             </tr>
-                                        ))}
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
@@ -573,9 +581,11 @@ export default function HumanCapital(props) {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
-                                        {(retiredWorkers || []).map((item, idx) => (
+                                        {(retiredWorkers || []).slice((retiredPage - 1) * ITEMS_PER_PAGE, retiredPage * ITEMS_PER_PAGE).map((item, idx) => {
+                                            const actualIdx = (retiredPage - 1) * ITEMS_PER_PAGE + idx;
+                                            return (
                                             <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                                <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
+                                                <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
                                                 <td className="p-3.5 font-bold text-slate-800">{item.nama}</td>
                                                 <td className="p-3.5 text-center font-bold text-amber-700">{item.umur_pensiun ?? '-'} Tahun</td>
                                                 <td className="p-3.5 text-slate-600 font-semibold">{item.jabatan}</td>
@@ -583,7 +593,8 @@ export default function HumanCapital(props) {
                                                 <td className="p-3.5 text-center font-mono text-slate-500">{item.tanggal}</td>
                                                 <td className="p-3.5 max-w-xs text-wrap text-slate-500 font-medium leading-relaxed">{item.keterangan}</td>
                                             </tr>
-                                        ))}
+                                            );
+                                        })}
                                         {(!retiredWorkers || retiredWorkers.length === 0) && (
                                             <tr>
                                                 <td colSpan={7} className="p-8 text-center text-slate-400 font-medium">
@@ -667,9 +678,11 @@ export default function HumanCapital(props) {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
-                                        {(tadWorkers || []).map((item, idx) => (
+                                        {(tadWorkers || []).slice((tadPage - 1) * ITEMS_PER_PAGE, tadPage * ITEMS_PER_PAGE).map((item, idx) => {
+                                            const actualIdx = (tadPage - 1) * ITEMS_PER_PAGE + idx;
+                                            return (
                                             <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                                <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
+                                                <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
                                                 <td className="p-3.5 font-bold text-slate-800">{item.nama}</td>
                                                 <td className="p-3.5 text-slate-600 font-semibold">{item.peran}</td>
                                                 <td className="p-3.5 text-slate-600 font-medium">{item.vendor}</td>
@@ -679,7 +692,8 @@ export default function HumanCapital(props) {
                                                     </span>
                                                 </td>
                                             </tr>
-                                        ))}
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>

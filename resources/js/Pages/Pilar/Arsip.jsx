@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { Folder, Database, Search, Download, Trash2, FileText, UploadCloud } from 'lucide-react';
+import Pagination from '../../Components/Pagination';
 
 export default function Arsip(props) {
     const { arsipList, uploadArchive, momList, auth, onOpenFeedback, activeSubMenu } = props;
@@ -15,6 +16,13 @@ export default function Arsip(props) {
     }, [activeSubMenu]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterKategori, setFilterKategori] = useState('Semua');
+    const [docPage, setDocPage] = useState(1);
+    const [historyPage, setHistoryPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
+    React.useEffect(() => {
+        setDocPage(1);
+    }, [searchQuery, filterKategori]);
 
     const categories = ['Semua', 'Laporan Bulanan', 'Kontrak & SCM', 'MOM Rapat', 'SOP & Regulasi', 'Umum'];
 
@@ -124,9 +132,11 @@ export default function Arsip(props) {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {filteredArsip.map((doc, idx) => (
+                                    {filteredArsip.slice((docPage - 1) * ITEMS_PER_PAGE, docPage * ITEMS_PER_PAGE).map((doc, idx) => {
+                                        const actualIdx = (docPage - 1) * ITEMS_PER_PAGE + idx;
+                                        return (
                                         <tr key={doc.id} className="hover:bg-slate-50/30 transition-colors">
-                                            <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
+                                            <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
                                             <td className="p-3.5 max-w-xs truncate">
                                                 <div className="flex items-center gap-2">
                                                     <FileText className="w-4 h-4 text-blue-600 shrink-0" />
@@ -158,7 +168,8 @@ export default function Arsip(props) {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))}
+                                        );
+                                    })}
                                     {filteredArsip.length === 0 && (
                                         <tr>
                                             <td colSpan={6} className="p-8 text-center text-slate-400 font-medium">
@@ -168,6 +179,12 @@ export default function Arsip(props) {
                                     )}
                                 </tbody>
                             </table>
+                            <Pagination
+                                currentPage={docPage}
+                                totalItems={filteredArsip.length}
+                                itemsPerPage={ITEMS_PER_PAGE}
+                                onPageChange={setDocPage}
+                            />
                         </div>
                     </div>
                 </div>
@@ -196,9 +213,11 @@ export default function Arsip(props) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {uploadArchive.map((log, idx) => (
+                                {uploadArchive.slice((historyPage - 1) * ITEMS_PER_PAGE, historyPage * ITEMS_PER_PAGE).map((log, idx) => {
+                                    const actualIdx = (historyPage - 1) * ITEMS_PER_PAGE + idx;
+                                    return (
                                     <tr key={log.id} className="hover:bg-slate-50/30 transition-colors">
-                                        <td className="p-3.5 text-slate-500 text-center font-medium">{idx + 1}</td>
+                                        <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
                                         <td className="p-3.5 font-bold text-slate-800">{log.filename}</td>
                                         <td className="p-3.5 font-mono text-slate-500">{log.fileSize}</td>
                                         <td className="p-3.5 font-semibold text-slate-600">{log.type}</td>
@@ -217,7 +236,8 @@ export default function Arsip(props) {
                                             </td>
                                         )}
                                     </tr>
-                                ))}
+                                    );
+                                })}
                                 {uploadArchive.length === 0 && (
                                     <tr>
                                         <td colSpan={isAdmin ? 8 : 7} className="p-8 text-center text-slate-400 font-medium">
@@ -227,6 +247,12 @@ export default function Arsip(props) {
                                 )}
                             </tbody>
                         </table>
+                        <Pagination
+                            currentPage={historyPage}
+                            totalItems={uploadArchive.length}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                            onPageChange={setHistoryPage}
+                        />
                     </div>
                 </div>
             )}
