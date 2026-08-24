@@ -11,6 +11,7 @@ use App\Http\Controllers\ArsipController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\FinancialPerformanceController;
 
 // Public Guest Routes
 Route::middleware('guest')->group(function () {
@@ -67,4 +68,7 @@ Route::middleware('auth')->group(function () {
 
     // Activity Log Route
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity.log');
+
+    // Financial Performance Route
+    Route::get('/financial-performance', [FinancialPerformanceController::class, 'index'])->name('financial.performance.index');
 });
