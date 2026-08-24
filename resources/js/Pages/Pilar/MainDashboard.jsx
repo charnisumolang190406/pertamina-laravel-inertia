@@ -14,19 +14,18 @@ import * as XLSX from 'xlsx';
 import KpiCard from '../../Components/KpiCard';
 import ChartDetailModal from '../../Components/ChartDetailModal';
 import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
+import ProduksiBarChart from '../../Components/ProduksiBarChart';
 
 
-/* ─── Dummy Data: Kinerja Operasi & Reliability ─── */
+/* ─── Data: Kinerja Operasi & Reliability Area Lahendong ─── */
 const produksiGwh = [
-    { tahun: '2018', nilai: 176.16 },
-    { tahun: '2019', nilai: 148.55 },
-    { tahun: '2020', nilai: 85.60 },
-    { tahun: '2021', nilai: 78.32 },
-    { tahun: '2022', nilai: 84.25 },
-    { tahun: '2023', nilai: 96.68 },
-    { tahun: '2024', nilai: 94.66 },
-    { tahun: '2025', nilai: 109.63 },
-    { tahun: '2026', nilai: 151.20, forecast: true },
+    { tahun: '2019', nilai: 820 },
+    { tahun: '2020', nilai: 828, diff: '+0.98%', isPositive: true },
+    { tahun: '2021', nilai: 775, diff: '-6.40%', isPositive: false },
+    { tahun: '2022', nilai: 864, diff: '+11.48%', isPositive: true },
+    { tahun: '2023', nilai: 869, diff: '+0.58%', isPositive: true },
+    { tahun: '2024', nilai: 872, diff: '+0.35%', isPositive: true },
+    { tahun: '2025', nilai: 849, diff: '-2.64%', isPositive: false },
 ];
 
 const realisasiProduksi2025 = [
@@ -53,14 +52,24 @@ const eafData = [
     { tahun: '2025', nilai: 94.61 },
 ];
 
-const mtbfData = [
-    { tahun: '2019', nilai: 22.81 },
-    { tahun: '2020', nilai: 26.07 },
-    { tahun: '2021', nilai: 20.28 },
-    { tahun: '2022', nilai: 21.47 },
-    { tahun: '2023', nilai: 28.50 },
-    { tahun: '2024', nilai: 55.83 },
-    { tahun: '2025', nilai: 26.54 },
+const mtbfUnit5Data = [
+    { tahun: '2019', nilai: 715 },
+    { tahun: '2020', nilai: 719 },
+    { tahun: '2021', nilai: 1752 },
+    { tahun: '2022', nilai: 2066 },
+    { tahun: '2023', nilai: 2162 },
+    { tahun: '2024', nilai: 1231 },
+    { tahun: '2025', nilai: 4356 },
+];
+
+const mtbfUnit6Data = [
+    { tahun: '2019', nilai: 477 },
+    { tahun: '2020', nilai: 8675 },
+    { tahun: '2021', nilai: 1648 },
+    { tahun: '2022', nilai: 2731 },
+    { tahun: '2023', nilai: 2883 },
+    { tahun: '2024', nilai: 4323 },
+    { tahun: '2025', nilai: 2190 },
 ];
 
 const eforData = [
@@ -73,13 +82,14 @@ const eforData = [
 ];
 
 const mttrData = [
-    { tahun: '2019', nilai: 27.49 },
-    { tahun: '2020', nilai: 56.84 },
-    { tahun: '2021', nilai: 10.10 },
-    { tahun: '2022', nilai: 12.95 },
-    { tahun: '2023', nilai: 10.04 },
-    { tahun: '2024', nilai: 29.97 },
-    { tahun: '2025', nilai: 5.22 },
+    { tahun: '2019', nilai: 30.96 },
+    { tahun: '2020', nilai: 26.96 },
+    { tahun: '2021', nilai: 12.45 },
+    { tahun: '2022', nilai: 6.77 },
+    { tahun: '2023', nilai: 2.79 },
+    { tahun: '2024', nilai: 3.44 },
+    { tahun: '2025', nilai: 8.86 },
+    { tahun: '2026', nilai: 9.40 },
 ];
 
 /* ─── Dummy Data: Financial Performance ─── */
@@ -179,29 +189,22 @@ function ReliabilityLineChart({ data, dataKey, unit, color = PERTAMINA_BLUE, dom
 function TabOperasi({ onChartClick }) {
     const realisasiHover = useBarHover();
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
+            {/* Top Row: Production Performance */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <ChartCard
-                    title="Produksi (GWh)"
-                    subtitle="Trend produksi tahunan Area Lahendong 2018–2026 (forecast)"
-                    className="h-72"
+                    title="Pencapaian Produksi (2019–2025, GWh)"
+                    subtitle="Pencapaian produksi tahunan & persentase perbedaan antar tahun"
+                    className="h-80"
                     onClick={() => onChartClick('produksi-gwh')}
                 >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={produksiGwh} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} domain={[0, 200]} />
-                            <RechartsTooltip formatter={(v) => [`${v} GWh`, 'Produksi']} />
-                            <Line type="monotone" dataKey="nilai" stroke={PERTAMINA_BLUE} strokeWidth={2.5} dot={{ r: 4 }} />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    <ProduksiBarChart data={produksiGwh} />
                 </ChartCard>
 
                 <ChartCard
                     title="Realisasi Produksi 2025 (GWh)"
                     subtitle="RKAP vs Realisasi bulanan & kumulatif — Total: 109,63 GWh"
-                    className="h-72"
+                    className="h-80"
                     onClick={() => onChartClick('realisasi-produksi-2025')}
                 >
                     <ResponsiveContainer width="100%" height="100%">
@@ -222,39 +225,65 @@ function TabOperasi({ onChartClick }) {
                 </ChartCard>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <ChartCard
-                    title="EAF (%)"
-                    subtitle="Equivalent Availability Factor — Higher is better"
-                    className="h-56"
-                    onClick={() => onChartClick('eaf')}
-                >
-                    <ReliabilityLineChart data={eafData} dataKey="nilai" unit="%" color={PERTAMINA_GREEN} domain={[80, 100]} />
-                </ChartCard>
-                <ChartCard
-                    title="MTBF (Day)"
-                    subtitle="Mean Time Between Failures"
-                    className="h-56"
-                    onClick={() => onChartClick('mtbf')}
-                >
-                    <ReliabilityLineChart data={mtbfData} dataKey="nilai" unit="hari" color={PERTAMINA_BLUE} />
-                </ChartCard>
-                <ChartCard
-                    title="EFOR (%)"
-                    subtitle="Equivalent Forced Outage Rate — Lower is better"
-                    className="h-56"
-                    onClick={() => onChartClick('efor')}
-                >
-                    <ReliabilityLineChart data={eforData} dataKey="nilai" unit="%" color={PERTAMINA_YELLOW} domain={[0, 10]} />
-                </ChartCard>
-                <ChartCard
-                    title="MTTR (Hour)"
-                    subtitle="Mean Time To Repair — Lower is better"
-                    className="h-56"
-                    onClick={() => onChartClick('mttr')}
-                >
-                    <ReliabilityLineChart data={mttrData} dataKey="nilai" unit="jam" color={PERTAMINA_RED} />
-                </ChartCard>
+            {/* Section: Reliability Maintenance Area Lahendong */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                        <h3 className="font-black text-sm text-slate-800 tracking-tight">Reliability Maintenance Area Lahendong (Tahun 2019 – 2026)</h3>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+                        Reliability & Maintenance
+                    </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <ChartCard
+                        title="MTBF Unit 5 (Hour)"
+                        subtitle="LHD - Unit 5 (PGE) 2019–2025"
+                        className="h-64"
+                        onClick={() => onChartClick('mtbf-unit5')}
+                    >
+                        <ReliabilityLineChart data={mtbfUnit5Data} dataKey="nilai" unit="jam" color={PERTAMINA_BLUE} />
+                    </ChartCard>
+
+                    <ChartCard
+                        title="MTBF Unit 6 (Hour)"
+                        subtitle="LHD - Unit 6 (PGE) 2019–2025"
+                        className="h-64"
+                        onClick={() => onChartClick('mtbf-unit6')}
+                    >
+                        <ReliabilityLineChart data={mtbfUnit6Data} dataKey="nilai" unit="jam" color={PERTAMINA_BLUE} />
+                    </ChartCard>
+
+                    <ChartCard
+                        title="MTTR Area Lahendong (Hour)"
+                        subtitle="Mean Time To Repair (2019–2026)"
+                        className="h-64"
+                        onClick={() => onChartClick('mttr')}
+                    >
+                        <ReliabilityLineChart data={mttrData} dataKey="nilai" unit="jam" color="#16a34a" />
+                    </ChartCard>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <ChartCard
+                        title="EAF (%)"
+                        subtitle="Equivalent Availability Factor — Higher is better"
+                        className="h-52"
+                        onClick={() => onChartClick('eaf')}
+                    >
+                        <ReliabilityLineChart data={eafData} dataKey="nilai" unit="%" color={PERTAMINA_GREEN} domain={[80, 100]} />
+                    </ChartCard>
+                    <ChartCard
+                        title="EFOR (%)"
+                        subtitle="Equivalent Forced Outage Rate — Lower is better"
+                        className="h-52"
+                        onClick={() => onChartClick('efor')}
+                    >
+                        <ReliabilityLineChart data={eforData} dataKey="nilai" unit="%" color={PERTAMINA_YELLOW} domain={[0, 10]} />
+                    </ChartCard>
+                </div>
             </div>
         </div>
     );
@@ -1435,14 +1464,14 @@ export default function MainDashboard(props) {
     const chartConfigs = {
         'produksi-gwh': {
             id: 'produksi-gwh',
-            title: 'Produksi (GWh)',
-            subtitle: 'Trend produksi tahunan Area Lahendong 2018–2026 (forecast)',
-            type: 'line',
+            title: 'Pencapaian Produksi (2019-2025, GWh)',
+            subtitle: 'Pencapaian produksi tahunan Area Lahendong & perbandingan persentase',
+            type: 'bar',
             xAxisKey: 'tahun',
             timeType: 'year',
-            yAxisDomain: [0, 200],
+            yAxisDomain: [0, 1000],
             series: [
-                { key: 'nilai', label: 'Produksi', color: PERTAMINA_BLUE, unit: 'GWh' }
+                { key: 'nilai', label: 'Produksi', color: '#72B340', unit: 'GWh' }
             ],
             rawData: produksiGwh
         },
@@ -1463,6 +1492,42 @@ export default function MainDashboard(props) {
             ],
             rawData: realisasiProduksi2025
         },
+        'mtbf-unit5': {
+            id: 'mtbf-unit5',
+            title: 'MTBF Unit 5 (Hour)',
+            subtitle: 'Mean Time Between Failures — LHD Unit 5 (PGE) 2019–2025',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            series: [
+                { key: 'nilai', label: 'MTBF Unit 5', color: PERTAMINA_BLUE, unit: 'jam' }
+            ],
+            rawData: mtbfUnit5Data
+        },
+        'mtbf-unit6': {
+            id: 'mtbf-unit6',
+            title: 'MTBF Unit 6 (Hour)',
+            subtitle: 'Mean Time Between Failures — LHD Unit 6 (PGE) 2019–2025',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            series: [
+                { key: 'nilai', label: 'MTBF Unit 6', color: PERTAMINA_BLUE, unit: 'jam' }
+            ],
+            rawData: mtbfUnit6Data
+        },
+        'mttr': {
+            id: 'mttr',
+            title: 'MTTR Area Lahendong (Hour)',
+            subtitle: 'Mean Time To Repair Area Lahendong (Tahun 2019 - 2026)',
+            type: 'line',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            series: [
+                { key: 'nilai', label: 'MTTR Area Lahendong', color: '#16a34a', unit: 'jam' }
+            ],
+            rawData: mttrData
+        },
         'eaf': {
             id: 'eaf',
             title: 'EAF (%)',
@@ -1476,18 +1541,6 @@ export default function MainDashboard(props) {
             ],
             rawData: eafData
         },
-        'mtbf': {
-            id: 'mtbf',
-            title: 'MTBF (Day)',
-            subtitle: 'Mean Time Between Failures',
-            type: 'line',
-            xAxisKey: 'tahun',
-            timeType: 'year',
-            series: [
-                { key: 'nilai', label: 'MTBF', color: PERTAMINA_BLUE, unit: 'hari' }
-            ],
-            rawData: mtbfData
-        },
         'efor': {
             id: 'efor',
             title: 'EFOR (%)',
@@ -1500,18 +1553,6 @@ export default function MainDashboard(props) {
                 { key: 'nilai', label: 'EFOR', color: PERTAMINA_YELLOW, unit: '%' }
             ],
             rawData: eforData
-        },
-        'mttr': {
-            id: 'mttr',
-            title: 'MTTR (Hour)',
-            subtitle: 'Mean Time To Repair — Lower is better',
-            type: 'line',
-            xAxisKey: 'tahun',
-            timeType: 'year',
-            series: [
-                { key: 'nilai', label: 'MTTR', color: PERTAMINA_RED, unit: 'jam' }
-            ],
-            rawData: mttrData
         },
         'financial-trend': {
             id: 'financial-trend',
@@ -1596,7 +1637,7 @@ export default function MainDashboard(props) {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <KpiCard title="Produksi 2025" value="109,63 GWh" subtitle="Realisasi produksi tahunan" icon={Zap} colorClass="text-blue-600" bgClass="bg-blue-50" />
+                <KpiCard title="Produksi 2025" value="849 GWh" subtitle="Pencapaian produksi tahunan" icon={Zap} colorClass="text-emerald-600" bgClass="bg-emerald-50" />
                 <KpiCard title="Total Plafon Budget" value={formatShortCurrency(totalBudget)} subtitle={`Realisasi: ${formatShortCurrency(totalActual)}`} icon={Calculator} colorClass="text-green-600" bgClass="bg-green-50" />
                 <KpiCard title="EAF 2025" value="94,61%" subtitle="Equivalent Availability Factor" icon={TrendingUp} colorClass="text-indigo-600" bgClass="bg-indigo-50" />
             </div>

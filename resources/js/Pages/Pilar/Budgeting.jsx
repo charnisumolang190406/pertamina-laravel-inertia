@@ -4,9 +4,10 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, Customized
 } from 'recharts';
 import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
+import ChartDetailModal from '../../Components/ChartDetailModal';
 import { 
   Calculator, TrendingUp, CheckCircle, AlertCircle, Plus, Trash2, Check, X, ShieldAlert, Activity, Wrench, Users2,
-  FileSpreadsheet, Database, Search, PieChart as PieIcon
+  FileSpreadsheet, Database, Search, PieChart as PieIcon, Maximize2
 } from 'lucide-react';
 import KpiCard from '../../Components/KpiCard';
 const PERTAMINA_BLUE = '#00529C';
@@ -64,19 +65,37 @@ const dummyAboPerFungsi = [
     { fungsi: 'Bus. Support', budget: 6.5, actual: 6.1, variance: -6.2 },
 ];
 
-function ChartCard({ title, subtitle, children, className = '' }) {
+function ChartCard({ title, subtitle, children, className = '', onClick }) {
+    const isClickable = !!onClick;
     return (
-        <div className={`bg-white p-5 rounded-3xl border border-slate-200 shadow-xs flex flex-col ${className}`}>
-            <div className="mb-3">
-                <h4 className="font-bold text-slate-800 text-sm">{title}</h4>
-                {subtitle && <p className="text-[10px] text-slate-400 font-bold mt-0.5">{subtitle}</p>}
+        <div
+            onClick={onClick}
+            className={`bg-white p-5 rounded-3xl border border-slate-200 shadow-xs flex flex-col transition-all duration-300 relative group ${
+                isClickable ? 'hover:shadow-md hover:border-slate-350 cursor-pointer' : ''
+            } ${className}`}
+        >
+            <div className="mb-3 flex justify-between items-start">
+                <div className="min-w-0">
+                    <h4 className="font-bold text-slate-800 text-sm truncate">{title}</h4>
+                    {subtitle && <p className="text-[10px] text-slate-400 font-bold mt-0.5 truncate">{subtitle}</p>}
+                </div>
+                {isClickable && (
+                    <span className="p-1 text-slate-350 group-hover:text-blue-600 rounded-lg group-hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100 shrink-0" title="Detail Chart">
+                        <Maximize2 className="w-3.5 h-3.5" />
+                    </span>
+                )}
             </div>
             <div className="flex-1 w-full min-h-0 text-[10px]">{children}</div>
+            {isClickable && (
+                <div className="absolute bottom-2 right-4 text-[8px] font-extrabold text-blue-600 tracking-wider opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    KLIK UNTUK DETAIL & FILTER
+                </div>
+            )}
         </div>
     );
 }
 
-function TabRealisasiAbo({ budgetDetailsList }) {
+function TabRealisasiAbo({ budgetDetailsList, onChartClick }) {
     const aboYearlyHover = useBarHover();
     const aboFungsiHover = useBarHover();
 
@@ -115,7 +134,6 @@ function TabRealisasiAbo({ budgetDetailsList }) {
         }));
 
         if (result.length === 0) {
-            // Fallback empty data if nothing uploaded yet
             return [
                 { fungsi: 'Operation', budget: 0, actual: 0, variance: 0 },
                 { fungsi: 'Maintenance', budget: 0, actual: 0, variance: 0 },
@@ -129,7 +147,12 @@ function TabRealisasiAbo({ budgetDetailsList }) {
     return (
         <div className="space-y-4 animate-[fadeIn_0.3s_ease-in-out]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard title="ABO 2019 – 2026 (USD Juta)" subtitle="Perbandingan RKAP vs Actual — Kenaikan anggaran ABO Area Lahendong" className="h-72">
+                <ChartCard
+                    title="ABO 2019 – 2026 (USD Juta)"
+                    subtitle="Perbandingan RKAP vs Actual — Kenaikan anggaran ABO Area Lahendong"
+                    className="h-72"
+                    onClick={() => onChartClick && onChartClick('abo-yearly')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={aboYearly} margin={{ top: 10, right: 60, left: -10, bottom: 5 }} {...aboYearlyHover.barChartProps}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -144,7 +167,12 @@ function TabRealisasiAbo({ budgetDetailsList }) {
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Actual ABO Area Lahendong 2026 — Kumulatif" subtitle="Serapan anggaran kumulatif RKAP vs Realisasi (IDR Miliar)" className="h-72">
+                <ChartCard
+                    title="Actual ABO Area Lahendong 2026 — Kumulatif"
+                    subtitle="Serapan anggaran kumulatif RKAP vs Realisasi (IDR Miliar)"
+                    className="h-72"
+                    onClick={() => onChartClick && onChartClick('abo-kumulatif')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={aboKumulatif2026} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -160,7 +188,12 @@ function TabRealisasiAbo({ budgetDetailsList }) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard title="Actual ABO Area Lahendong 2026 — Monthly" subtitle="Realisasi bulanan RKAP vs Actual (IDR Miliar)" className="h-64">
+                <ChartCard
+                    title="Actual ABO Area Lahendong 2026 — Monthly"
+                    subtitle="Realisasi bulanan RKAP vs Actual (IDR Miliar)"
+                    className="h-64"
+                    onClick={() => onChartClick && onChartClick('abo-monthly')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={aboMonthly2026} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -174,7 +207,12 @@ function TabRealisasiAbo({ budgetDetailsList }) {
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Rincian Realisasi ABO per Fungsi" subtitle="Budget vs Actual per fungsi — Area Lahendong 2026 (IDR Miliar)" className="h-64">
+                <ChartCard
+                    title="Rincian Realisasi ABO per Fungsi"
+                    subtitle="Budget vs Actual per fungsi — Area Lahendong 2026 (IDR Miliar)"
+                    className="h-64"
+                    onClick={() => onChartClick && onChartClick('abo-fungsi')}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={dynamicAboPerFungsi} margin={{ top: 10, right: 60, left: -10, bottom: 5 }} {...aboFungsiHover.barChartProps}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -211,20 +249,34 @@ function RingkasanBarChart({ chartData, formatCurrency }) {
     );
 }
 
-
-function RingkasanVisualization({ chartData, formatCurrency, formatShortCurrency, getFunctionIcon, titleSuffix }) {
+function RingkasanVisualization({ chartData, formatCurrency, formatShortCurrency, getFunctionIcon, titleSuffix, onChartClick, chartId }) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-[fadeIn_0.3s_ease-in-out] mb-6">
-            <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col h-96">
+            <div
+                onClick={() => onChartClick && onChartClick(chartId)}
+                className={`lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col h-96 relative group ${
+                    onChartClick ? 'hover:shadow-md hover:border-slate-350 cursor-pointer' : ''
+                }`}
+            >
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h3 className="font-extrabold text-slate-800 text-sm">Visualisasi Anggaran Per Fungsi {titleSuffix}</h3>
                         <p className="text-[11px] text-slate-500 font-medium mt-0.5">Komparasi RKAP Plafon (Target) vs Realisasi Pemakaian Aktual.</p>
                     </div>
+                    {onChartClick && (
+                        <span className="p-1.5 text-slate-350 group-hover:text-blue-600 rounded-xl group-hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100" title="Detail Chart">
+                            <Maximize2 className="w-4 h-4" />
+                        </span>
+                    )}
                 </div>
                 <div className="flex-1 w-full min-h-0 text-[10px]">
                     <RingkasanBarChart chartData={chartData} formatCurrency={formatCurrency} />
                 </div>
+                {onChartClick && (
+                    <div className="absolute bottom-2 right-6 text-[8px] font-extrabold text-blue-600 tracking-wider opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                        KLIK UNTUK DETAIL & FILTER
+                    </div>
+                )}
             </div>
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between">
                 <div>
@@ -271,8 +323,9 @@ export default function Budgeting(props) {
     const { budgetDetailsList, momList, auth, onOpenFeedback, activeSubMenu } = props;
     const currentUser = auth.user;
 
-    
     const [activeBudgetSubTab, setActiveBudgetSubTab] = useState('abo');
+    const [selectedChart, setSelectedChart] = useState(null);
+    const [isChartModalOpen, setIsChartModalOpen] = useState(false);
 
     React.useEffect(() => {
         if (activeSubMenu) {
@@ -360,6 +413,125 @@ export default function Budgeting(props) {
         }
     };
 
+    // Dynamic ABO per fungsi calculation for modal
+    const dynamicAboPerFungsi = React.useMemo(() => {
+        const aboList = budgetDetailsList.filter(b => b.kategori === 'ABO');
+        const groupedMap = aboList.reduce((acc, curr) => {
+            const funcName = getClassifiedFunction(curr.name);
+            if (!acc[funcName]) {
+                acc[funcName] = { fungsi: funcName, budget: 0, actual: 0 };
+            }
+            acc[funcName].budget += curr.budget;
+            acc[funcName].actual += curr.actual;
+            return acc;
+        }, {});
+
+        const result = Object.values(groupedMap).map(item => ({
+            fungsi: item.fungsi,
+            budget: Number((item.budget / 1000000000).toFixed(2)),
+            actual: Number((item.actual / 1000000000).toFixed(2)),
+            variance: Number(((item.actual - item.budget) / 1000000000).toFixed(2))
+        }));
+
+        if (result.length === 0) {
+            return [
+                { fungsi: 'Operation', budget: 0, actual: 0, variance: 0 },
+                { fungsi: 'Maintenance', budget: 0, actual: 0, variance: 0 },
+                { fungsi: 'HSSE', budget: 0, actual: 0, variance: 0 },
+                { fungsi: 'Bus. Support', budget: 0, actual: 0, variance: 0 }
+            ];
+        }
+        return result;
+    }, [budgetDetailsList]);
+
+    const chartConfigs = {
+        'abo-yearly': {
+            id: 'abo-yearly',
+            title: 'ABO 2019 – 2026 (USD Juta)',
+            subtitle: 'Perbandingan RKAP vs Actual ABO Area Lahendong',
+            type: 'bar',
+            xAxisKey: 'tahun',
+            timeType: 'year',
+            series: [
+                { key: 'rkap', label: 'RKAP (USD)', color: '#93c5fd', type: 'bar', unit: 'Juta USD' },
+                { key: 'actual', label: 'Actual (USD)', color: PERTAMINA_GREEN, type: 'bar', unit: 'Juta USD' }
+            ],
+            rawData: aboYearly
+        },
+        'abo-kumulatif': {
+            id: 'abo-kumulatif',
+            title: 'Actual ABO Area Lahendong 2026 — Kumulatif',
+            subtitle: 'Serapan anggaran kumulatif RKAP vs Realisasi (IDR Miliar)',
+            type: 'line',
+            xAxisKey: 'bulan',
+            timeType: 'month',
+            series: [
+                { key: 'rkap', label: 'RKAP Kumulatif', color: PERTAMINA_BLUE, unit: 'Miliar' },
+                { key: 'realisasi', label: 'Realisasi Kumulatif', color: PERTAMINA_GREEN, unit: 'Miliar' }
+            ],
+            rawData: aboKumulatif2026
+        },
+        'abo-monthly': {
+            id: 'abo-monthly',
+            title: 'Actual ABO Area Lahendong 2026 — Monthly',
+            subtitle: 'Realisasi bulanan RKAP vs Actual (IDR Miliar)',
+            type: 'line',
+            xAxisKey: 'bulan',
+            timeType: 'month',
+            series: [
+                { key: 'rkap', label: 'RKAP 2026', color: PERTAMINA_BLUE, unit: 'Miliar' },
+                { key: 'realisasi', label: 'Real 2026', color: PERTAMINA_GREEN, unit: 'Miliar' }
+            ],
+            rawData: aboMonthly2026
+        },
+        'abo-fungsi': {
+            id: 'abo-fungsi',
+            title: 'Rincian Realisasi ABO per Fungsi',
+            subtitle: 'Budget vs Actual per fungsi — Area Lahendong 2026 (IDR Miliar)',
+            type: 'bar',
+            xAxisKey: 'fungsi',
+            timeType: 'other',
+            series: [
+                { key: 'budget', label: 'Budget', color: '#93c5fd', type: 'bar', unit: 'Miliar' },
+                { key: 'actual', label: 'Actual', color: PERTAMINA_GREEN, type: 'bar', unit: 'Miliar' }
+            ],
+            rawData: dynamicAboPerFungsi
+        },
+        'budget-ringkasan-abo': {
+            id: 'budget-ringkasan-abo',
+            title: 'Visualisasi Anggaran Per Fungsi (ABO)',
+            subtitle: 'Komparasi RKAP Plafon vs Realisasi Pemakaian Aktual (ABO)',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'budget', label: 'RKAP Plafon', color: PERTAMINA_BLUE, type: 'bar', unit: 'Rp' },
+                { key: 'actual', label: 'Realisasi Actual', color: PERTAMINA_GREEN, type: 'bar', unit: 'Rp' }
+            ],
+            rawData: chartDataAbo
+        },
+        'budget-ringkasan-abi': {
+            id: 'budget-ringkasan-abi',
+            title: 'Visualisasi Anggaran Per Fungsi (ABI)',
+            subtitle: 'Komparasi RKAP Plafon vs Realisasi Pemakaian Aktual (ABI)',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'budget', label: 'RKAP Plafon', color: PERTAMINA_BLUE, type: 'bar', unit: 'Rp' },
+                { key: 'actual', label: 'Realisasi Actual', color: PERTAMINA_GREEN, type: 'bar', unit: 'Rp' }
+            ],
+            rawData: chartDataAbi
+        }
+    };
+
+    const handleChartClick = (chartId) => {
+        if (chartConfigs[chartId]) {
+            setSelectedChart(chartConfigs[chartId]);
+            setIsChartModalOpen(true);
+        }
+    };
+
     const handleClear = () => {
         if (confirm('Apakah Anda yakin ingin MENGOSONGKAN seluruh data rincian anggaran cost center / WBS?')) {
             router.post('/budget/clear');
@@ -379,8 +551,6 @@ export default function Budgeting(props) {
     };
 
     const isAdmin = currentUser?.role?.startsWith('Admin');
-
-    // Filter logic moved up
 
     const sumBudget = searchFilteredBudgetDetails.reduce((acc, curr) => acc + (Number(curr.budget) || 0), 0);
     const sumConsumed = searchFilteredBudgetDetails.reduce((acc, curr) => acc + (Number(curr.consumed) || 0), 0);
@@ -496,7 +666,7 @@ export default function Budgeting(props) {
 
                 return (
                     <div className="space-y-4 animate-[fadeIn_0.3s_ease-in-out]">
-                        <RingkasanVisualization chartData={chartDataAbo} formatCurrency={formatCurrency} formatShortCurrency={formatShortCurrency} getFunctionIcon={getFunctionIcon} titleSuffix="(ABO)" />
+                        <RingkasanVisualization chartData={chartDataAbo} formatCurrency={formatCurrency} formatShortCurrency={formatShortCurrency} getFunctionIcon={getFunctionIcon} titleSuffix="(ABO)" onChartClick={handleChartClick} chartId="budget-ringkasan-abo" />
                         <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
                             {/* Table Controls */}
                             <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
@@ -587,7 +757,7 @@ export default function Budgeting(props) {
             {/* Subtab 3: WBS Element (ABI) */}
             {activeBudgetSubTab === 'abi' && (
                 <div className="space-y-4 animate-[fadeIn_0.3s_ease-in-out]">
-                    <RingkasanVisualization chartData={chartDataAbi} formatCurrency={formatCurrency} formatShortCurrency={formatShortCurrency} getFunctionIcon={getFunctionIcon} titleSuffix="(ABI)" />
+                    <RingkasanVisualization chartData={chartDataAbi} formatCurrency={formatCurrency} formatShortCurrency={formatShortCurrency} getFunctionIcon={getFunctionIcon} titleSuffix="(ABI)" onChartClick={handleChartClick} chartId="budget-ringkasan-abi" />
                     <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
                         {/* Table Controls */}
                         <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
@@ -692,7 +862,17 @@ export default function Budgeting(props) {
             )}
 
             {/* Subtab 4: Realisasi ABO */}
-            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo budgetDetailsList={budgetDetailsList} />}
+            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo budgetDetailsList={budgetDetailsList} onChartClick={handleChartClick} />}
+
+            {/* Chart Detail Modal */}
+            <ChartDetailModal
+                isOpen={isChartModalOpen}
+                onClose={() => {
+                    setIsChartModalOpen(false);
+                    setSelectedChart(null);
+                }}
+                chartConfig={selectedChart}
+            />
         </div>
     );
 }

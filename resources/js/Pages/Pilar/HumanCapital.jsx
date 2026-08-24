@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { router } from '@inertiajs/react';
 import {
     Users, UserCheck, TrendingUp, Venus, Mars,
-    Clock, Download, Trash2, UserPlus, UserMinus
+    Clock, Download, Trash2, UserPlus, UserMinus, Maximize2
 } from 'lucide-react';
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import KpiCard from '../../Components/KpiCard';
 import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
+import ChartDetailModal from '../../Components/ChartDetailModal';
 
 const GENDER_COLORS = ['#3b82f6', '#ec4899'];
 
@@ -100,6 +101,8 @@ export default function HumanCapital(props) {
     const [masterView, setMasterView] = useState('organik'); // 'organik' | 'tad'
     const [activeSubTabOrganik, setActiveSubTabOrganik] = useState('mutasi');
     const [activeSubTabTad, setActiveSubTabTad] = useState('tad');
+    const [selectedChart, setSelectedChart] = useState(null);
+    const [isChartModalOpen, setIsChartModalOpen] = useState(false);
 
     React.useEffect(() => {
         if (activeSubMenu) {
@@ -249,6 +252,44 @@ export default function HumanCapital(props) {
             totalPersonil: totalAllPersonil.size
         };
     }, [lemburTadList]);
+
+    const chartConfigs = {
+        'hc-age': {
+            id: 'hc-age',
+            title: 'Komposisi Pekerja Berdasarkan Usia',
+            subtitle: 'Distribusi usia karyawan organik berdasarkan kelompok umur dan gender',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'Pria', label: 'Pria', color: '#3b82f6', type: 'bar', unit: 'orang' },
+                { key: 'Wanita', label: 'Wanita', color: '#ec4899', type: 'bar', unit: 'orang' }
+            ],
+            rawData: ageChartData
+        },
+        'hc-lembur': {
+            id: 'hc-lembur',
+            title: `Tren Biaya & Jam Lembur TAD (${currentYear})`,
+            subtitle: 'Monitoring Jam Lembur vs Nilai Biaya Lembur TAD per Periode',
+            type: 'composed',
+            xAxisKey: 'periode',
+            timeType: 'other',
+            yAxisIdLeft: 'left',
+            yAxisIdRight: 'right',
+            series: [
+                { key: 'jam', label: 'Jam Lembur', color: '#3b82f6', type: 'bar', yAxisId: 'left', unit: 'jam' },
+                { key: 'nilai', label: 'Biaya Lembur', color: '#10b981', type: 'line', yAxisId: 'right', unit: 'Juta Rp' }
+            ],
+            rawData: lemburChartData
+        }
+    };
+
+    const handleChartClick = (chartId) => {
+        if (chartConfigs[chartId]) {
+            setSelectedChart(chartConfigs[chartId]);
+            setIsChartModalOpen(true);
+        }
+    };
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto animate-[fadeIn_0.3s_ease-in-out] font-sans text-slate-800">
@@ -405,10 +446,18 @@ export default function HumanCapital(props) {
                     </div>
 
                     {/* AGE CHART ROW */}
-                    <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5">
-                        <div className="mb-4">
-                            <h3 className="font-extrabold text-slate-800 text-sm">Komposisi Pekerja Berdasarkan Usia</h3>
-                            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Distribusi usia karyawan organik berdasarkan gender.</p>
+                    <div
+                        onClick={() => handleChartClick('hc-age')}
+                        className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 hover:shadow-md hover:border-slate-350 cursor-pointer transition-all relative group"
+                    >
+                        <div className="mb-4 flex justify-between items-start">
+                            <div>
+                                <h3 className="font-extrabold text-slate-800 text-sm">Komposisi Pekerja Berdasarkan Usia</h3>
+                                <p className="text-[11px] text-slate-500 font-medium mt-0.5">Distribusi usia karyawan organik berdasarkan gender.</p>
+                            </div>
+                            <span className="p-1.5 text-slate-350 group-hover:text-blue-600 rounded-xl group-hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100" title="Detail Chart">
+                                <Maximize2 className="w-4 h-4" />
+                            </span>
                         </div>
                         {ageChartData.length > 0 ? (
                             <div className="h-72">
@@ -429,6 +478,9 @@ export default function HumanCapital(props) {
                                 Data umur belum tersedia. Silakan unggah Master Data Organik yang mencakup umur.
                             </div>
                         )}
+                        <div className="absolute bottom-2 right-6 text-[8px] font-extrabold text-blue-600 tracking-wider opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            KLIK UNTUK DETAIL & FILTER
+                        </div>
                     </div>
 
                     {/* SUB TAB NAV */}
@@ -638,9 +690,17 @@ export default function HumanCapital(props) {
                     {activeSubTabTad === 'lembur' && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {/* KIRI: TREN BIAYA LEMBUR (LINE CHART) */}
-                            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5">
-                                <div className="mb-4">
-                                    <h3 className="font-extrabold text-slate-800 text-sm">Tren Biaya Lembur Tahun {currentYear}*</h3>
+                            <div
+                                onClick={() => handleChartClick('hc-lembur')}
+                                className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 hover:shadow-md hover:border-slate-350 cursor-pointer transition-all relative group"
+                            >
+                                <div className="mb-4 flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-extrabold text-slate-800 text-sm">Tren Biaya Lembur Tahun {currentYear}*</h3>
+                                    </div>
+                                    <span className="p-1.5 text-slate-350 group-hover:text-blue-600 rounded-xl group-hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100" title="Detail Chart">
+                                        <Maximize2 className="w-4 h-4" />
+                                    </span>
                                 </div>
                                 {lemburChartData.length > 0 ? (
                                     <div className="h-64">
@@ -653,6 +713,9 @@ export default function HumanCapital(props) {
                                 )}
                                 <div className="mt-2 text-right">
                                     <p className="text-[9px] font-bold text-slate-400 italic">*Data per {lemburChartData[lemburChartData.length - 1]?.periode || 'saat ini'}</p>
+                                </div>
+                                <div className="absolute bottom-2 right-6 text-[8px] font-extrabold text-blue-600 tracking-wider opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    KLIK UNTUK DETAIL & FILTER
                                 </div>
                             </div>
 
@@ -740,6 +803,15 @@ export default function HumanCapital(props) {
                 </div>
             )}
 
+            {/* Chart Detail Modal */}
+            <ChartDetailModal
+                isOpen={isChartModalOpen}
+                onClose={() => {
+                    setIsChartModalOpen(false);
+                    setSelectedChart(null);
+                }}
+                chartConfig={selectedChart}
+            />
         </div>
     );
 }
