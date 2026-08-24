@@ -15,7 +15,8 @@ const MAPPING_SPECS = {
     it_asset: { nomor_seri: 'Nomor Seri / Tag', jenis: 'Jenis Aset', merek: 'Merek/Model', user: 'Pengguna', fungsi: 'Fungsi', status: 'Status' },
     master_organik: { nopok: 'No. Pegawai', nama: 'Nama Pegawai', gender: 'Jenis Kelamin', umur: 'Umur', tanggal_lahir: 'Tanggal Lahir', jabatan: 'Jabatan', fungsi: 'Fungsi/Departemen' },
     master_tad: { nama: 'Nama Lengkap', peran: 'Peran Kerja', vendor: 'Vendor Penyedia', status: 'Status Kontrak' },
-    master_pensiun: { nama: 'Nama Karyawan', jabatan: 'Jabatan Terakhir', umur: 'Umur Pensiun', tahun: 'Tahun Pensiun', tanggal: 'Tanggal Efektif', keterangan: 'Keterangan' }
+    master_pensiun: { nama: 'Nama Karyawan', jabatan: 'Jabatan Terakhir', umur: 'Umur Pensiun', tahun: 'Tahun Pensiun', tanggal: 'Tanggal Efektif', keterangan: 'Keterangan' },
+    financial_performance: { year: 'Tahun', revenue: 'Revenue', cost: 'Cost', depreciation: 'Depreciation', net_profit: 'Profit/Loss Net', abo: 'ABO', ebitda: 'EBITDA', cost_per_kwh: 'Cost per kWh' }
 };
 
 const MAPPING_DEFAULTS = {
@@ -30,7 +31,8 @@ const MAPPING_DEFAULTS = {
     it_asset: { nomor_seri: '', jenis: 'PC', merek: 'HP', user: 'Staff', fungsi: 'BS', status: 'Optimal' },
     master_organik: { nopok: '-', nama: 'Nama Pegawai', gender: 'Laki-laki', umur: 30, tanggal_lahir: '1990-01-01', jabatan: 'Staff', fungsi: 'Operasi' },
     master_tad: { nama: 'Nama TAD', peran: 'Security', vendor: 'PT Daya', status: 'Aktif' },
-    master_pensiun: { nama: 'Nama Pensiun', jabatan: 'Staff', umur: 56, tahun: 2026, tanggal: '2026-01-01', keterangan: 'Pensiun Normal' }
+    master_pensiun: { nama: 'Nama Pensiun', jabatan: 'Staff', umur: 56, tahun: 2026, tanggal: '2026-01-01', keterangan: 'Pensiun Normal' },
+    financial_performance: { year: 2026, revenue: 0, cost: 0, depreciation: 0, net_profit: 0, abo: 0, ebitda: 0, cost_per_kwh: 0 }
 };
 
 export default function UploadWizardModal({ isOpen, onClose }) {
@@ -67,6 +69,9 @@ export default function UploadWizardModal({ isOpen, onClose }) {
         ],
         'Manajemen Kontrak (Semua Fungsi)': [
             { id: 'scm', label: 'Data Monitoring Kontrak' },
+        ],
+        'Laporan Kinerja (Perusahaan)': [
+            { id: 'financial_performance', label: 'Financial Performance (Keuangan)' },
         ],
         'Lainnya': [
             { id: 'it_asset', label: 'Aset Perangkat IT (IT Asset)' }

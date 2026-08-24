@@ -19,6 +19,7 @@ use App\Models\Mom;
 use App\Models\HcTad;
 use App\Models\HcRetired;
 use App\Models\Employee;
+use App\Models\FinancialPerformance;
 
 class ImportController extends Controller
 {
@@ -257,6 +258,22 @@ class ImportController extends Controller
                         );
                         $insertedCount++;
                         break;
+                        
+                    case 'financial_performance':
+                        FinancialPerformance::updateOrCreate(
+                            ['year' => intval($row['year'] ?? 0)],
+                            [
+                                'revenue' => (float)($row['revenue'] ?? 0),
+                                'cost' => (float)($row['cost'] ?? 0),
+                                'depreciation' => (float)($row['depreciation'] ?? 0),
+                                'net_profit' => (float)($row['net_profit'] ?? 0),
+                                'abo' => (float)($row['abo'] ?? 0),
+                                'ebitda' => (float)($row['ebitda'] ?? 0),
+                                'cost_per_kwh' => (float)($row['cost_per_kwh'] ?? 0),
+                            ]
+                        );
+                        $insertedCount++;
+                        break;
                 }
             }
 
@@ -271,6 +288,8 @@ class ImportController extends Controller
                 $archiveCategory = 'Laporan Bulanan';
             } elseif (in_array($type, ['master_organik', 'master_tad', 'master_pensiun'])) {
                 $archiveCategory = 'Master Data';
+            } elseif ($type === 'financial_performance') {
+                $archiveCategory = 'Laporan Finansial';
             }
 
             Arsip::create([
