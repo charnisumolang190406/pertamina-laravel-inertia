@@ -92,48 +92,7 @@ const mttrData = [
     { tahun: '2026', nilai: 9.40 },
 ];
 
-/* ─── Dummy Data: Financial Performance ─── */
-const financialTrend = [
-    { tahun: '2018', revenue: 12.5, cost: 5.2, depreciation: 8.1, profitLoss: -0.8 },
-    { tahun: '2019', revenue: 10.8, cost: 5.0, depreciation: 9.5, profitLoss: -3.7 },
-    { tahun: '2020', revenue: 6.2, cost: 4.8, depreciation: 10.2, profitLoss: -8.8 },
-    { tahun: '2021', revenue: 5.8, cost: 4.5, depreciation: 11.0, profitLoss: -9.7 },
-    { tahun: '2022', revenue: 6.5, cost: 4.9, depreciation: 11.8, profitLoss: -10.2 },
-    { tahun: '2023', revenue: 7.8, cost: 5.1, depreciation: 12.5, profitLoss: -9.8 },
-    { tahun: '2024', revenue: 9.2, cost: 5.3, depreciation: 13.2, profitLoss: -9.3 },
-    { tahun: '2025', revenue: 10.13, cost: 5.43, depreciation: 14.31, profitLoss: -10.79 },
-];
-
-const costKwhData = [
-    { tahun: '2018', nilai: 9.46 },
-    { tahun: '2019', nilai: 12.30 },
-    { tahun: '2020', nilai: 18.50 },
-    { tahun: '2021', nilai: 23.94 },
-    { tahun: '2022', nilai: 22.10 },
-    { tahun: '2023', nilai: 21.50 },
-    { tahun: '2024', nilai: 20.49 },
-    { tahun: '2025', nilai: 20.23 },
-];
-
-const ebitdaData = [
-    { tahun: '2018', nilai: 11.04 },
-    { tahun: '2019', nilai: 8.50 },
-    { tahun: '2020', nilai: 3.20 },
-    { tahun: '2021', nilai: 1.72 },
-    { tahun: '2022', nilai: 2.80 },
-    { tahun: '2023', nilai: 3.50 },
-    { tahun: '2024', nilai: 4.58 },
-    { tahun: '2025', nilai: 4.13, label: 'ytd Nov' },
-];
-
-const productionCostScatter = [
-    { label: 'RKAP 2025', costKwh: 16.90, produksi: 126 },
-    { label: 'RKAP Revisi', costKwh: 20.10, produksi: 116 },
-    { label: 'Q1 2025', costKwh: 20.01, produksi: 25 },
-    { label: 'Q2 2025', costKwh: 20.15, produksi: 55 },
-    { label: 'Q3 2025', costKwh: 20.20, produksi: 82 },
-    { label: 'Q4 2025', costKwh: 20.23, produksi: 110 },
-];
+/* ─── Financial Performance Data is now dynamic ─── */
 
 /* Realisasi ABO moved to Budgeting */
 
@@ -290,7 +249,7 @@ function TabOperasi({ onChartClick }) {
 }
 
 /* ─── Tab: Financial Performance ─── */
-function TabFinancial({ onChartClick }) {
+function TabFinancial({ onChartClick, financialTrend, costKwhData, ebitdaData, productionCostScatter }) {
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -336,7 +295,7 @@ function TabFinancial({ onChartClick }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <ChartCard
                     title="Cost/kWh (cent USD)"
-                    subtitle="Biaya produksi per kWh — 2025: 20,23 cent USD"
+                    subtitle="Biaya produksi per kWh"
                     className="h-64"
                     onClick={() => onChartClick('cost-kwh')}
                 >
@@ -1443,7 +1402,34 @@ function TabRiskRegister({ auth }) {
 
 /* ─── Main Dashboard ─── */
 export default function MainDashboard(props) {
-    const { scmList, budgetDetailsList } = props;
+    const { scmList, budgetDetailsList, financialPerformances = [] } = props;
+
+    // Map dynamic data from database
+    const financialTrend = financialPerformances.length > 0 
+        ? financialPerformances.map(item => ({
+            tahun: String(item.year),
+            revenue: Number((item.revenue / 1000000).toFixed(2)),
+            cost: Number((item.cost / 1000000).toFixed(2)),
+            depreciation: Number((item.depreciation / 1000000).toFixed(2)),
+            profitLoss: Number((item.net_profit / 1000000).toFixed(2))
+        }))
+        : [];
+
+    const costKwhData = financialPerformances.length > 0
+        ? financialPerformances.map(item => ({
+            tahun: String(item.year),
+            nilai: Number(item.cost_per_kwh)
+        }))
+        : [];
+
+    const ebitdaData = financialPerformances.length > 0
+        ? financialPerformances.map(item => ({
+            tahun: String(item.year),
+            nilai: Number((item.ebitda / 1000000).toFixed(2))
+        }))
+        : [];
+
+    const productionCostScatter = []; // Pending confirmation on production data
 
     const [activeSubTab, setActiveSubTab] = useState('operasi');
     const [selectedChart, setSelectedChart] = useState(null);
@@ -1573,22 +1559,20 @@ export default function MainDashboard(props) {
             id: 'production-cost-scatter',
             title: 'Production vs Cost per kWh',
             subtitle: 'Korelasi produksi (GWh) dan biaya per kWh (cent USD)',
-            type: 'composed',
+            type: 'scatter',
             xAxisKey: 'costKwh',
-            timeType: 'other',
             series: [
-                { key: 'produksi', label: 'Produksi', color: PERTAMINA_BLUE, type: 'line', unit: 'GWh' }
+                { key: 'produksi', label: 'Produksi (GWh)', color: PERTAMINA_BLUE }
             ],
             rawData: productionCostScatter
         },
         'cost-kwh': {
             id: 'cost-kwh',
             title: 'Cost/kWh (cent USD)',
-            subtitle: 'Biaya produksi per kWh — 2025: 20,23 cent USD',
+            subtitle: 'Biaya produksi per kWh',
             type: 'line',
             xAxisKey: 'tahun',
             timeType: 'year',
-            yAxisDomain: [5, 26],
             series: [
                 { key: 'nilai', label: 'Cost/kWh', color: PERTAMINA_BLUE, unit: 'cent USD' }
             ],
@@ -1664,7 +1648,7 @@ export default function MainDashboard(props) {
 
             {/* Tab Content */}
             {activeSubTab === 'operasi' && <TabOperasi onChartClick={handleChartClick} />}
-            {activeSubTab === 'financial' && <TabFinancial onChartClick={handleChartClick} />}
+            {activeSubTab === 'financial' && <TabFinancial onChartClick={handleChartClick} financialTrend={financialTrend} costKwhData={costKwhData} ebitdaData={ebitdaData} productionCostScatter={productionCostScatter} />}
             {activeSubTab === 'risk' && <TabRiskRegister auth={props.auth} />}
 
             {/* Premium Chart Detail Modal */}

@@ -19,6 +19,7 @@ use App\Models\UploadArchive;
 use App\Models\Employee;
 use App\Models\TadMutation;
 use App\Models\BbmStock;
+use App\Models\FinancialPerformance;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -84,6 +85,7 @@ class DashboardController extends Controller
             'assetList' => Asset::all(),
             'uploadArchive' => UploadArchive::orderBy('id', 'desc')->get(),
             'bbmList' => BbmStock::all(),
+            'financialPerformances' => FinancialPerformance::orderBy('year', 'asc')->get(),
         ]);
     }
 }

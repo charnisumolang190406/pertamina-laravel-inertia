@@ -403,6 +403,7 @@ export default function Dashboard(props) {
                 <UploadWizardModal
                     isOpen={uploadWizardOpen}
                     onClose={() => setUploadWizardOpen(false)}
+                    auth={props.auth}
                 />
             </div>
         </div>

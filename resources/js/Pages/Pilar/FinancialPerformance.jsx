@@ -97,6 +97,7 @@ export default function FinancialPerformance({ auth, financials }) {
             <UploadWizardModal 
                 isOpen={isUploadOpen} 
                 onClose={() => setIsUploadOpen(false)} 
+                auth={auth}
             />
         </div>
     );

@@ -35,8 +35,14 @@ const MAPPING_DEFAULTS = {
     financial_performance: { year: 2026, revenue: 0, cost: 0, depreciation: 0, net_profit: 0, abo: 0, ebitda: 0, cost_per_kwh: 0 }
 };
 
-export default function UploadWizardModal({ isOpen, onClose }) {
+export default function UploadWizardModal({ isOpen, onClose, auth }) {
     if (!isOpen) return null;
+
+    const userRole = auth?.user?.role || '';
+    const isAdminBPB = userRole.includes('Bisnis Planning');
+    const isAdminFM = userRole.includes('Facility Management') || userRole.includes('Logistik');
+    const isAdminHC = userRole.includes('HC');
+    const isAdminICT = userRole.includes('ICT');
 
     const [step, setStep] = useState(1); // 1: Select Type, 2: Upload, 3: Preview & Map
     const [dataType, setDataType] = useState('lembur_tad');
@@ -66,17 +72,31 @@ export default function UploadWizardModal({ isOpen, onClose }) {
         'Budgeting': [
             { id: 'budget_abo', label: 'Data Detail Budget ABO (Overhead/Operasi)' },
             { id: 'budget_abi', label: 'Data Detail Budget ABI (Investasi/Proyek)' },
+            { id: 'financial_performance', label: 'Financial Performance (Keuangan)' },
         ],
         'Manajemen Kontrak (Semua Fungsi)': [
             { id: 'scm', label: 'Data Monitoring Kontrak' },
         ],
-        'Laporan Kinerja (Perusahaan)': [
-            { id: 'financial_performance', label: 'Financial Performance (Keuangan)' },
-        ],
+
         'Lainnya': [
             { id: 'it_asset', label: 'Aset Perangkat IT (IT Asset)' }
         ]
     };
+
+    const filteredDataTypes = Object.keys(groupedDataTypes).reduce((acc, key) => {
+        if (isAdminBPB) {
+            if (key === 'Budgeting' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
+        } else if (isAdminFM) {
+            if (key === 'Facility Management (FM)' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
+        } else if (isAdminHC) {
+            if (key === 'Human Capital (HC)' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
+        } else if (isAdminICT) {
+            if (key === 'Lainnya') acc[key] = groupedDataTypes[key];
+        } else {
+            acc[key] = groupedDataTypes[key];
+        }
+        return acc;
+    }, {});
 
     const handleTypeSelect = (type) => {
         setDataType(type);
@@ -338,11 +358,11 @@ export default function UploadWizardModal({ isOpen, onClose }) {
                         <div className="space-y-4">
                             <h4 className="font-bold text-slate-800 text-xs text-center mb-4">Pilih kategori data laporan yang ingin Anda impor:</h4>
                             <div className="space-y-6">
-                                {Object.keys(groupedDataTypes).map(groupName => (
-                                    <div key={groupName} className="space-y-3">
-                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1 border-b border-slate-100 pb-1">{groupName}</h5>
+                                {Object.entries(filteredDataTypes).map(([category, types]) => (
+                                    <div key={category} className="space-y-3">
+                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1 border-b border-slate-100 pb-1">{category}</h5>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            {groupedDataTypes[groupName].map(t => (
+                                            {types.map(t => (
                                                 <button
                                                     key={t.id}
                                                     onClick={() => handleTypeSelect(t.id)}
