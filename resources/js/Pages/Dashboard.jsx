@@ -46,10 +46,7 @@ export default function Dashboard(props) {
         setExpandedMenus(prev => ({ ...prev, [menuId]: !prev[menuId] }));
     };
 
-    const [notifications, setNotifications] = useState([
-        { id: 1, text: "Manager / Kepala memberikan feedback baru di MOM SCM.", read: false },
-        { id: 2, text: "Kontrak Driver PGE Lahendong tersisa 6 bulan lagi.", read: false }
-    ]);
+    const [notifications, setNotifications] = useState(props.notifications || []);
     const [showNotifMenu, setShowNotifMenu] = useState(false);
 
     const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
