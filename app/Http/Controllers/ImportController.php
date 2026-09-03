@@ -315,7 +315,7 @@ class ImportController extends Controller
                         );
                         $insertedCount++;
                         break;
-                        
+
                     case 'financial_performance':
                         FinancialPerformance::updateOrCreate(
                             ['year' => intval($row['year'] ?? 0)],
@@ -359,8 +359,6 @@ class ImportController extends Controller
                 $archiveCategory = 'Laporan Bulanan';
             } elseif (in_array($type, ['master_organik', 'master_tad', 'master_pensiun'])) {
                 $archiveCategory = 'Master Data';
-            } elseif ($type === 'financial_performance') {
-                $archiveCategory = 'Laporan Finansial';
             }
 
             Arsip::create([
