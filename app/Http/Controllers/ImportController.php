@@ -20,6 +20,7 @@ use App\Models\HcTad;
 use App\Models\HcRetired;
 use App\Models\Employee;
 use App\Models\FinancialPerformance;
+use App\Models\BbmStock;
 
 class ImportController extends Controller
 {
@@ -51,6 +52,8 @@ class ImportController extends Controller
                 HcTad::query()->delete();
             } elseif ($type === 'master_pensiun') {
                 HcRetired::query()->delete();
+            } elseif ($type === 'alat_berat') {
+                AlatBerat::query()->delete();
             }
 
             foreach ($rows as $row) {
@@ -143,27 +146,79 @@ class ImportController extends Controller
                         break;
 
                     case 'alat_berat':
+                        // Helper to parse excel dates
+                        $parseDate = function($value) {
+                            if (empty($value)) return null;
+                            if (is_numeric($value)) {
+                                return \Carbon\Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value))->format('Y-m-d');
+                            }
+                            try {
+                                return \Carbon\Carbon::parse($value)->format('Y-m-d');
+                            } catch (\Exception $e) {
+                                return null;
+                            }
+                        };
+                        
+                        $jenis = trim($row['jenis'] ?? 'Unknown');
+                        $nopol = trim($row['nopol'] ?? '-');
+                        
+                        // Filter out intermediate headers and empty separator rows from the Excel file
+                        if (strtoupper($jenis) === 'JENIS KENDARAAN' || strtoupper($nopol) === 'NOMOR POLISI' || strtoupper($jenis) === 'NO') {
+                            continue 2; // Skip this row and go to next foreach iteration
+                        }
+                        if (($jenis === '' || $jenis === 'Unknown') && ($nopol === '' || $nopol === '-')) {
+                            continue 2; // Skip completely empty rows
+                        }
+                        
                         AlatBerat::create([
                             'id' => $uniqueId,
-                            'jenis' => $row['jenis'] ?? 'Forklift',
-                            'nopol' => $row['nopol'] ?? '-',
-                            'expired_kir' => $row['expired_kir'] ?? date('Y-m-d'),
-                            'expired_stnk' => $row['expired_stnk'] ?? date('Y-m-d'),
-                            'expired_sio' => $row['expired_sio'] ?? date('Y-m-d'),
-                            'expired_sia' => $row['expired_sia'] ?? date('Y-m-d'),
+                            'nopol' => $nopol,
+                            'tahun' => $row['tahun'] ?? null,
+                            'jenis' => $jenis,
+                            'alokasi' => $row['alokasi'] ?? null,
+                            'merk' => $row['merk'] ?? null,
+                            'model' => $row['model'] ?? null,
+                            
+                            'stnk' => $parseDate($row['stnk'] ?? null),
+                            'pajak' => $parseDate($row['pajak'] ?? null),
+                            'kir' => $parseDate($row['kir'] ?? null),
                             'status' => $row['status'] ?? 'Optimal',
+                            'kondisi' => $row['kondisi'] ?? null,
                         ]);
                         $insertedCount++;
                         break;
 
                     case 'perbaikan_rumdin':
+                        $tglRequest = null;
+                        if (!empty($row['tanggal_request'])) {
+                            try {
+                                if (is_numeric($row['tanggal_request'])) {
+                                    $tglRequest = gmdate("Y-m-d", ($row['tanggal_request'] - 25569) * 86400);
+                                } else {
+                                    $tglRequest = \Carbon\Carbon::parse($row['tanggal_request'])->format('Y-m-d');
+                                }
+                            } catch (\Exception $e) {}
+                        }
+                        
+                        $tglSelesai = null;
+                        if (!empty($row['tanggal_selesai'])) {
+                            try {
+                                if (is_numeric($row['tanggal_selesai'])) {
+                                    $tglSelesai = gmdate("Y-m-d", ($row['tanggal_selesai'] - 25569) * 86400);
+                                } else {
+                                    $tglSelesai = \Carbon\Carbon::parse($row['tanggal_selesai'])->format('Y-m-d');
+                                }
+                            } catch (\Exception $e) {}
+                        }
+
                         Perbaikan::create([
                             'id' => $uniqueId,
-                            'nomor_rumah' => $row['nomor_rumah'] ?? 'N-00',
-                            'estimasi' => intval($row['estimasi'] ?? 0),
-                            'realisasi' => intval($row['realisasi'] ?? 0),
-                            'progress' => intval($row['progress'] ?? 0),
-                            'keterangan' => $row['keterangan'] ?? 'Perbaikan Umum',
+                            'pekerjaan' => $row['deskripsi_pekerjaan'] ?? 'Perbaikan Umum',
+                            'lokasi' => 'Rumah Dinas',
+                            'tanggal_request' => $tglRequest,
+                            'tanggal_selesai' => $tglSelesai,
+                            'status' => $row['status'] ?? 'In Progress',
+                            'link_foto' => $row['link_bukti_foto_opsional'] ?? null,
                         ]);
                         $insertedCount++;
                         break;
@@ -272,6 +327,20 @@ class ImportController extends Controller
                                 'abo' => (float)($row['abo'] ?? 0),
                                 'ebitda' => (float)($row['ebitda'] ?? 0),
                                 'cost_per_kwh' => (float)($row['cost_per_kwh'] ?? 0),
+                            ]
+                        );
+                        $insertedCount++;
+                        break;
+                        
+                    case 'bbm':
+                        BbmStock::updateOrCreate(
+                            ['bulan' => $row['bulan']],
+                            [
+                                'stock_awal_solar' => (float)($row['stock_awal_solar'] ?? 0),
+                                'penerimaan_solar' => (float)($row['penerimaan_solar'] ?? 0),
+                                'pengeluaran_ag_solar' => (float)($row['pengeluaran_ag_solar'] ?? 0),
+                                'pengeluaran_proyek_solar' => (float)($row['pengeluaran_proyek_solar'] ?? 0),
+                                'stock_akhir_solar' => (float)($row['stock_akhir_solar'] ?? 0),
                             ]
                         );
                         $insertedCount++;

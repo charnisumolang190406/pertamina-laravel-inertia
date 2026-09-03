@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import { 
-  Package, Laptop, Folder, Trash2, Database, AlertCircle, CheckCircle, Droplet, Plus, Download
+  Package, Laptop, Folder, Trash2, Database, AlertCircle, CheckCircle, Droplet, Plus, Download, UploadCloud
 } from 'lucide-react';
+import Swal from 'sweetalert2';
 import KpiCard from '../../Components/KpiCard';
 import Pagination from '../../Components/Pagination';
 export default function Logistik(props) {
@@ -14,6 +15,31 @@ export default function Logistik(props) {
     const [alatBeratPage, setAlatBeratPage] = useState(1);
     const [bbmPage, setBbmPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
+    const fileInputRef = useRef(null);
+
+    const handleFileUpload = (e, type) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const url = type === 'bbm' ? '/import-bbm' : '/import-perbaikan';
+        const label = type === 'bbm' ? 'BBM' : 'Perbaikan';
+
+        router.post(url, formData, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                alert(`File Excel berhasil diunggah dan data ${label} telah diperbarui!`);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            },
+            onError: (errors) => {
+                alert('Gagal mengunggah file. Pastikan format file benar sesuai template.');
+                console.error(errors);
+            }
+        });
+    };
 
     React.useEffect(() => {
         if (activeSubMenu) {
@@ -143,16 +169,26 @@ export default function Logistik(props) {
             </div>
 
             {/* ACTION BUTTONS */}
-            {isAdmin && activeSubTab !== 'bbm' && (
+            {isAdmin && (
                 <div className="flex justify-end gap-2 text-xs font-bold">
                     <button
-                        onClick={() => alert('Fitur Tambah Data sedang dalam tahap pengembangan.')}
+                        onClick={() => Swal.fire({
+                            title: 'Fitur Belum Tersedia',
+                            text: 'Fitur Tambah Data secara manual sedang dalam tahap pengembangan. Silakan gunakan tombol Upload Laporan (Excel) di pojok kanan atas layar.',
+                            icon: 'info',
+                            confirmButtonColor: '#2563eb'
+                        })}
                         className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-xl border border-blue-700 cursor-pointer transition-all active:scale-95 shadow-sm"
                     >
                         <Plus className="w-3.5 h-3.5" /> Tambah Data {activeSubTab.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </button>
                     <button
-                        onClick={() => alert('Fitur Unduh Laporan sedang dalam tahap pengembangan.')}
+                        onClick={() => Swal.fire({
+                            title: 'Fitur Belum Tersedia',
+                            text: 'Fitur Unduh Laporan sedang dalam tahap pengembangan.',
+                            icon: 'info',
+                            confirmButtonColor: '#2563eb'
+                        })}
                         className="flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 px-4 py-1.5 rounded-xl border border-slate-300 cursor-pointer transition-all active:scale-95 shadow-sm"
                     >
                         <Download className="w-3.5 h-3.5" /> Unduh Laporan
@@ -172,9 +208,11 @@ export default function Logistik(props) {
                             <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
                                     <th className="p-3.5 text-slate-500 font-bold w-10 text-center">No</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Tanggal (Tgl)</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Nama Request</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Status (Progres)</th>
+                                    <th className="p-3.5 text-slate-500 font-bold">Tanggal Request</th>
+                                    <th className="p-3.5 text-slate-500 font-bold">Tanggal Selesai</th>
+                                    <th className="p-3.5 text-slate-500 font-bold">Deskripsi Pekerjaan</th>
+                                    <th className="p-3.5 text-slate-500 font-bold text-center">Status</th>
+                                    <th className="p-3.5 text-slate-500 font-bold text-center">Bukti Foto</th>
                                     {isAdmin && <th className="p-3.5 text-slate-500 font-bold text-center w-20">Aksi</th>}
                                 </tr>
                             </thead>
@@ -184,14 +222,26 @@ export default function Logistik(props) {
                                     return (
                                     <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
                                         <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
-                                        <td className="p-3.5 text-slate-600 font-mono text-[11px]">{formatDate(item.created_at)}</td>
-                                        <td className="p-3.5 max-w-md text-wrap font-bold text-slate-700">{item.pekerjaan} - {item.lokasi}</td>
-                                        <td className="p-3.5">
+                                        <td className="p-3.5 text-slate-600 font-mono text-[11px]">{formatDate(item.tanggal_request || item.created_at)}</td>
+                                        <td className="p-3.5 text-slate-600 font-mono text-[11px]">{formatDate(item.tanggal_selesai)}</td>
+                                        <td className="p-3.5 max-w-md text-wrap font-bold text-slate-700">
+                                            {item.pekerjaan} {item.lokasi && item.lokasi !== 'Rumah Dinas' ? `- ${item.lokasi}` : ''}
+                                        </td>
+                                        <td className="p-3.5 text-center">
                                             <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${
-                                                item.status.toLowerCase().includes('selesai') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                                item.status?.toLowerCase().includes('selesai') || item.status?.toLowerCase() === 'done' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                                             }`}>
-                                                {item.status}
+                                                {item.status || 'In Progress'}
                                             </span>
+                                        </td>
+                                        <td className="p-3.5 text-center">
+                                            {item.link_foto ? (
+                                                <a href={item.link_foto} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 text-[10px] font-bold transition-colors">
+                                                    <Folder className="w-3 h-3" /> Lihat
+                                                </a>
+                                            ) : (
+                                                <span className="text-slate-300 text-[10px]">-</span>
+                                            )}
                                         </td>
                                         {isAdmin && (
                                             <td className="p-3.5 text-center">
@@ -261,17 +311,17 @@ export default function Logistik(props) {
                                         <td className="p-3.5 text-center font-mono text-slate-500">{item.kir}</td>
                                         <td className="p-3.5">
                                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                                item.status.toLowerCase().includes('aman') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                                                (item.status || '').toLowerCase().includes('aman') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
                                             }`}>
-                                                {item.status}
+                                                {item.status || '-'}
                                             </span>
                                         </td>
                                         <td className="p-3.5 max-w-xs text-wrap text-slate-600 font-medium">
-                                            {item.kondisi.toLowerCase().includes('maintenance') ? (
+                                            {(item.kondisi || '').toLowerCase().includes('maintenance') ? (
                                                 <span className="text-red-600 font-bold flex items-center gap-1">
                                                     <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {item.kondisi}
                                                 </span>
-                                            ) : item.kondisi}
+                                            ) : (item.kondisi || '-')}
                                         </td>
                                         {isAdmin && (
                                             <td className="p-3.5 text-center">

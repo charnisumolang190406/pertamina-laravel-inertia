@@ -12,6 +12,6 @@ class Perbaikan extends Model
     public $incrementing = false;
     protected $primaryKey = 'id';
     protected $fillable = [
-        'id', 'lokasi', 'pekerjaan', 'estimasi', 'realisasi', 'status', 'keterangan'
+        'id', 'lokasi', 'pekerjaan', 'estimasi', 'realisasi', 'status', 'keterangan', 'tanggal_request', 'tanggal_selesai', 'link_foto'
     ];
 }
