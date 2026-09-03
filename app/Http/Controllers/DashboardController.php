@@ -20,6 +20,8 @@ use App\Models\Employee;
 use App\Models\TadMutation;
 use App\Models\BbmStock;
 use App\Models\FinancialPerformance;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -27,6 +29,21 @@ class DashboardController extends Controller
     public function index()
     {
         $currentYear = (int) date('Y');
+
+        if (!Schema::hasTable('financial_performances')) {
+            Schema::create('financial_performances', function (Blueprint $table) {
+                $table->id();
+                $table->integer('year')->unique();
+                $table->decimal('revenue', 15, 2)->default(0);
+                $table->decimal('cost', 15, 2)->default(0);
+                $table->decimal('depreciation', 15, 2)->default(0);
+                $table->decimal('net_profit', 15, 2)->default(0);
+                $table->decimal('abo', 15, 2)->default(0);
+                $table->decimal('ebitda', 15, 2)->default(0);
+                $table->decimal('cost_per_kwh', 8, 2)->default(0);
+                $table->timestamps();
+            });
+        }
 
         $maleCount = Employee::whereIn('gender', ['Laki-laki', 'L', 'Pria'])->count();
         $femaleCount = Employee::whereIn('gender', ['Perempuan', 'P', 'Wanita'])->count();

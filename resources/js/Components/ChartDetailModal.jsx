@@ -449,15 +449,23 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                         <div className="flex-1 w-full min-h-0 text-[11px]">
                             {filteredData.length > 0 && (
                                 <>
-                                    {isProduksiGwhChart ? (
-                                        <ProduksiBarChart data={filteredData} className="w-full h-full" />
-                                    ) : (
+                                    {(() => {
+                                        const computedYDomain = yAxisDomain || [
+                                            dataMin => (dataMin > 10 ? Math.max(0, Math.floor(dataMin * 0.88)) : Math.max(0, Math.floor(dataMin - 1))),
+                                            dataMax => (dataMax > 10 ? Math.ceil(dataMax * 1.12) : Math.ceil(dataMax + 1))
+                                        ];
+
+                                        if (isProduksiGwhChart) {
+                                            return <ProduksiBarChart data={filteredData} className="w-full h-full" />;
+                                        }
+
+                                        return (
                                         <ResponsiveContainer width="100%" height="100%">
                                             {type === 'line' ? (
                                                 <LineChart data={filteredData} margin={{ top: 30, right: 25, left: -5, bottom: 5 }}>
                                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                                     <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                                    <YAxis domain={yAxisDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                    <YAxis domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                                                     <RechartsTooltip formatter={customTooltipFormatter} />
                                                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
                                                     {series.map(s => {
@@ -485,7 +493,7 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                                 <BarChart data={filteredData} margin={{ top: 30, right: 45, left: -5, bottom: 5 }} {...barHover.barChartProps}>
                                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                                     <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                                    <YAxis domain={yAxisDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                    <YAxis domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                                                     <RechartsTooltip formatter={customTooltipFormatter} />
                                                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
                                                     {series.map(s => {
@@ -523,11 +531,11 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                                     {/* Dual Axis Support if defined */}
                                                     {yAxisIdLeft && yAxisIdRight ? (
                                                         <>
-                                                            <YAxis yAxisId="left" tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                                            <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                            <YAxis yAxisId="left" domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                            <YAxis yAxisId="right" orientation="right" domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                                                         </>
                                                     ) : (
-                                                        <YAxis tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                        <YAxis domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                                                     )}
 
                                                     <RechartsTooltip formatter={customTooltipFormatter} />
@@ -587,7 +595,7 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                                 <AreaChart data={filteredData} margin={{ top: 30, right: 25, left: -5, bottom: 5 }}>
                                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                                     <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                                    <YAxis domain={yAxisDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                    <YAxis domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                                                     <RechartsTooltip formatter={customTooltipFormatter} />
                                                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
                                                     {series.map(s => {
@@ -613,7 +621,8 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                                 </AreaChart>
                                             ) : null}
                                         </ResponsiveContainer>
-                                    )}
+                                        );
+                                    })()}
                                 </>
                             )}
                         </div>

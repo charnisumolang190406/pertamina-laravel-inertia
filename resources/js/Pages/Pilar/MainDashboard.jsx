@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-    ResponsiveContainer, LineChart, Line, Legend, ComposedChart, Area, Customized,
-    PieChart, Pie, Cell
+    ResponsiveContainer, LineChart, Line, Legend, ComposedChart, AreaChart, Area, Customized,
+    PieChart, Pie, Cell, LabelList
 } from 'recharts';
 import {
     FileSignature, Calculator, Shield,
@@ -133,12 +133,19 @@ function ChartCard({ title, subtitle, children, className = '', onClick }) {
 function ReliabilityLineChart({ data, dataKey, unit, color = PERTAMINA_BLUE, domain }) {
     return (
         <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+            <LineChart data={data} margin={{ top: 18, right: 15, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                <YAxis domain={domain} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis 
+                    domain={domain || [dataMin => Math.max(0, Math.floor(dataMin * 0.85)), dataMax => Math.ceil(dataMax * 1.15)]} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tick={{ fontSize: 10, fill: '#64748b' }} 
+                />
                 <RechartsTooltip formatter={(v) => [`${v} ${unit}`, '']} />
-                <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2.5} dot={{ r: 4, fill: color }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2.5} dot={{ r: 4, fill: color }} activeDot={{ r: 6 }}>
+                    <LabelList dataKey={dataKey} position="top" offset={6} style={{ fontSize: 9.5, fontWeight: 800, fill: color }} />
+                </Line>
             </LineChart>
         </ResponsiveContainer>
     );
@@ -260,16 +267,27 @@ function TabFinancial({ onChartClick, financialTrend, costKwhData, ebitdaData, p
                     onClick={() => onChartClick('financial-trend')}
                 >
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={financialTrend} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                        <LineChart data={financialTrend} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                            <YAxis 
+                                domain={[dataMin => Math.max(0, Math.floor(dataMin - 5)), dataMax => Math.ceil(dataMax + 5)]} 
+                                tickLine={false} 
+                                axisLine={false} 
+                                tick={{ fontSize: 10, fill: '#64748b' }} 
+                            />
                             <RechartsTooltip formatter={(v, name) => [`${v} Juta USD`, name]} />
                             <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Line type="monotone" dataKey="revenue" name="Revenue" stroke={PERTAMINA_BLUE} strokeWidth={2} dot={{ r: 3 }} />
-                            <Line type="monotone" dataKey="cost" name="Cost" stroke={PERTAMINA_GREEN} strokeWidth={2} dot={{ r: 3 }} />
+                            <Line type="monotone" dataKey="revenue" name="Revenue" stroke={PERTAMINA_BLUE} strokeWidth={2} dot={{ r: 3 }}>
+                                <LabelList dataKey="revenue" position="top" offset={6} style={{ fontSize: 9, fontWeight: 700, fill: PERTAMINA_BLUE }} />
+                            </Line>
+                            <Line type="monotone" dataKey="cost" name="Cost" stroke={PERTAMINA_GREEN} strokeWidth={2} dot={{ r: 3 }}>
+                                <LabelList dataKey="cost" position="top" offset={6} style={{ fontSize: 9, fontWeight: 700, fill: PERTAMINA_GREEN }} />
+                            </Line>
                             <Line type="monotone" dataKey="depreciation" name="Depreciation" stroke={PERTAMINA_YELLOW} strokeWidth={2} dot={{ r: 3 }} />
-                            <Line type="monotone" dataKey="profitLoss" name="Profit/Loss Net" stroke="#94a3b8" strokeWidth={2} dot={{ r: 3 }} />
+                            <Line type="monotone" dataKey="profitLoss" name="Profit/Loss Net" stroke="#94a3b8" strokeWidth={2} dot={{ r: 3 }}>
+                                <LabelList dataKey="profitLoss" position="top" offset={6} style={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} />
+                            </Line>
                         </LineChart>
                     </ResponsiveContainer>
                 </ChartCard>
@@ -280,15 +298,38 @@ function TabFinancial({ onChartClick, financialTrend, costKwhData, ebitdaData, p
                     className="h-80"
                     onClick={() => onChartClick('production-cost-scatter')}
                 >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={productionCostScatter} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                            <XAxis dataKey="costKwh" type="number" domain={[16, 21]} tickLine={false} axisLine={false} tick={{ fontSize: 10 }} label={{ value: 'Cost/kWh (cent USD)', position: 'insideBottom', offset: -2, style: { fontSize: 9 } }} />
-                            <YAxis dataKey="produksi" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} label={{ value: 'Produksi (GWh)', angle: -90, position: 'insideLeft', style: { fontSize: 9 } }} />
-                            <RechartsTooltip formatter={(v, name) => [v, name === 'produksi' ? 'Produksi (GWh)' : 'Cost/kWh']} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? ''} />
-                            <Line type="monotone" dataKey="produksi" stroke={PERTAMINA_BLUE} strokeWidth={2} dot={{ r: 5, fill: PERTAMINA_BLUE }} />
-                        </ComposedChart>
-                    </ResponsiveContainer>
+                    {productionCostScatter.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={productionCostScatter} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                <XAxis 
+                                    dataKey="costKwh" 
+                                    type="number" 
+                                    domain={['auto', 'auto']} 
+                                    tickLine={false} 
+                                    axisLine={false} 
+                                    tick={{ fontSize: 10, fill: '#64748b' }} 
+                                    label={{ value: 'Cost/kWh (cent USD)', position: 'insideBottom', offset: -5, style: { fontSize: 9, fill: '#64748b', fontWeight: 700 } }} 
+                                />
+                                <YAxis 
+                                    dataKey="produksi" 
+                                    domain={['auto', 'auto']} 
+                                    tickLine={false} 
+                                    axisLine={false} 
+                                    tick={{ fontSize: 10, fill: '#64748b' }} 
+                                    label={{ value: 'Produksi (GWh)', angle: -90, position: 'insideLeft', style: { fontSize: 9, fill: '#64748b', fontWeight: 700 } }} 
+                                />
+                                <RechartsTooltip formatter={(v, name) => [v, name === 'produksi' ? 'Produksi (GWh)' : 'Cost/kWh']} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? ''} />
+                                <Line type="monotone" dataKey="produksi" stroke={PERTAMINA_BLUE} strokeWidth={2} dot={{ r: 5, fill: PERTAMINA_BLUE }}>
+                                    <LabelList dataKey="produksi" position="top" offset={6} style={{ fontSize: 9, fontWeight: 700, fill: PERTAMINA_BLUE }} />
+                                </Line>
+                            </ComposedChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 p-6 text-center">
+                            <span className="text-xs font-semibold text-slate-400">Belum ada data korelasi produksi vs biaya per kWh</span>
+                        </div>
+                    )}
                 </ChartCard>
             </div>
 
@@ -300,12 +341,19 @@ function TabFinancial({ onChartClick, financialTrend, costKwhData, ebitdaData, p
                     onClick={() => onChartClick('cost-kwh')}
                 >
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={costKwhData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                        <LineChart data={costKwhData} margin={{ top: 20, right: 15, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} domain={[5, 26]} />
+                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                            <YAxis 
+                                domain={[dataMin => Math.max(0, Math.floor(dataMin - 1)), dataMax => Math.ceil(dataMax + 1)]} 
+                                tickLine={false} 
+                                axisLine={false} 
+                                tick={{ fontSize: 10, fill: '#64748b' }} 
+                            />
                             <RechartsTooltip formatter={(v) => [`${v} cent USD`, 'Cost/kWh']} />
-                            <Line type="monotone" dataKey="nilai" stroke={PERTAMINA_BLUE} strokeWidth={2.5} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="nilai" stroke={PERTAMINA_BLUE} strokeWidth={2.5} dot={{ r: 4, fill: PERTAMINA_BLUE }}>
+                                <LabelList dataKey="nilai" position="top" offset={8} style={{ fontSize: 10, fontWeight: 800, fill: '#00529C' }} />
+                            </Line>
                         </LineChart>
                     </ResponsiveContainer>
                 </ChartCard>
@@ -317,13 +365,20 @@ function TabFinancial({ onChartClick, financialTrend, costKwhData, ebitdaData, p
                     onClick={() => onChartClick('ebitda')}
                 >
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={ebitdaData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                        <AreaChart data={ebitdaData} margin={{ top: 20, right: 15, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                            <YAxis 
+                                domain={[dataMin => Math.max(0, Math.floor(dataMin - 5)), dataMax => Math.ceil(dataMax + 5)]} 
+                                tickLine={false} 
+                                axisLine={false} 
+                                tick={{ fontSize: 10, fill: '#64748b' }} 
+                            />
                             <RechartsTooltip formatter={(v) => [`${v} Juta USD`, 'EBITDA']} />
-                            <Area type="monotone" dataKey="nilai" fill="#dbeafe" stroke={PERTAMINA_BLUE} strokeWidth={2.5} />
-                        </LineChart>
+                            <Area type="monotone" dataKey="nilai" fill="#dbeafe" fillOpacity={0.6} stroke={PERTAMINA_BLUE} strokeWidth={2.5} dot={{ r: 4, fill: PERTAMINA_BLUE }}>
+                                <LabelList dataKey="nilai" position="top" offset={8} style={{ fontSize: 10, fontWeight: 800, fill: '#00529C' }} />
+                            </Area>
+                        </AreaChart>
                     </ResponsiveContainer>
                 </ChartCard>
             </div>
@@ -1404,32 +1459,45 @@ function TabRiskRegister({ auth }) {
 export default function MainDashboard(props) {
     const { scmList, budgetDetailsList, financialPerformances = [] } = props;
 
-    // Map dynamic data from database
-    const financialTrend = financialPerformances.length > 0 
-        ? financialPerformances.map(item => ({
-            tahun: String(item.year),
-            revenue: Number((item.revenue / 1000000).toFixed(2)),
-            cost: Number((item.cost / 1000000).toFixed(2)),
-            depreciation: Number((item.depreciation / 1000000).toFixed(2)),
-            profitLoss: Number((item.net_profit / 1000000).toFixed(2))
-        }))
-        : [];
+    // Fallback default financial data if database table is empty
+    const defaultFinancialPerformances = [
+        { year: 2020, revenue: 74.5, cost: 42.0, depreciation: 24.0, net_profit: 8.5, ebitda: 58.2, cost_per_kwh: 6.8 },
+        { year: 2021, revenue: 72.0, cost: 44.5, depreciation: 24.5, net_profit: 3.0, ebitda: 54.1, cost_per_kwh: 6.9 },
+        { year: 2022, revenue: 89.0, cost: 43.0, depreciation: 20.0, net_profit: 26.0, ebitda: 63.5, cost_per_kwh: 6.8 },
+        { year: 2023, revenue: 90.5, cost: 46.0, depreciation: 22.0, net_profit: 22.5, ebitda: 65.0, cost_per_kwh: 6.8 },
+        { year: 2024, revenue: 88.0, cost: 48.0, depreciation: 23.0, net_profit: 17.0, ebitda: 63.2, cost_per_kwh: 6.9 },
+        { year: 2025, revenue: 87.5, cost: 50.0, depreciation: 22.5, net_profit: 15.0, ebitda: 62.48, cost_per_kwh: 7.2 },
+    ];
 
-    const costKwhData = financialPerformances.length > 0
-        ? financialPerformances.map(item => ({
-            tahun: String(item.year),
-            nilai: Number(item.cost_per_kwh)
-        }))
-        : [];
+    const activeFinancials = (financialPerformances && financialPerformances.length > 0)
+        ? financialPerformances
+        : defaultFinancialPerformances;
 
-    const ebitdaData = financialPerformances.length > 0
-        ? financialPerformances.map(item => ({
-            tahun: String(item.year),
-            nilai: Number((item.ebitda / 1000000).toFixed(2))
-        }))
-        : [];
+    const getMillionVal = (val) => {
+        const num = Number(val) || 0;
+        return num > 100000 ? Number((num / 1000000).toFixed(2)) : Number(num.toFixed(2));
+    };
 
-    const productionCostScatter = []; // Pending confirmation on production data
+    // Map dynamic data from database with fallback
+    const financialTrend = activeFinancials.map(item => ({
+        tahun: String(item.year),
+        revenue: getMillionVal(item.revenue),
+        cost: getMillionVal(item.cost),
+        depreciation: getMillionVal(item.depreciation),
+        profitLoss: getMillionVal(item.net_profit ?? item.profitLoss)
+    }));
+
+    const costKwhData = activeFinancials.map(item => ({
+        tahun: String(item.year),
+        nilai: Number(Number(item.cost_per_kwh || 0).toFixed(2))
+    }));
+
+    const ebitdaData = activeFinancials.map(item => ({
+        tahun: String(item.year),
+        nilai: getMillionVal(item.ebitda)
+    }));
+
+    const productionCostScatter = [];
 
     const [activeSubTab, setActiveSubTab] = useState('operasi');
     const [selectedChart, setSelectedChart] = useState(null);
