@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Head, router, Link } from '@inertiajs/react';
 import {
     LayoutDashboard, Calculator, Users, Package, FileSignature,
-    FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound, ChevronDown, ChevronRight, Activity
+    FolderOpen, Bell, LogOut, Calendar, Database, Laptop, Shield, UploadCloud, UsersRound, ChevronDown, ChevronRight, Activity,
+    CheckCircle2, Clock, AlertTriangle, MessageSquare, Box
 } from 'lucide-react';
 
 import MainDashboard from './Pilar/MainDashboard';
@@ -17,7 +18,7 @@ import FeedbackModal from '../Components/FeedbackModal';
 import UploadWizardModal from '../Components/UploadWizardModal';
 
 export default function Dashboard(props) {
-    const { auth, flash, env } = props;
+    const { auth, flash, env, notifications: initialNotifications = [] } = props;
     const currentUser = auth.user;
 
     const getDefaultTab = (role) => {
@@ -46,10 +47,7 @@ export default function Dashboard(props) {
         setExpandedMenus(prev => ({ ...prev, [menuId]: !prev[menuId] }));
     };
 
-    const [notifications, setNotifications] = useState([
-        { id: 1, text: "Manager / Kepala memberikan feedback baru di MOM SCM.", read: false },
-        { id: 2, text: "Kontrak Driver PGE Lahendong tersisa 6 bulan lagi.", read: false }
-    ]);
+    const [notifications, setNotifications] = useState(initialNotifications);
     const [showNotifMenu, setShowNotifMenu] = useState(false);
 
     const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -70,9 +68,10 @@ export default function Dashboard(props) {
         { 
             id: 'view-budget', title: 'Budgeting', label: 'ABI & ABO Monitor', icon: Calculator,
             children: [
+                { id: 'realisasi-abo', title: 'Realisasi & Top 3 ABO' },
+                { id: 'realisasi-abi', title: 'Realisasi & Timeline ABI' },
                 { id: 'abo', title: 'Cost Center (ABO)' },
-                { id: 'abi', title: 'WBS Element (ABI)' },
-                { id: 'realisasi-abo', title: 'Trend Realisasi ABO' }
+                { id: 'abi', title: 'WBS Element (ABI)' }
             ]
         },
         { 
@@ -336,27 +335,63 @@ export default function Dashboard(props) {
                             </button>
 
                             {showNotifMenu && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-150 p-4 z-50 animate-[fadeIn_0.2s_ease-in-out]">
-                                    <div className="flex justify-between items-center mb-3">
-                                        <h4 className="text-xs font-bold text-slate-800">Notifikasi Terbaru</h4>
+                                <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-50 animate-[fadeIn_0.2s_ease-in-out]">
+                                    <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                                        <div className="flex items-center gap-2">
+                                            <Bell className="w-4 h-4 text-pertamina-blue" />
+                                            <h4 className="text-xs font-black text-slate-800">Notifikasi Sistem</h4>
+                                        </div>
                                         {notifications.length > 0 && (
                                             <button
                                                 onClick={() => setNotifications([])}
-                                                className="text-[10px] text-blue-600 hover:text-blue-700 font-bold cursor-pointer"
+                                                className="text-[10px] text-blue-600 hover:text-blue-700 font-bold hover:underline cursor-pointer"
                                             >
-                                                Bersihkan
+                                                Tandai Dibaca
                                             </button>
                                         )}
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="max-h-80 overflow-y-auto space-y-2.5 pt-3">
                                         {notifications.length > 0 ? (
-                                            notifications.map(n => (
-                                                <div key={n.id} className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-[11px] font-medium text-slate-600 leading-normal">
-                                                    {n.text}
-                                                </div>
-                                            ))
+                                            notifications.map(n => {
+                                                let Icon = Activity;
+                                                let iconBg = 'bg-blue-50 text-blue-600 border-blue-200';
+                                                if (n.type === 'upload') {
+                                                    Icon = UploadCloud;
+                                                    iconBg = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                                                } else if (n.type === 'contract') {
+                                                    Icon = FileSignature;
+                                                    iconBg = 'bg-amber-50 text-amber-600 border-amber-200';
+                                                } else if (n.type === 'mom') {
+                                                    Icon = MessageSquare;
+                                                    iconBg = 'bg-indigo-50 text-indigo-600 border-indigo-200';
+                                                } else if (n.type === 'stock') {
+                                                    Icon = Box;
+                                                    iconBg = 'bg-rose-50 text-rose-600 border-rose-200';
+                                                }
+
+                                                return (
+                                                    <div key={n.id} className="p-3 bg-slate-50/80 hover:bg-slate-100/80 transition-colors rounded-xl border border-slate-200/70 text-xs flex gap-3 items-start">
+                                                        <div className={`p-2 rounded-lg border ${iconBg} shrink-0 mt-0.5`}>
+                                                            <Icon className="w-4 h-4" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex justify-between items-center gap-1">
+                                                                <h5 className="font-bold text-slate-800 text-[11px] truncate">{n.title || 'Notifikasi'}</h5>
+                                                                <span className="text-[9.5px] font-semibold text-slate-400 shrink-0">{n.time}</span>
+                                                            </div>
+                                                            <p className="text-[11px] text-slate-600 font-normal leading-relaxed mt-1">
+                                                                {n.text}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
                                         ) : (
-                                            <p className="text-[11px] text-slate-400 text-center py-4">Tidak ada notifikasi baru.</p>
+                                            <div className="text-center py-6">
+                                                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-1.5 opacity-60" />
+                                                <p className="text-xs font-bold text-slate-700">Semua Berjalan Normal</p>
+                                                <p className="text-[11px] text-slate-400 mt-0.5">Tidak ada notifikasi baru saat ini.</p>
+                                            </div>
                                         )}
                                     </div>
                                 </div>

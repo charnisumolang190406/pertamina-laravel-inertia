@@ -48,6 +48,84 @@ class DashboardController extends Controller
         $maleCount = Employee::whereIn('gender', ['Laki-laki', 'L', 'Pria'])->count();
         $femaleCount = Employee::whereIn('gender', ['Perempuan', 'P', 'Wanita'])->count();
 
+        // ─── DYNAMIC NOTIFICATIONS FROM REAL DATABASE EVENTS ───
+        $notifications = [];
+        $notifId = 1;
+
+        // 1. Real Upload/Import Archive events
+        $recentUploads = UploadArchive::latest()->take(3)->get();
+        foreach ($recentUploads as $upload) {
+            $notifications[] = [
+                'id' => $notifId++,
+                'type' => 'upload',
+                'title' => 'Impor Data Berhasil',
+                'text' => ($upload->uploaded_by ?: 'Admin') . ' mengimpor ' . ($upload->rowCount ?: 'beberapa') . ' baris data (' . $upload->filename . ').',
+                'time' => $upload->created_at ? $upload->created_at->diffForHumans() : ($upload->timestamp ?: 'Baru saja'),
+                'read' => false,
+            ];
+        }
+
+        // 2. Real SCM Contracts expiring within 6 months
+        $expiringContracts = Scm::where('status', 'Aktif')
+            ->whereDate('selesai', '<=', now()->addMonths(6))
+            ->orderBy('selesai', 'asc')
+            ->take(2)
+            ->get();
+        foreach ($expiringContracts as $contract) {
+            $endDate = \Carbon\Carbon::parse($contract->selesai);
+            $daysLeft = (int) now()->diffInDays($endDate, false);
+            $daysText = $daysLeft > 0 ? "tersisa {$daysLeft} hari lagi" : "telah berakhir";
+            $notifications[] = [
+                'id' => $notifId++,
+                'type' => 'contract',
+                'title' => 'Jadwal Kontrak SCM',
+                'text' => "Kontrak {$contract->vendor} ('{$contract->nama}') {$daysText} (berakhir " . $endDate->format('d M Y') . ").",
+                'time' => $endDate->format('d M Y'),
+                'read' => false,
+            ];
+        }
+
+        // 3. Real MOM with Feedback
+        $momFeedback = Mom::whereNotNull('feedback')->latest('updated_at')->take(2)->get();
+        foreach ($momFeedback as $m) {
+            $notifications[] = [
+                'id' => $notifId++,
+                'type' => 'mom',
+                'title' => 'Feedback MOM ' . $m->fungsi,
+                'text' => "Isu '{$m->isu}': " . \Illuminate\Support\Str::limit($m->feedback, 90),
+                'time' => $m->updated_at ? $m->updated_at->diffForHumans() : 'Terkini',
+                'read' => false,
+            ];
+        }
+
+        // 4. Low Material Stock Warnings
+        $lowStocks = Stok::where('saldo', '<=', 5)->take(2)->get();
+        foreach ($lowStocks as $stok) {
+            $notifications[] = [
+                'id' => $notifId++,
+                'type' => 'stock',
+                'title' => 'Peringatan Stok Rendah',
+                'text' => "Stok material '{$stok->nama}' tersisa {$stok->saldo} unit ({$stok->fungsi}).",
+                'time' => 'Inventori Aktif',
+                'read' => false,
+            ];
+        }
+
+        // 5. Recent Activity Logs if available
+        $recentActivities = \Spatie\Activitylog\Models\Activity::with('causer')->latest()->take(2)->get();
+        foreach ($recentActivities as $act) {
+            $actorName = $act->causer ? ($act->causer->fullName ?: $act->causer->name) : 'Admin Sistem';
+            $subjectName = class_basename($act->subject_type);
+            $notifications[] = [
+                'id' => $notifId++,
+                'type' => 'activity',
+                'title' => 'Perubahan Data ' . $subjectName,
+                'text' => "{$actorName} melakukan " . ($act->event === 'created' ? 'penambahan' : ($act->event === 'updated' ? 'pembaruan' : 'penghapusan')) . " pada {$subjectName}.",
+                'time' => $act->created_at ? $act->created_at->diffForHumans() : 'Baru saja',
+                'read' => false,
+            ];
+        }
+
         return Inertia::render('Dashboard', [
             'scmList' => Scm::orderBy('id', 'desc')->get(),
             'calendarEvents' => CalendarEvent::all(),
@@ -103,6 +181,7 @@ class DashboardController extends Controller
             'uploadArchive' => UploadArchive::orderBy('id', 'desc')->get(),
             'bbmList' => BbmStock::all(),
             'financialPerformances' => FinancialPerformance::orderBy('year', 'asc')->get(),
+            'notifications' => $notifications,
         ]);
     }
 }

@@ -12,6 +12,56 @@ import ProduksiBarChart from './ProduksiBarChart';
 import Pagination from './Pagination';
 
 /**
+ * Smart number formatter for compact chart axis & labels (e.g. 122.638.190.900 -> 122,64M)
+ */
+export const formatSmartNumber = (val, unit = '') => {
+    if (val === undefined || val === null || isNaN(val)) return '-';
+    const num = Number(val);
+    const abs = Math.abs(num);
+
+    // If unit is Rp or numbers are in the hundreds of millions / billions
+    if (unit === 'Rp' || abs >= 100000000) {
+        if (abs >= 1000000000) {
+            const bill = num / 1000000000;
+            return `${bill.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}M`;
+        }
+        if (abs >= 1000000) {
+            const mill = num / 1000000;
+            return `${mill.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}Jt`;
+        }
+        if (abs >= 1000) {
+            const thou = num / 1000;
+            return `${thou.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 1 })}rb`;
+        }
+    }
+
+    if (abs >= 1000000000) {
+        return `${(num / 1000000000).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}B`;
+    }
+
+    if (Number.isInteger(num)) {
+        return num.toLocaleString('id-ID');
+    }
+    return num.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+};
+
+export const formatKpiDisplayValue = (val, unit = '') => {
+    if (val === undefined || val === null || isNaN(val)) return '-';
+    const num = Number(val);
+    const abs = Math.abs(num);
+
+    if (unit === 'Rp' || abs >= 1000000000) {
+        if (abs >= 1000000000) {
+            return `Rp ${(num / 1000000000).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Miliar`;
+        }
+        if (abs >= 1000000) {
+            return `Rp ${(num / 1000000).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Juta`;
+        }
+    }
+    return `${Number.isInteger(num) ? num.toLocaleString('id-ID') : num.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${unit || ''}`;
+};
+
+/**
  * CustomPointLabel — Renders a crisp badge with data values above Line / Dot / Area points
  */
 const CustomPointLabel = (props) => {
@@ -19,7 +69,7 @@ const CustomPointLabel = (props) => {
     if (value === undefined || value === null || isNaN(value)) return null;
 
     const formattedVal = typeof value === 'number'
-        ? (Number.isInteger(value) ? value.toLocaleString('id-ID') : value.toFixed(2))
+        ? formatSmartNumber(value, unit)
         : value;
 
     const textWidth = Math.max(String(formattedVal).length * 7 + 10, 28);
@@ -44,7 +94,7 @@ const CustomPointLabel = (props) => {
                 x={x}
                 y={badgeY + 11.5}
                 fill="#0f172a"
-                fontSize={9.5}
+                fontSize={9}
                 fontWeight="800"
                 textAnchor="middle"
             >
@@ -62,7 +112,7 @@ const CustomBarLabel = (props) => {
     if (value === undefined || value === null || isNaN(value) || value === 0) return null;
 
     const formattedVal = typeof value === 'number'
-        ? (Number.isInteger(value) ? value.toLocaleString('id-ID') : value.toFixed(2))
+        ? formatSmartNumber(value)
         : value;
 
     return (
@@ -70,7 +120,7 @@ const CustomBarLabel = (props) => {
             x={x + width / 2}
             y={y - 6}
             fill="#1e293b"
-            fontSize={10}
+            fontSize={9.5}
             fontWeight="800"
             textAnchor="middle"
         >
@@ -252,14 +302,13 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
             '9': 'September', '10': 'Oktober', '11': 'November', '12': 'Desember'
         };
         return months[mStr] || `Bulan ${mStr}`;
-    };
-
-    // Reusable Recharts Tooltip Formatter
+    };    // Reusable Recharts Tooltip Formatter
     const customTooltipFormatter = (value, name) => {
-        const s = series.find(x => x.key === name);
-        const unitStr = s ? ` ${s.unit || ''}` : '';
+        const s = series.find(x => x.key === name || x.label === name);
+        const unitStr = s?.unit ? ` ${s.unit}` : '';
         const num = typeof value === 'number' ? value.toLocaleString('id-ID') : value;
-        return [`${num}${unitStr}`, s ? s.label : name];
+        const smartFmt = typeof value === 'number' && Math.abs(value) >= 1000000 ? ` (${formatSmartNumber(value, s?.unit)})` : '';
+        return [`${num}${unitStr}${smartFmt}`, s ? s.label : name];
     };
 
     // Determine bar keys for overlay comparison
@@ -334,7 +383,7 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                 </div>
                             )}
 
-                            {/* Month-Based Filter */}
+                            {/* Monthly Filter */}
                             {timeType === 'month' && (
                                 <div className="space-y-2">
                                     {/* Quarter Shortcut buttons */}
@@ -465,7 +514,14 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                                 <LineChart data={filteredData} margin={{ top: 30, right: 25, left: -5, bottom: 5 }}>
                                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                                     <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                                    <YAxis domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                    <YAxis
+                                                        domain={computedYDomain}
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        width={65}
+                                                        tickFormatter={(v) => formatSmartNumber(v)}
+                                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                                                    />
                                                     <RechartsTooltip formatter={customTooltipFormatter} />
                                                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
                                                     {series.map(s => {
@@ -493,7 +549,14 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                                 <BarChart data={filteredData} margin={{ top: 30, right: 45, left: -5, bottom: 5 }} {...barHover.barChartProps}>
                                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                                     <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                                    <YAxis domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                    <YAxis
+                                                        domain={computedYDomain}
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        width={65}
+                                                        tickFormatter={(v) => formatSmartNumber(v)}
+                                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                                                    />
                                                     <RechartsTooltip formatter={customTooltipFormatter} />
                                                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
                                                     {series.map(s => {
@@ -531,11 +594,35 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                                     {/* Dual Axis Support if defined */}
                                                     {yAxisIdLeft && yAxisIdRight ? (
                                                         <>
-                                                            <YAxis yAxisId="left" domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                                            <YAxis yAxisId="right" orientation="right" domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                            <YAxis
+                                                                yAxisId="left"
+                                                                domain={computedYDomain}
+                                                                tickLine={false}
+                                                                axisLine={false}
+                                                                width={65}
+                                                                tickFormatter={(v) => formatSmartNumber(v)}
+                                                                tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                                                            />
+                                                            <YAxis
+                                                                yAxisId="right"
+                                                                orientation="right"
+                                                                domain={computedYDomain}
+                                                                tickLine={false}
+                                                                axisLine={false}
+                                                                width={65}
+                                                                tickFormatter={(v) => formatSmartNumber(v)}
+                                                                tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                                                            />
                                                         </>
                                                     ) : (
-                                                        <YAxis domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                        <YAxis
+                                                            domain={computedYDomain}
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            width={65}
+                                                            tickFormatter={(v) => formatSmartNumber(v)}
+                                                            tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                                                        />
                                                     )}
 
                                                     <RechartsTooltip formatter={customTooltipFormatter} />
@@ -595,7 +682,14 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                                 <AreaChart data={filteredData} margin={{ top: 30, right: 25, left: -5, bottom: 5 }}>
                                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                                     <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-                                                    <YAxis domain={computedYDomain} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                                                    <YAxis
+                                                        domain={computedYDomain}
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        width={65}
+                                                        tickFormatter={(v) => formatSmartNumber(v)}
+                                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                                                    />
                                                     <RechartsTooltip formatter={customTooltipFormatter} />
                                                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
                                                     {series.map(s => {
@@ -646,19 +740,19 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                             <div className="grid grid-cols-2 gap-2 mt-2.5 pl-1 text-[10px]">
                                                 <div>
                                                     <span className="text-slate-400 block font-bold">Rata-rata</span>
-                                                    <span className="font-extrabold text-slate-800">{kpi.avg} {kpi.unit}</span>
+                                                    <span className="font-extrabold text-slate-800">{formatKpiDisplayValue(kpi.avg, kpi.unit)}</span>
                                                 </div>
                                                 <div>
                                                     <span className="text-slate-400 block font-bold">Total</span>
-                                                    <span className="font-extrabold text-slate-800">{kpi.sum} {kpi.unit}</span>
+                                                    <span className="font-extrabold text-slate-800">{formatKpiDisplayValue(kpi.sum, kpi.unit)}</span>
                                                 </div>
                                                 <div>
                                                     <span className="text-slate-400 block font-bold">Minimum</span>
-                                                    <span className="font-bold text-slate-700">{kpi.min} {kpi.unit}</span>
+                                                    <span className="font-bold text-slate-700">{formatKpiDisplayValue(kpi.min, kpi.unit)}</span>
                                                 </div>
                                                 <div>
                                                     <span className="text-slate-400 block font-bold">Maximum</span>
-                                                    <span className="font-bold text-slate-700">{kpi.max} {kpi.unit}</span>
+                                                    <span className="font-bold text-slate-700">{formatKpiDisplayValue(kpi.max, kpi.unit)}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -705,9 +799,12 @@ export default function ChartDetailModal({ isOpen, onClose, chartConfig }) {
                                                     {series.map(s => {
                                                         if (!selectedSeriesKeys.includes(s.key)) return null;
                                                         const val = d[s.key];
+                                                        const isRupiah = s.unit === 'Rp' || (typeof val === 'number' && Math.abs(val) >= 1000000);
                                                         return (
                                                             <td key={s.key} className="px-6 py-2.5 font-medium text-slate-600">
-                                                                {typeof val === 'number' ? val.toLocaleString('id-ID') : val}
+                                                                {typeof val === 'number'
+                                                                    ? (isRupiah ? `Rp ${val.toLocaleString('id-ID')}` : val.toLocaleString('id-ID'))
+                                                                    : val}
                                                             </td>
                                                         );
                                                     })}

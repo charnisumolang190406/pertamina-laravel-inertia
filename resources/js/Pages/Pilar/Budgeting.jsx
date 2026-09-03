@@ -16,6 +16,12 @@ const PERTAMINA_GREEN = '#8DC63F';
 const PERTAMINA_YELLOW = '#F59E0B';
 const PERTAMINA_RED = '#E52B2D';
 
+import AboRealisasiBarChart from '../../Components/AboRealisasiBarChart';
+import { AboMonthlyLineChart, AboKumulatifLineChart, aboMonthly2026Data, aboKumulatif2026Data } from '../../Components/AboTrendLines';
+import TopAboSection, { TOP_LAHENDONG_DATA, TOP_PER_FUNGSI_DATA } from '../../Components/TopAboSection';
+import AbiRealisasiBarChart from '../../Components/AbiRealisasiBarChart';
+import AbiTimelineChart from '../../Components/AbiTimelineChart';
+
 /* ─── Dummy Data: Realisasi ABO ─── */
 const aboYearly = [
     { tahun: '2019', rkap: 28.5, actual: 26.0, variance: -8.78 },
@@ -26,44 +32,6 @@ const aboYearly = [
     { tahun: '2024', rkap: 36.5, actual: 35.2, variance: -3.56 },
     { tahun: '2025', rkap: 38.0, actual: 37.5, variance: -1.32 },
     { tahun: '2026', rkap: 39.5, actual: 38.8, variance: -1.77 },
-];
-
-const aboKumulatif2026 = [
-    { bulan: '1', rkap: 3.2, realisasi: 3.0 },
-    { bulan: '2', rkap: 6.5, realisasi: 6.2 },
-    { bulan: '3', rkap: 9.8, realisasi: 9.5 },
-    { bulan: '4', rkap: 13.2, realisasi: 12.8 },
-    { bulan: '5', rkap: 16.5, realisasi: 16.0 },
-    { bulan: '6', rkap: 19.8, realisasi: 19.2 },
-    { bulan: '7', rkap: 23.2, realisasi: 22.5 },
-    { bulan: '8', rkap: 26.5, realisasi: 25.8 },
-    { bulan: '9', rkap: 29.8, realisasi: 29.0 },
-    { bulan: '10', rkap: 33.2, realisasi: 32.2 },
-    { bulan: '11', rkap: 36.5, realisasi: 35.5 },
-    { bulan: '12', rkap: 39.5, realisasi: 38.8 },
-];
-
-const aboMonthly2026 = [
-    { bulan: '1', rkap: 3.2, realisasi: 3.0 },
-    { bulan: '2', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '3', rkap: 3.3, realisasi: 3.3 },
-    { bulan: '4', rkap: 3.4, realisasi: 3.3 },
-    { bulan: '5', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '6', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '7', rkap: 3.4, realisasi: 3.3 },
-    { bulan: '8', rkap: 3.3, realisasi: 3.3 },
-    { bulan: '9', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '10', rkap: 3.4, realisasi: 3.2 },
-    { bulan: '11', rkap: 3.3, realisasi: 3.3 },
-    { bulan: '12', rkap: 3.0, realisasi: 3.3 },
-];
-
-const dummyAboPerFungsi = [
-    { fungsi: 'Operation', budget: 12.5, actual: 12.4, variance: -0.8 },
-    { fungsi: 'Maintenance', budget: 10.2, actual: 10.1, variance: -1.0 },
-    { fungsi: 'GM', budget: 5.8, actual: 5.7, variance: -1.7 },
-    { fungsi: 'HSSE', budget: 4.5, actual: 4.5, variance: 0.0 },
-    { fungsi: 'Bus. Support', budget: 6.5, actual: 6.1, variance: -6.2 },
 ];
 
 function ChartCard({ title, subtitle, children, className = '', onClick }) {
@@ -96,138 +64,52 @@ function ChartCard({ title, subtitle, children, className = '', onClick }) {
     );
 }
 
-function TabRealisasiAbo({ budgetDetailsList, onChartClick }) {
-    const aboYearlyHover = useBarHover();
-    const aboFungsiHover = useBarHover();
-
-    const dynamicAboPerFungsi = React.useMemo(() => {
-        const aboList = budgetDetailsList.filter(b => b.kategori === 'ABO');
-        
-        const getClassifiedFunction = (name = '') => {
-            const nameLower = name.toLowerCase();
-            if (nameLower.includes('maint') || nameLower.includes('perbaikan') || nameLower.includes('investasi pipe') || nameLower.includes('maintenance')) {
-                return 'Maintenance';
-            }
-            if (nameLower.includes('steam') || nameLower.includes('drill') || nameLower.includes('operation') || nameLower.includes('ops') || nameLower.includes('produksi')) {
-                return 'Operation';
-            }
-            if (nameLower.includes('hsse') || nameLower.includes('safety') || nameLower.includes('lingkungan') || nameLower.includes('hydrant')) {
-                return 'HSSE';
-            }
-            return 'Business Support';
-        };
-
-        const groupedMap = aboList.reduce((acc, curr) => {
-            const funcName = getClassifiedFunction(curr.name);
-            if (!acc[funcName]) {
-                acc[funcName] = { fungsi: funcName, budget: 0, actual: 0 };
-            }
-            acc[funcName].budget += curr.budget;
-            acc[funcName].actual += curr.actual;
-            return acc;
-        }, {});
-
-        const result = Object.values(groupedMap).map(item => ({
-            fungsi: item.fungsi,
-            budget: Number((item.budget / 1000000000).toFixed(2)),
-            actual: Number((item.actual / 1000000000).toFixed(2)),
-            variance: Number(((item.actual - item.budget) / 1000000000).toFixed(2))
-        }));
-
-        if (result.length === 0) {
-            return [
-                { fungsi: 'Operation', budget: 0, actual: 0, variance: 0 },
-                { fungsi: 'Maintenance', budget: 0, actual: 0, variance: 0 },
-                { fungsi: 'HSSE', budget: 0, actual: 0, variance: 0 },
-                { fungsi: 'Bus. Support', budget: 0, actual: 0, variance: 0 }
-            ];
-        }
-        return result;
-    }, [budgetDetailsList]);
-
+function TabRealisasiAbo({ onChartClick }) {
     return (
-        <div className="space-y-4 animate-[fadeIn_0.3s_ease-in-out]">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard
-                    title="ABO 2019 – 2026 (USD Juta)"
-                    subtitle="Perbandingan RKAP vs Actual — Kenaikan anggaran ABO Area Lahendong"
-                    className="h-72"
-                    onClick={() => onChartClick && onChartClick('abo-yearly')}
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={aboYearly} margin={{ top: 10, right: 60, left: -10, bottom: 5 }} {...aboYearlyHover.barChartProps}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <RechartsTooltip formatter={(v, name) => [`${v} Juta USD`, name]} />
-                            <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Bar dataKey="rkap" name="RKAP (USD)" fill="#93c5fd" radius={[3, 3, 0, 0]} />
-                            <Bar dataKey="actual" name="Actual (USD)" fill={PERTAMINA_GREEN} radius={[3, 3, 0, 0]} />
-                            <Customized component={BarDiffOverlay} barKey1="rkap" barKey2="actual" activeIndex={aboYearlyHover.activeIndex} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+        <div className="space-y-6 animate-[fadeIn_0.3s_ease-in-out]">
+            {/* Realisasi ABO 2026 Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left: Custom Broken-Axis SVG Bar Chart */}
+                <div className="lg:col-span-7">
+                    <AboRealisasiBarChart onClick={() => onChartClick && onChartClick('abo-realisasi-per-fungsi')} />
+                </div>
 
-                <ChartCard
-                    title="Actual ABO Area Lahendong 2026 — Kumulatif"
-                    subtitle="Serapan anggaran kumulatif RKAP vs Realisasi (IDR Miliar)"
-                    className="h-72"
-                    onClick={() => onChartClick && onChartClick('abo-kumulatif')}
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={aboKumulatif2026} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="bulan" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} label={{ value: 'Bulan', position: 'insideBottom', offset: -2, style: { fontSize: 9 } }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <RechartsTooltip formatter={(v, name) => [`${v} Miliar`, name]} />
-                            <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Line type="monotone" dataKey="rkap" name="RKAP Kumulatif" stroke={PERTAMINA_BLUE} strokeWidth={2.5} dot={{ r: 3 }} />
-                            <Line type="monotone" dataKey="realisasi" name="Realisasi Kumulatif" stroke={PERTAMINA_GREEN} strokeWidth={2.5} dot={{ r: 3 }} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+                {/* Right: Monthly & Kumulatif Line Charts */}
+                <div className="lg:col-span-5 flex flex-col gap-4">
+                    <ChartCard
+                        title="Actual ABO 2026 Monthly"
+                        subtitle="RKAP 2026 vs Realisasi vs Prognosa (IDR Miliar)"
+                        className="h-60"
+                        onClick={() => onChartClick && onChartClick('abo-monthly-2026')}
+                    >
+                        <AboMonthlyLineChart />
+                    </ChartCard>
+
+                    <ChartCard
+                        title="Actual ABO 2026 Kumulatif"
+                        subtitle="Akumulasi RKAP vs Realisasi vs Prognosa (IDR Miliar)"
+                        className="h-60"
+                        onClick={() => onChartClick && onChartClick('abo-kumulatif-2026')}
+                    >
+                        <AboKumulatifLineChart />
+                    </ChartCard>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard
-                    title="Actual ABO Area Lahendong 2026 — Monthly"
-                    subtitle="Realisasi bulanan RKAP vs Actual (IDR Miliar)"
-                    className="h-64"
-                    onClick={() => onChartClick && onChartClick('abo-monthly')}
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={aboMonthly2026} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="bulan" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} domain={[2.5, 3.8]} />
-                            <RechartsTooltip formatter={(v, name) => [`${v} Miliar`, name]} />
-                            <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Line type="monotone" dataKey="rkap" name="RKAP 2026" stroke={PERTAMINA_BLUE} strokeWidth={2} dot={{ r: 3 }} />
-                            <Line type="monotone" dataKey="realisasi" name="Real 2026" stroke={PERTAMINA_GREEN} strokeWidth={2} dot={{ r: 3 }} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+            {/* Top 3 ABO 2026 (Top 3 Lahendong on top, then 5 operational functions) */}
+            <TopAboSection onChartClick={onChartClick} />
+        </div>
+    );
+}
 
-                <ChartCard
-                    title="Rincian Realisasi ABO per Fungsi"
-                    subtitle="Budget vs Actual per fungsi — Area Lahendong 2026 (IDR Miliar)"
-                    className="h-64"
-                    onClick={() => onChartClick && onChartClick('abo-fungsi')}
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={dynamicAboPerFungsi} margin={{ top: 10, right: 60, left: -10, bottom: 5 }} {...aboFungsiHover.barChartProps}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="fungsi" tickLine={false} axisLine={false} tick={{ fontSize: 9 }} />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                            <RechartsTooltip formatter={(v, name) => [`${v} Miliar`, name]} />
-                            <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Bar dataKey="budget" name="Budget" fill="#93c5fd" radius={[3, 3, 0, 0]} />
-                            <Bar dataKey="actual" name="Actual" fill={PERTAMINA_GREEN} radius={[3, 3, 0, 0]} />
-                            <Customized component={BarDiffOverlay} barKey1="budget" barKey2="actual" activeIndex={aboFungsiHover.activeIndex} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartCard>
-            </div>
+function TabRealisasiAbi({ onChartClick }) {
+    return (
+        <div className="space-y-6 animate-[fadeIn_0.3s_ease-in-out]">
+            {/* Realisasi Biaya ABI 2026 (11 Proyek Investasi) */}
+            <AbiRealisasiBarChart onClick={() => onChartClick && onChartClick('abi-realisasi-biaya')} />
+
+            {/* Realisasi Timeline ABI 2026 (Gantt Schedule) */}
+            <AbiTimelineChart />
         </div>
     );
 }
@@ -324,7 +206,7 @@ export default function Budgeting(props) {
     const { budgetDetailsList, momList, auth, onOpenFeedback, activeSubMenu } = props;
     const currentUser = auth.user;
 
-    const [activeBudgetSubTab, setActiveBudgetSubTab] = useState('abo');
+    const [activeBudgetSubTab, setActiveBudgetSubTab] = useState('realisasi-abo');
     const [aboViewMode, setAboViewMode] = useState('detail'); // 'detail' | 'grouped'
     const [aboDetailPage, setAboDetailPage] = useState(1);
     const [aboGroupedPage, setAboGroupedPage] = useState(1);
@@ -434,89 +316,158 @@ export default function Budgeting(props) {
         }
     };
 
-    // Dynamic ABO per fungsi calculation for modal
-    const dynamicAboPerFungsi = React.useMemo(() => {
-        const aboList = budgetDetailsList.filter(b => b.kategori === 'ABO');
-        const groupedMap = aboList.reduce((acc, curr) => {
-            const funcName = getClassifiedFunction(curr.name, curr.fungsi);
-            if (!acc[funcName]) {
-                acc[funcName] = { fungsi: funcName, budget: 0, actual: 0 };
-            }
-            acc[funcName].budget += curr.budget;
-            acc[funcName].actual += curr.actual;
-            return acc;
-        }, {});
-
-        const result = Object.values(groupedMap).map(item => ({
-            fungsi: item.fungsi,
-            budget: Number((item.budget / 1000000000).toFixed(2)),
-            actual: Number((item.actual / 1000000000).toFixed(2)),
-            variance: Number(((item.actual - item.budget) / 1000000000).toFixed(2))
-        }));
-
-        if (result.length === 0) {
-            return [
-                { fungsi: 'Operation', budget: 0, actual: 0, variance: 0 },
-                { fungsi: 'Maintenance', budget: 0, actual: 0, variance: 0 },
-                { fungsi: 'HSSE', budget: 0, actual: 0, variance: 0 },
-                { fungsi: 'Bus. Support', budget: 0, actual: 0, variance: 0 }
-            ];
-        }
-        return result;
-    }, [budgetDetailsList]);
-
     const chartConfigs = {
-        'abo-yearly': {
-            id: 'abo-yearly',
-            title: 'ABO 2019 – 2026 (USD Juta)',
-            subtitle: 'Perbandingan RKAP vs Actual ABO Area Lahendong',
-            type: 'bar',
-            xAxisKey: 'tahun',
-            timeType: 'year',
-            series: [
-                { key: 'rkap', label: 'RKAP (USD)', color: '#93c5fd', type: 'bar', unit: 'Juta USD' },
-                { key: 'actual', label: 'Actual (USD)', color: PERTAMINA_GREEN, type: 'bar', unit: 'Juta USD' }
-            ],
-            rawData: aboYearly
-        },
-        'abo-kumulatif': {
-            id: 'abo-kumulatif',
-            title: 'Actual ABO Area Lahendong 2026 — Kumulatif',
-            subtitle: 'Serapan anggaran kumulatif RKAP vs Realisasi (IDR Miliar)',
-            type: 'line',
-            xAxisKey: 'bulan',
-            timeType: 'month',
-            series: [
-                { key: 'rkap', label: 'RKAP Kumulatif', color: PERTAMINA_BLUE, unit: 'Miliar' },
-                { key: 'realisasi', label: 'Realisasi Kumulatif', color: PERTAMINA_GREEN, unit: 'Miliar' }
-            ],
-            rawData: aboKumulatif2026
-        },
-        'abo-monthly': {
-            id: 'abo-monthly',
-            title: 'Actual ABO Area Lahendong 2026 — Monthly',
-            subtitle: 'Realisasi bulanan RKAP vs Actual (IDR Miliar)',
-            type: 'line',
-            xAxisKey: 'bulan',
-            timeType: 'month',
-            series: [
-                { key: 'rkap', label: 'RKAP 2026', color: PERTAMINA_BLUE, unit: 'Miliar' },
-                { key: 'realisasi', label: 'Real 2026', color: PERTAMINA_GREEN, unit: 'Miliar' }
-            ],
-            rawData: aboMonthly2026
-        },
-        'abo-fungsi': {
-            id: 'abo-fungsi',
-            title: 'Rincian Realisasi ABO per Fungsi',
-            subtitle: 'Budget vs Actual per fungsi — Area Lahendong 2026 (IDR Miliar)',
+        'abo-realisasi-per-fungsi': {
+            id: 'abo-realisasi-per-fungsi',
+            title: 'Realisasi ABO 2026 Area Lahendong per Fungsi (IDR Miliar)',
+            subtitle: 'Budget vs Actual & persentase serapan anggaran per fungsi operasional',
             type: 'bar',
             xAxisKey: 'fungsi',
             timeType: 'other',
             series: [
-                { key: 'budget', label: 'Budget', color: '#93c5fd', type: 'bar', unit: 'Miliar' },
-                { key: 'actual', label: 'Actual', color: PERTAMINA_GREEN, type: 'bar', unit: 'Miliar' }
+                { key: 'budget', label: 'Budget', color: '#3B82F6', type: 'bar', unit: 'Miliar' },
+                { key: 'actual', label: 'Actual', color: '#72B340', type: 'bar', unit: 'Miliar' }
             ],
-            rawData: dynamicAboPerFungsi
+            rawData: [
+                { fungsi: 'Operation', budget: 6.47, actual: 1.80 },
+                { fungsi: 'Maintenance', budget: 11.19, actual: 5.24 },
+                { fungsi: 'GM', budget: 0.37, actual: 0.26 },
+                { fungsi: 'HSSE', budget: 6.73, actual: 2.25 },
+                { fungsi: 'Bus. Support', budget: 47.80, actual: 26.61 },
+                { fungsi: 'GPR', budget: 2.28, actual: 1.40 },
+                { fungsi: 'TOTAL', budget: 74.84, actual: 37.55 }
+            ]
+        },
+        'abo-monthly-2026': {
+            id: 'abo-monthly-2026',
+            title: 'Actual ABO 2026 Monthly (IDR Miliar)',
+            subtitle: 'RKAP vs Realisasi vs Prognosa bulanan Area Lahendong 2026',
+            type: 'line',
+            xAxisKey: 'bulan',
+            timeType: 'month',
+            series: [
+                { key: 'rkap', label: 'RKAP 2026', color: '#2563EB', unit: 'Miliar' },
+                { key: 'realisasi', label: 'Realisasi', color: '#16A34A', unit: 'Miliar' },
+                { key: 'prognosa', label: 'Prognosa', color: '#EA580C', unit: 'Miliar' }
+            ],
+            rawData: aboMonthly2026Data
+        },
+        'abo-kumulatif-2026': {
+            id: 'abo-kumulatif-2026',
+            title: 'Actual ABO 2026 Kumulatif (IDR Miliar)',
+            subtitle: 'Akumulasi serapan anggaran RKAP vs Realisasi vs Prognosa',
+            type: 'line',
+            xAxisKey: 'bulan',
+            timeType: 'month',
+            series: [
+                { key: 'rkap', label: 'RKAP 2026', color: '#2563EB', unit: 'Miliar' },
+                { key: 'realisasi', label: 'Realisasi', color: '#16A34A', unit: 'Miliar' },
+                { key: 'prognosa', label: 'Prognosa', color: '#EA580C', unit: 'Miliar' }
+            ],
+            rawData: aboKumulatif2026Data
+        },
+        'abi-realisasi-biaya': {
+            id: 'abi-realisasi-biaya',
+            title: 'Realisasi Biaya ABI 2026 (IDR Miliar)',
+            subtitle: 'Rencana vs Realisasi 11 Proyek Anggaran Biaya Investasi Area Lahendong',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'rencana', label: 'Rencana', color: '#3B82F6', type: 'bar', unit: 'Miliar' },
+                { key: 'realisasi', label: 'Realisasi', color: '#72B340', type: 'bar', unit: 'Miliar' }
+            ],
+            rawData: [
+                { name: 'Pengadaan Logging Truck Unit', rencana: 15.00, realisasi: 6.79 },
+                { name: 'Pemindahan AFT Cluster 37', rencana: 8.85, realisasi: 0.74 },
+                { name: 'Pemipaan Jalur EDV ke AFT Cl. 27', rencana: 1.96, realisasi: 0.00 },
+                { name: 'Pengadaan Master Valve LHD-31', rencana: 2.21, realisasi: 0.00 },
+                { name: '1 Set Aktuator MCV Unit 5&6', rencana: 7.16, realisasi: 0.00 },
+                { name: 'Perbaikan Main Steam Line Unit 1-4', rencana: 4.22, realisasi: 0.00 },
+                { name: 'Pembelian PSV Unit 1-4*', rencana: 2.70, realisasi: 0.00 },
+                { name: 'Pemboran Sumur Make-Up TPS-P1.2*', rencana: 110.12, realisasi: 2.11 },
+                { name: 'Surveillance System LHD*', rencana: 2.30, realisasi: 0.00 },
+                { name: 'Pemagaran Pagar Balong Cluster*', rencana: 5.91, realisasi: 0.00 },
+                { name: 'TA Area LHD Unit 5&6', rencana: 79.98, realisasi: 5.05 }
+            ]
+        },
+        'top-abo-lahendong': {
+            id: 'top-abo-lahendong',
+            title: 'TOP 3 ABO Area Lahendong 2026 (Juta IDR)',
+            subtitle: 'Tiga alokasi anggaran terbesar Area Lahendong beserta realisasi serapan',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'anggaran', label: 'Anggaran', color: '#3B82F6', type: 'bar', unit: 'Juta IDR' },
+                { key: 'realisasi', label: 'Realisasi', color: '#72B340', type: 'bar', unit: 'Juta IDR' }
+            ],
+            rawData: TOP_LAHENDONG_DATA.map(d => ({ name: d.name, anggaran: d.anggaran, realisasi: d.realisasi, diff: d.diff, fungsi: d.fungsi }))
+        },
+        'top-abo-operation': {
+            id: 'top-abo-operation',
+            title: 'Top 3 ABO 2026 — Operation (Juta IDR)',
+            subtitle: 'Rincian 3 pos alokasi anggaran & realisasi tertinggi fungsi Operation',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'anggaran', label: 'Anggaran', color: '#3B82F6', type: 'bar', unit: 'Juta IDR' },
+                { key: 'realisasi', label: 'Realisasi', color: '#72B340', type: 'bar', unit: 'Juta IDR' }
+            ],
+            rawData: TOP_PER_FUNGSI_DATA.operation.items
+        },
+        'top-abo-maintenance': {
+            id: 'top-abo-maintenance',
+            title: 'Top 3 ABO 2026 — Maintenance (Juta IDR)',
+            subtitle: 'Rincian 3 pos alokasi anggaran & realisasi tertinggi fungsi Maintenance',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'anggaran', label: 'Anggaran', color: '#3B82F6', type: 'bar', unit: 'Juta IDR' },
+                { key: 'realisasi', label: 'Realisasi', color: '#72B340', type: 'bar', unit: 'Juta IDR' }
+            ],
+            rawData: TOP_PER_FUNGSI_DATA.maintenance.items
+        },
+        'top-abo-gpr': {
+            id: 'top-abo-gpr',
+            title: 'Top 3 ABO 2026 — GPR (Juta IDR)',
+            subtitle: 'Rincian 3 pos alokasi anggaran & realisasi tertinggi fungsi GPR',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'anggaran', label: 'Anggaran', color: '#3B82F6', type: 'bar', unit: 'Juta IDR' },
+                { key: 'realisasi', label: 'Realisasi', color: '#72B340', type: 'bar', unit: 'Juta IDR' }
+            ],
+            rawData: TOP_PER_FUNGSI_DATA.gpr.items
+        },
+        'top-abo-business_support': {
+            id: 'top-abo-business_support',
+            title: 'Top 3 ABO 2026 — Business Support (Juta IDR)',
+            subtitle: 'Rincian 3 pos alokasi anggaran & realisasi tertinggi fungsi Business Support',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'anggaran', label: 'Anggaran', color: '#3B82F6', type: 'bar', unit: 'Juta IDR' },
+                { key: 'realisasi', label: 'Realisasi', color: '#72B340', type: 'bar', unit: 'Juta IDR' }
+            ],
+            rawData: TOP_PER_FUNGSI_DATA.business_support.items
+        },
+        'top-abo-hsse': {
+            id: 'top-abo-hsse',
+            title: 'Top 3 ABO 2026 — HSSE (Juta IDR)',
+            subtitle: 'Rincian 3 pos alokasi anggaran & realisasi tertinggi fungsi HSSE',
+            type: 'bar',
+            xAxisKey: 'name',
+            timeType: 'other',
+            series: [
+                { key: 'anggaran', label: 'Anggaran', color: '#3B82F6', type: 'bar', unit: 'Juta IDR' },
+                { key: 'realisasi', label: 'Realisasi', color: '#72B340', type: 'bar', unit: 'Juta IDR' }
+            ],
+            rawData: TOP_PER_FUNGSI_DATA.hsse.items
         },
         'budget-ringkasan-abo': {
             id: 'budget-ringkasan-abo',
@@ -617,30 +568,38 @@ export default function Budgeting(props) {
             </div>
 
             {/* Subtab Navigation */}
-            <div className="flex border-b border-slate-200 bg-white p-2 rounded-2xl border shadow-2xs">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-2xs">
+                <button
+                    onClick={() => setActiveBudgetSubTab('realisasi-abo')}
+                    className={`py-2.5 px-3 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        activeBudgetSubTab === 'realisasi-abo' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                >
+                    <PieIcon className="w-4 h-4" /> Realisasi & Top 3 ABO
+                </button>
+                <button
+                    onClick={() => setActiveBudgetSubTab('realisasi-abi')}
+                    className={`py-2.5 px-3 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        activeBudgetSubTab === 'realisasi-abi' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                >
+                    <Activity className="w-4 h-4" /> Realisasi & Timeline ABI
+                </button>
                 <button
                     onClick={() => setActiveBudgetSubTab('abo')}
-                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                        activeBudgetSubTab === 'abo' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                    className={`py-2.5 px-3 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        activeBudgetSubTab === 'abo' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                 >
                     <FileSpreadsheet className="w-4 h-4" /> Cost Center (ABO) ({budgetDetailsList.filter(i => i.kategori === 'ABO').length})
                 </button>
                 <button
                     onClick={() => setActiveBudgetSubTab('abi')}
-                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                        activeBudgetSubTab === 'abi' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                    className={`py-2.5 px-3 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        activeBudgetSubTab === 'abi' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                 >
                     <FileSpreadsheet className="w-4 h-4" /> WBS Element (ABI) ({budgetDetailsList.filter(i => i.kategori === 'ABI').length})
-                </button>
-                <button
-                    onClick={() => setActiveBudgetSubTab('realisasi-abo')}
-                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                        activeBudgetSubTab === 'realisasi-abo' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                >
-                    <PieIcon className="w-4 h-4" /> Trend Realisasi ABO
                 </button>
             </div>
 
@@ -1018,8 +977,11 @@ export default function Budgeting(props) {
                 </div>
             )}
 
-            {/* Subtab 4: Realisasi ABO */}
-            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo budgetDetailsList={budgetDetailsList} onChartClick={handleChartClick} />}
+            {/* Subtab 1: Realisasi & Top 3 ABO */}
+            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo onChartClick={handleChartClick} />}
+
+            {/* Subtab 2: Realisasi & Timeline ABI */}
+            {activeBudgetSubTab === 'realisasi-abi' && <TabRealisasiAbi onChartClick={handleChartClick} />}
 
             {/* Chart Detail Modal */}
             <ChartDetailModal

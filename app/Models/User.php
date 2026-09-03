@@ -17,6 +17,11 @@ class User extends Authenticatable
         'initials',
     ];
 
+    public function getNameAttribute()
+    {
+        return $this->fullName ?? $this->username;
+    }
+
     protected $hidden = [
         'password',
         'remember_token',

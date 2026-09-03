@@ -8,13 +8,15 @@ import {
     FileSignature, Calculator, Shield,
     Activity, DollarSign, PieChart as PieChartIcon, Zap, TrendingUp, Maximize2,
     UploadCloud, FileSpreadsheet, Download, Search, Plus, Trash2,
-    ChevronLeft, ChevronRight, CornerDownLeft
+    ChevronLeft, ChevronRight, CornerDownLeft, Gauge, CheckCircle2, SlidersHorizontal
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import KpiCard from '../../Components/KpiCard';
 import ChartDetailModal from '../../Components/ChartDetailModal';
 import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
 import ProduksiBarChart from '../../Components/ProduksiBarChart';
+import ReliabilityUnitChart from '../../Components/ReliabilityUnitChart';
+import BetterIndicator from '../../Components/BetterIndicator';
 
 
 /* ─── Data: Kinerja Operasi & Reliability Area Lahendong ─── */
@@ -43,54 +45,304 @@ const realisasiProduksi2025 = [
     { bulan: '12', rkap: 12.2, realisasi: 11.5, kumRkap: 128.7, kumReal: 125.7, rkapRevisi: 127.0 },
 ];
 
-const eafData = [
-    { tahun: '2020', nilai: 91.08 },
-    { tahun: '2021', nilai: 88.56 },
-    { tahun: '2022', nilai: 97.27 },
-    { tahun: '2023', nilai: 94.53 },
-    { tahun: '2024', nilai: 89.61 },
-    { tahun: '2025', nilai: 94.61 },
-];
-
-const mtbfUnit5Data = [
-    { tahun: '2019', nilai: 715 },
-    { tahun: '2020', nilai: 719 },
-    { tahun: '2021', nilai: 1752 },
-    { tahun: '2022', nilai: 2066 },
-    { tahun: '2023', nilai: 2162 },
-    { tahun: '2024', nilai: 1231 },
-    { tahun: '2025', nilai: 4356 },
-];
-
-const mtbfUnit6Data = [
-    { tahun: '2019', nilai: 477 },
-    { tahun: '2020', nilai: 8675 },
-    { tahun: '2021', nilai: 1648 },
-    { tahun: '2022', nilai: 2731 },
-    { tahun: '2023', nilai: 2883 },
-    { tahun: '2024', nilai: 4323 },
-    { tahun: '2025', nilai: 2190 },
-];
-
-const eforData = [
-    { tahun: '2020', nilai: 7.60 },
-    { tahun: '2021', nilai: 5.09 },
-    { tahun: '2022', nilai: 2.51 },
-    { tahun: '2023', nilai: 1.42 },
-    { tahun: '2024', nilai: 2.23 },
-    { tahun: '2025', nilai: 0.81 },
-];
-
-const mttrData = [
-    { tahun: '2019', nilai: 30.96 },
-    { tahun: '2020', nilai: 26.96 },
-    { tahun: '2021', nilai: 12.45 },
-    { tahun: '2022', nilai: 6.77 },
-    { tahun: '2023', nilai: 2.79 },
-    { tahun: '2024', nilai: 3.44 },
-    { tahun: '2025', nilai: 8.86 },
-    { tahun: '2026', nilai: 9.40 },
-];
+/* ─── Data: Reliability Maintenance Area Lahendong (2019 – 2026 YTD) ─── */
+const reliabilityMetricsData = {
+    eaf: {
+        id: 'eaf',
+        label: 'EAF (%)',
+        fullTitle: 'Equivalent Availability Factor (EAF)',
+        subtitle: 'Tingkat kesiapan unit pembangkit beroperasi (Higher is better)',
+        unit: '%',
+        better: 'up',
+        units: [
+            {
+                id: 'eaf-unit1',
+                title: 'EAF (%) Unit 1',
+                diff: '0,00%',
+                isPositive: true,
+                yDomain: [90, 103],
+                data: [
+                    { year: '2019', value: 99.86 },
+                    { year: '2020', value: 99.86 },
+                    { year: '2021', value: 100.00 },
+                    { year: '2022', value: 95.50 },
+                    { year: '2023', value: 99.04 },
+                    { year: '2024', value: 100.00 },
+                    { year: '2025', value: 100.00 },
+                    { year: '2026 YTD', value: 100.00 }
+                ]
+            },
+            {
+                id: 'eaf-unit2',
+                title: 'EAF (%) Unit 2',
+                diff: '0,00%',
+                isPositive: true,
+                yDomain: [90, 103],
+                data: [
+                    { year: '2019', value: 100.00 },
+                    { year: '2020', value: 100.00 },
+                    { year: '2021', value: 100.00 },
+                    { year: '2022', value: 96.16 },
+                    { year: '2023', value: 100.00 },
+                    { year: '2024', value: 100.00 },
+                    { year: '2025', value: 100.00 },
+                    { year: '2026 YTD', value: 100.00 }
+                ]
+            },
+            {
+                id: 'eaf-unit3',
+                title: 'EAF (%) Unit 3',
+                diff: '+0,69%',
+                isPositive: true,
+                yDomain: [60, 105],
+                data: [
+                    { year: '2019', value: 69.21 },
+                    { year: '2020', value: 69.21 },
+                    { year: '2021', value: 99.59 },
+                    { year: '2022', value: 97.81 },
+                    { year: '2023', value: 99.93 },
+                    { year: '2024', value: 99.76 },
+                    { year: '2025', value: 99.31 },
+                    { year: '2026 YTD', value: 100.00 }
+                ]
+            },
+            {
+                id: 'eaf-unit4',
+                title: 'EAF (%) Unit 4',
+                diff: '-0,22%',
+                isPositive: false,
+                yDomain: [90, 103],
+                data: [
+                    { year: '2019', value: 100.00 },
+                    { year: '2020', value: 100.00 },
+                    { year: '2021', value: 100.00 },
+                    { year: '2022', value: 95.91 },
+                    { year: '2023', value: 100.00 },
+                    { year: '2024', value: 100.00 },
+                    { year: '2025', value: 100.00 },
+                    { year: '2026 YTD', value: 99.78 }
+                ]
+            },
+            {
+                id: 'eaf-unit5',
+                title: 'EAF (%) Unit 5',
+                diff: '+0,04%',
+                isPositive: true,
+                yDomain: [75, 105],
+                data: [
+                    { year: '2019', value: 97.94 },
+                    { year: '2020', value: 97.94 },
+                    { year: '2021', value: 97.20 },
+                    { year: '2022', value: 94.12 },
+                    { year: '2023', value: 83.36 },
+                    { year: '2024', value: 96.49 },
+                    { year: '2025', value: 99.89 },
+                    { year: '2026 YTD', value: 99.93 }
+                ]
+            },
+            {
+                id: 'eaf-unit6',
+                title: 'EAF (%) Unit 6',
+                diff: '-4,81%',
+                isPositive: false,
+                yDomain: [75, 105],
+                data: [
+                    { year: '2019', value: 98.51 },
+                    { year: '2020', value: 98.51 },
+                    { year: '2021', value: 82.13 },
+                    { year: '2022', value: 93.27 },
+                    { year: '2023', value: 84.98 },
+                    { year: '2024', value: 94.44 },
+                    { year: '2025', value: 99.71 },
+                    { year: '2026 YTD', value: 94.91 }
+                ]
+            }
+        ]
+    },
+    efor: {
+        id: 'efor',
+        label: 'EFOR (%)',
+        fullTitle: 'Equivalent Forced Outage Rate (EFOR)',
+        subtitle: 'Tingkat frekuensi gangguan paksa unit pembangkit (Lower is better)',
+        unit: '%',
+        better: 'down',
+        units: [
+            {
+                id: 'efor-unit1',
+                title: 'EFOR (%) Unit 1',
+                diff: '0,00%',
+                isPositive: true,
+                yDomain: [0, 0.25],
+                data: [
+                    { year: '2019', value: 0.00 },
+                    { year: '2020', value: 0.00 },
+                    { year: '2021', value: 0.00 },
+                    { year: '2022', value: 0.12 },
+                    { year: '2023', value: 0.00 },
+                    { year: '2024', value: 0.00 },
+                    { year: '2025', value: 0.00 },
+                    { year: '2026 YTD', value: 0.00 }
+                ]
+            },
+            {
+                id: 'efor-unit2',
+                title: 'EFOR (%) Unit 2',
+                diff: '0,00%',
+                isPositive: true,
+                yDomain: [0, 0.25],
+                data: [
+                    { year: '2019', value: 0.00 },
+                    { year: '2020', value: 0.00 },
+                    { year: '2021', value: 0.00 },
+                    { year: '2022', value: 0.00 },
+                    { year: '2023', value: 0.00 },
+                    { year: '2024', value: 0.00 },
+                    { year: '2025', value: 0.00 },
+                    { year: '2026 YTD', value: 0.00 }
+                ]
+            },
+            {
+                id: 'efor-unit3',
+                title: 'EFOR (%) Unit 3',
+                diff: '-0,03%',
+                isPositive: true,
+                yDomain: [0, 10.5],
+                data: [
+                    { year: '2019', value: 9.01 },
+                    { year: '2020', value: 9.01 },
+                    { year: '2021', value: 0.00 },
+                    { year: '2022', value: 0.00 },
+                    { year: '2023', value: 0.00 },
+                    { year: '2024', value: 0.00 },
+                    { year: '2025', value: 0.03 },
+                    { year: '2026 YTD', value: 0.00 }
+                ]
+            },
+            {
+                id: 'efor-unit4',
+                title: 'EFOR (%) Unit 4',
+                diff: '+0,11%',
+                isPositive: false,
+                yDomain: [0, 0.25],
+                data: [
+                    { year: '2019', value: 0.00 },
+                    { year: '2020', value: 0.00 },
+                    { year: '2021', value: 0.00 },
+                    { year: '2022', value: 0.00 },
+                    { year: '2023', value: 0.00 },
+                    { year: '2024', value: 0.00 },
+                    { year: '2025', value: 0.00 },
+                    { year: '2026 YTD', value: 0.11 }
+                ]
+            },
+            {
+                id: 'efor-unit5',
+                title: 'EFOR (%) Unit 5',
+                diff: '-0,11%',
+                isPositive: true,
+                yDomain: [0, 0.8],
+                data: [
+                    { year: '2019', value: 0.20 },
+                    { year: '2020', value: 0.20 },
+                    { year: '2021', value: 0.45 },
+                    { year: '2022', value: 0.13 },
+                    { year: '2023', value: 0.24 },
+                    { year: '2024', value: 0.63 },
+                    { year: '2025', value: 0.11 },
+                    { year: '2026 YTD', value: 0.00 }
+                ]
+            },
+            {
+                id: 'efor-unit6',
+                title: 'EFOR (%) Unit 6',
+                diff: '-0,29%',
+                isPositive: true,
+                yDomain: [0, 2.3],
+                data: [
+                    { year: '2019', value: 0.24 },
+                    { year: '2020', value: 0.24 },
+                    { year: '2021', value: 0.75 },
+                    { year: '2022', value: 0.29 },
+                    { year: '2023', value: 0.04 },
+                    { year: '2024', value: 1.98 },
+                    { year: '2025', value: 0.29 },
+                    { year: '2026 YTD', value: 0.00 }
+                ]
+            }
+        ]
+    },
+    mtbf: {
+        id: 'mtbf',
+        label: 'MTBF (Day)',
+        fullTitle: 'Mean Time Between Failures (MTBF)',
+        subtitle: 'Rata-rata waktu operasi pembangkit antar kegagalan (Higher is better)',
+        unit: 'Day',
+        better: 'up',
+        units: [
+            {
+                id: 'mtbf-unit5',
+                title: 'MTBF (Day) Unit 5',
+                diff: '+16,80%',
+                isPositive: true,
+                yDomain: [0, 240],
+                data: [
+                    { year: '2019', value: 29.80 },
+                    { year: '2020', value: 29.94 },
+                    { year: '2021', value: 73.00 },
+                    { year: '2022', value: 86.08 },
+                    { year: '2023', value: 90.09 },
+                    { year: '2024', value: 51.30 },
+                    { year: '2025', value: 181.50 },
+                    { year: '2026 YTD', value: 212.00 }
+                ]
+            },
+            {
+                id: 'mtbf-unit6',
+                title: 'MTBF (Day) Unit 6',
+                diff: '+92,20%',
+                isPositive: true,
+                yDomain: [0, 400],
+                data: [
+                    { year: '2019', value: 19.87 },
+                    { year: '2020', value: 361.44 },
+                    { year: '2021', value: 68.65 },
+                    { year: '2022', value: 113.79 },
+                    { year: '2023', value: 120.11 },
+                    { year: '2024', value: 180.14 },
+                    { year: '2025', value: 91.25 },
+                    { year: '2026 YTD', value: 175.38 }
+                ]
+            }
+        ]
+    },
+    mttr: {
+        id: 'mttr',
+        label: 'MTTR (Hour)',
+        fullTitle: 'Mean Time To Repair (MTTR)',
+        subtitle: 'Rata-rata durasi perbaikan gangguan pembangkit (Lower is better)',
+        unit: 'Hour',
+        better: 'down',
+        units: [
+            {
+                id: 'mttr',
+                title: 'MTTR (Hour)',
+                diff: '+5,41%',
+                isPositive: false,
+                yDomain: [0, 1.5],
+                data: [
+                    { year: '2019', value: 1.29 },
+                    { year: '2020', value: 1.12 },
+                    { year: '2021', value: 0.52 },
+                    { year: '2022', value: 0.28 },
+                    { year: '2023', value: 0.12 },
+                    { year: '2024', value: 0.14 },
+                    { year: '2025', value: 0.37 },
+                    { year: '2026 YTD', value: 0.39 }
+                ]
+            }
+        ]
+    }
+};
 
 /* ─── Financial Performance Data is now dynamic ─── */
 
@@ -154,6 +406,10 @@ function ReliabilityLineChart({ data, dataKey, unit, color = PERTAMINA_BLUE, dom
 /* ─── Tab: Kinerja Operasi & Reliability ─── */
 function TabOperasi({ onChartClick }) {
     const realisasiHover = useBarHover();
+    const [selectedMetricKey, setSelectedMetricKey] = useState('eaf');
+
+    const currentMetric = reliabilityMetricsData[selectedMetricKey] || reliabilityMetricsData.eaf;
+
     return (
         <div className="space-y-6">
             {/* Top Row: Production Performance */}
@@ -191,64 +447,135 @@ function TabOperasi({ onChartClick }) {
                 </ChartCard>
             </div>
 
-            {/* Section: Reliability Maintenance Area Lahendong */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                    <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                        <h3 className="font-black text-sm text-slate-800 tracking-tight">Reliability Maintenance Area Lahendong (Tahun 2019 – 2026)</h3>
+            {/* Section: Reliability Maintenance Area Lahendong with Interactive Metric Menu */}
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-5">
+                {/* Header & Metric Selector Menu */}
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+                            <h3 className="font-black text-sm text-slate-800 tracking-tight">
+                                Reliability Maintenance Area Lahendong (Tahun 2019 – 2026 YTD)
+                            </h3>
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-medium mt-1">
+                            {currentMetric.fullTitle} — <span className="text-slate-700 font-bold">{currentMetric.subtitle}</span>
+                        </p>
                     </div>
-                    <span className="text-[10px] font-bold px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
-                        Reliability & Maintenance
+
+                    {/* Metric Tabs Menu (EAF, EFOR, MTBF, MTTR) */}
+                    <div className="flex flex-wrap items-center bg-slate-100 p-1.5 rounded-2xl border border-slate-200 gap-1.5 self-stretch lg:self-auto">
+                        {[
+                            { key: 'eaf', label: 'EAF (%)', count: '6 Unit' },
+                            { key: 'efor', label: 'EFOR (%)', count: '6 Unit' },
+                            { key: 'mtbf', label: 'MTBF (Day)', count: '2 Unit' },
+                            { key: 'mttr', label: 'MTTR (Hour)', count: 'Area LHD' }
+                        ].map((m) => {
+                            const isActive = selectedMetricKey === m.key;
+                            return (
+                                <button
+                                    key={m.key}
+                                    type="button"
+                                    onClick={() => setSelectedMetricKey(m.key)}
+                                    className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                                        isActive
+                                            ? 'bg-pertamina-blue text-white shadow-xs scale-[1.02]'
+                                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                                    }`}
+                                >
+                                    <span>{m.label}</span>
+                                    <span
+                                        className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md ${
+                                            isActive
+                                                ? 'bg-white/20 text-white'
+                                                : 'bg-slate-200 text-slate-600'
+                                        }`}
+                                    >
+                                        {m.count}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Metric Charts Display Area with Left Better Indicator Pillar */}
+                <div className="flex gap-4 items-stretch pt-1">
+                    {/* Left Vertical Better Indicator */}
+                    <BetterIndicator
+                        direction={currentMetric.better}
+                        className="w-10 shrink-0 hidden sm:flex"
+                    />
+
+                    {/* Charts Grid */}
+                    <div className="flex-1 min-w-0">
+                        {/* EAF & EFOR Grid: 6 Unit charts in 3 columns x 2 rows */}
+                        {(selectedMetricKey === 'eaf' || selectedMetricKey === 'efor') && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {currentMetric.units.map((unitItem) => (
+                                    <ReliabilityUnitChart
+                                        key={unitItem.id}
+                                        title={unitItem.title}
+                                        data={unitItem.data}
+                                        diff={unitItem.diff}
+                                        isPositive={unitItem.isPositive}
+                                        unit={currentMetric.unit}
+                                        yDomain={unitItem.yDomain}
+                                        onClick={() => onChartClick(unitItem.id)}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {/* MTBF Grid: 2 Unit charts (Unit 5 & Unit 6) */}
+                        {selectedMetricKey === 'mtbf' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                {currentMetric.units.map((unitItem) => (
+                                    <ReliabilityUnitChart
+                                        key={unitItem.id}
+                                        title={unitItem.title}
+                                        data={unitItem.data}
+                                        diff={unitItem.diff}
+                                        isPositive={unitItem.isPositive}
+                                        unit="Day"
+                                        yDomain={unitItem.yDomain}
+                                        className="h-64"
+                                        onClick={() => onChartClick(unitItem.id)}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {/* MTTR: 1 Area Lahendong Chart */}
+                        {selectedMetricKey === 'mttr' && (
+                            <div className="max-w-2xl mx-auto w-full">
+                                {currentMetric.units.map((unitItem) => (
+                                    <ReliabilityUnitChart
+                                        key={unitItem.id}
+                                        title={unitItem.title}
+                                        data={unitItem.data}
+                                        diff={unitItem.diff}
+                                        isPositive={unitItem.isPositive}
+                                        unit="Hour"
+                                        yDomain={unitItem.yDomain}
+                                        className="h-72"
+                                        onClick={() => onChartClick(unitItem.id)}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Footer Info note */}
+                <div className="flex flex-wrap justify-between items-center pt-3 border-t border-slate-100 text-[11px] text-slate-400 font-semibold">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#1b7b64] inline-block"></span>
+                        <span>Segmen hijau tebal & bulatan mewakili target capaian <strong>2025 – 2026 YTD</strong></span>
+                    </div>
+                    <span className="text-[10px] text-blue-600 font-bold">
+                        * Klik pada setiap kartu grafik untuk melihat rincian tabel & statistik
                     </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <ChartCard
-                        title="MTBF Unit 5 (Hour)"
-                        subtitle="LHD - Unit 5 (PGE) 2019–2025"
-                        className="h-64"
-                        onClick={() => onChartClick('mtbf-unit5')}
-                    >
-                        <ReliabilityLineChart data={mtbfUnit5Data} dataKey="nilai" unit="jam" color={PERTAMINA_BLUE} />
-                    </ChartCard>
-
-                    <ChartCard
-                        title="MTBF Unit 6 (Hour)"
-                        subtitle="LHD - Unit 6 (PGE) 2019–2025"
-                        className="h-64"
-                        onClick={() => onChartClick('mtbf-unit6')}
-                    >
-                        <ReliabilityLineChart data={mtbfUnit6Data} dataKey="nilai" unit="jam" color={PERTAMINA_BLUE} />
-                    </ChartCard>
-
-                    <ChartCard
-                        title="MTTR Area Lahendong (Hour)"
-                        subtitle="Mean Time To Repair (2019–2026)"
-                        className="h-64"
-                        onClick={() => onChartClick('mttr')}
-                    >
-                        <ReliabilityLineChart data={mttrData} dataKey="nilai" unit="jam" color="#16a34a" />
-                    </ChartCard>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <ChartCard
-                        title="EAF (%)"
-                        subtitle="Equivalent Availability Factor — Higher is better"
-                        className="h-52"
-                        onClick={() => onChartClick('eaf')}
-                    >
-                        <ReliabilityLineChart data={eafData} dataKey="nilai" unit="%" color={PERTAMINA_GREEN} domain={[80, 100]} />
-                    </ChartCard>
-                    <ChartCard
-                        title="EFOR (%)"
-                        subtitle="Equivalent Forced Outage Rate — Lower is better"
-                        className="h-52"
-                        onClick={() => onChartClick('efor')}
-                    >
-                        <ReliabilityLineChart data={eforData} dataKey="nilai" unit="%" color={PERTAMINA_YELLOW} domain={[0, 10]} />
-                    </ChartCard>
                 </div>
             </div>
         </div>
@@ -1546,68 +1873,6 @@ export default function MainDashboard(props) {
             ],
             rawData: realisasiProduksi2025
         },
-        'mtbf-unit5': {
-            id: 'mtbf-unit5',
-            title: 'MTBF Unit 5 (Hour)',
-            subtitle: 'Mean Time Between Failures — LHD Unit 5 (PGE) 2019–2025',
-            type: 'line',
-            xAxisKey: 'tahun',
-            timeType: 'year',
-            series: [
-                { key: 'nilai', label: 'MTBF Unit 5', color: PERTAMINA_BLUE, unit: 'jam' }
-            ],
-            rawData: mtbfUnit5Data
-        },
-        'mtbf-unit6': {
-            id: 'mtbf-unit6',
-            title: 'MTBF Unit 6 (Hour)',
-            subtitle: 'Mean Time Between Failures — LHD Unit 6 (PGE) 2019–2025',
-            type: 'line',
-            xAxisKey: 'tahun',
-            timeType: 'year',
-            series: [
-                { key: 'nilai', label: 'MTBF Unit 6', color: PERTAMINA_BLUE, unit: 'jam' }
-            ],
-            rawData: mtbfUnit6Data
-        },
-        'mttr': {
-            id: 'mttr',
-            title: 'MTTR Area Lahendong (Hour)',
-            subtitle: 'Mean Time To Repair Area Lahendong (Tahun 2019 - 2026)',
-            type: 'line',
-            xAxisKey: 'tahun',
-            timeType: 'year',
-            series: [
-                { key: 'nilai', label: 'MTTR Area Lahendong', color: '#16a34a', unit: 'jam' }
-            ],
-            rawData: mttrData
-        },
-        'eaf': {
-            id: 'eaf',
-            title: 'EAF (%)',
-            subtitle: 'Equivalent Availability Factor — Higher is better',
-            type: 'line',
-            xAxisKey: 'tahun',
-            timeType: 'year',
-            yAxisDomain: [80, 100],
-            series: [
-                { key: 'nilai', label: 'EAF', color: PERTAMINA_GREEN, unit: '%' }
-            ],
-            rawData: eafData
-        },
-        'efor': {
-            id: 'efor',
-            title: 'EFOR (%)',
-            subtitle: 'Equivalent Forced Outage Rate — Lower is better',
-            type: 'line',
-            xAxisKey: 'tahun',
-            timeType: 'year',
-            yAxisDomain: [0, 10],
-            series: [
-                { key: 'nilai', label: 'EFOR', color: PERTAMINA_YELLOW, unit: '%' }
-            ],
-            rawData: eforData
-        },
         'financial-trend': {
             id: 'financial-trend',
             title: 'Revenue, Cost & Profit/Loss (Juta USD)',
@@ -1659,6 +1924,24 @@ export default function MainDashboard(props) {
             rawData: ebitdaData
         }
     };
+
+    // Register all individual reliability unit charts into chartConfigs
+    Object.values(reliabilityMetricsData).forEach(metric => {
+        metric.units.forEach(unit => {
+            chartConfigs[unit.id] = {
+                id: unit.id,
+                title: unit.title,
+                subtitle: `${metric.fullTitle} — ${metric.subtitle}`,
+                type: 'line',
+                xAxisKey: 'year',
+                timeType: 'year',
+                series: [
+                    { key: 'value', label: unit.title, color: metric.better === 'up' ? PERTAMINA_BLUE : '#16a34a', unit: metric.unit }
+                ],
+                rawData: unit.data.map(d => ({ year: d.year, value: d.value }))
+            };
+        });
+    });
 
     const handleChartClick = (chartId) => {
         setSelectedChart(chartConfigs[chartId]);
