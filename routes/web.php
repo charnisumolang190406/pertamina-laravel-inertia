@@ -12,6 +12,9 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\FinancialPerformanceController;
+use App\Http\Controllers\PerbaikanImportController;
+use App\Http\Controllers\BbmImportController;
+use App\Http\Controllers\AlatBeratImportController;
 
 // Public Guest Routes
 Route::middleware('guest')->group(function () {
@@ -65,6 +68,9 @@ Route::middleware('auth')->group(function () {
 
     // Import Excel Wizard Route
     Route::post('/import', [ImportController::class, 'import'])->name('import');
+    Route::post('/import-perbaikan', [PerbaikanImportController::class, 'import'])->name('import.perbaikan');
+    Route::post('/import-bbm', [BbmImportController::class, 'import'])->name('import.bbm');
+    Route::post('/import-alat-berat', [AlatBeratImportController::class, 'import'])->name('import.alat_berat');
 
     // Activity Log Route
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity.log');

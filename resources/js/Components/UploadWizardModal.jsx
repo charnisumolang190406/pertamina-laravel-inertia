@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import * as XLSX from 'xlsx';
 import { X, UploadCloud, CheckCircle2, ChevronRight, AlertCircle, RefreshCw, Table } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const MAPPING_SPECS = {
     scm: { nomor: 'Nomor Kontrak', nama: 'Nama Pekerjaan', vendor: 'Mitra/Vendor', nilai: 'Nilai Kontrak', mulai: 'Tgl Mulai', selesai: 'Tgl Selesai', progres: 'Progres (%)', status: 'Status', fungsi: 'Fungsi' },
@@ -9,14 +10,15 @@ const MAPPING_SPECS = {
     lembur_tad: { nopok: 'Nopek/Nopok', nama: 'Nama TAD', jabatan: 'Jabatan', fungsi: 'Fungsi', upah: 'Upah Pokok', jam_lembur: 'Jam Lembur', lembur_val: 'Nilai Lembur (Rp)', periode: 'Periode (Bulan Tahun)' },
     budget_abo: { fundCent: 'Fund Cen', fungsi: 'Fungsi', name: 'Name', commitItem: 'Commitment Item', text: 'Text', budget: 'Consumable Budget(IDR)', consumed: 'Consumed Budget(IDR)', commitment: 'Commitment(IDR)', actual: 'Actual(IDR)', available: 'Available(IDR)' },
     budget_abi: { fundCent: 'No WBS', name: 'Pekerjaan', commitItem: 'PIC', text: 'Keterangan', budget: 'Anggaran Eq IDR', consumed: 'Commitment Ekv IDR', actual: 'Realisasi Ekv IDR', available: 'Available Ekv IDR' },
-    alat_berat: { jenis: 'Jenis Alat', nopol: 'Nomor Polisi', expired_kir: 'KIR Expired', expired_stnk: 'STNK Expired', expired_sio: 'SIO Expired', expired_sia: 'SIA Expired', status: 'Status' },
-    perbaikan_rumdin: { nomor_rumah: 'Nomor Rumah', estimasi: 'Estimasi Biaya', realisasi: 'Realisasi Biaya', progress: 'Progress (%)', keterangan: 'Keterangan' },
+    alat_berat: { nopol: 'Nomor Polisi', tahun: 'Tahun Kendaraan', jenis: 'Jenis Kendaraan', alokasi: 'Alokasi Pemakai', merk: 'Merk', model: 'Type / Model', stnk: 'STNK Expired', pajak: 'Pajak STNK', kir: 'KIR Expired', status: 'Status', kondisi: 'Kondisi Aset' },
+    perbaikan_rumdin: { deskripsi_pekerjaan: 'Deskripsi Pekerjaan', tanggal_request: 'Tanggal Request', tanggal_selesai: 'Tanggal Selesai', status: 'Status', link_bukti_foto_opsional: 'Link Bukti Foto (Opsional)' },
     hc: { bulan: 'Periode', nama: 'Nama Pegawai', jenis: 'Jenis Mutasi', fungsi: 'Fungsi Tujuan', keterangan: 'Keterangan' },
     it_asset: { nomor_seri: 'Nomor Seri / Tag', jenis: 'Jenis Aset', merek: 'Merek/Model', user: 'Pengguna', fungsi: 'Fungsi', status: 'Status' },
     master_organik: { nopok: 'No. Pegawai', nama: 'Nama Pegawai', gender: 'Jenis Kelamin', umur: 'Umur', tanggal_lahir: 'Tanggal Lahir', jabatan: 'Jabatan', fungsi: 'Fungsi/Departemen' },
     master_tad: { nama: 'Nama Lengkap', peran: 'Peran Kerja', vendor: 'Vendor Penyedia', status: 'Status Kontrak' },
     master_pensiun: { nama: 'Nama Karyawan', jabatan: 'Jabatan Terakhir', umur: 'Umur Pensiun', tahun: 'Tahun Pensiun', tanggal: 'Tanggal Efektif', keterangan: 'Keterangan' },
-    financial_performance: { year: 'Tahun', revenue: 'Revenue', cost: 'Cost', depreciation: 'Depreciation', net_profit: 'Profit/Loss Net', abo: 'ABO', ebitda: 'EBITDA', cost_per_kwh: 'Cost per kWh' }
+    financial_performance: { year: 'Tahun', revenue: 'Revenue', cost: 'Cost', depreciation: 'Depreciation', net_profit: 'Profit/Loss Net', abo: 'ABO', ebitda: 'EBITDA', cost_per_kwh: 'Cost per kWh' },
+    bbm: { bulan: 'Bulan', stock_awal_solar: 'Stock Awal', penerimaan_solar: 'Penerimaan', pengeluaran_ag_solar: 'Pengeluaran AG', pengeluaran_proyek_solar: 'Pengeluaran Proyek', stock_akhir_solar: 'Stock Akhir' }
 };
 
 const MAPPING_DEFAULTS = {
@@ -25,14 +27,15 @@ const MAPPING_DEFAULTS = {
     lembur_tad: { nopok: '-', nama: 'Pekerja TAD', jabatan: 'Staff', fungsi: 'BUSINESS SUPPORT', upah: 0, jam_lembur: 0, lembur_val: 0, periode: '' },
     budget_abo: { fundCent: '', fungsi: 'Business Support', name: 'Pos Anggaran', commitItem: '6001000000', text: '', budget: 0, consumed: 0, commitment: 0, actual: 0, available: 0, kategori: 'ABO' },
     budget_abi: { fundCent: '', name: 'Pos Anggaran', commitItem: '500000', text: '', budget: 0, consumed: 0, actual: 0, available: 0, kategori: 'ABI' },
-    alat_berat: { jenis: 'Forklift', nopol: '-', expired_kir: '', expired_stnk: '', expired_sio: '', expired_sia: '', status: 'Optimal' },
-    perbaikan_rumdin: { nomor_rumah: 'N-00', estimasi: 0, realisasi: 0, progress: 0, keterangan: '' },
+    alat_berat: { nopol: '-', tahun: '', jenis: 'Unknown', alokasi: '', merk: '', model: '', stnk: '', pajak: '', kir: '', status: 'Optimal', kondisi: '' },
+    perbaikan_rumdin: { deskripsi_pekerjaan: 'Perbaikan', tanggal_request: '', tanggal_selesai: '', status: 'In Progress', link_bukti_foto_opsional: '' },
     hc: { bulan: '', nama: 'Nama Karyawan', jenis: 'Masuk', fungsi: 'BS', keterangan: '' },
     it_asset: { nomor_seri: '', jenis: 'PC', merek: 'HP', user: 'Staff', fungsi: 'BS', status: 'Optimal' },
     master_organik: { nopok: '-', nama: 'Nama Pegawai', gender: 'Laki-laki', umur: 30, tanggal_lahir: '1990-01-01', jabatan: 'Staff', fungsi: 'Operasi' },
     master_tad: { nama: 'Nama TAD', peran: 'Security', vendor: 'PT Daya', status: 'Aktif' },
     master_pensiun: { nama: 'Nama Pensiun', jabatan: 'Staff', umur: 56, tahun: 2026, tanggal: '2026-01-01', keterangan: 'Pensiun Normal' },
-    financial_performance: { year: 2026, revenue: 0, cost: 0, depreciation: 0, net_profit: 0, abo: 0, ebitda: 0, cost_per_kwh: 0 }
+    financial_performance: { year: 2026, revenue: 0, cost: 0, depreciation: 0, net_profit: 0, abo: 0, ebitda: 0, cost_per_kwh: 0 },
+    bbm: { bulan: 'Januari', stock_awal_solar: 0, penerimaan_solar: 0, pengeluaran_ag_solar: 0, pengeluaran_proyek_solar: 0, stock_akhir_solar: 0 }
 };
 
 export default function UploadWizardModal({ isOpen, onClose, auth }) {
@@ -67,7 +70,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
             { id: 'logistik', label: 'Stok Material Gudang (FM)' },
             { id: 'alat_berat', label: 'Aset Alat Berat & KIR (FM)' },
             { id: 'perbaikan_rumdin', label: 'Perbaikan Rumah Dinas (FM)' },
-            { id: 'bbm', label: 'Laporan Pemakaian BBM (FM)' },
+            { id: 'bbm', label: 'Laporan Pemakaian BBM (FM)' }
         ],
         'Budgeting': [
             { id: 'budget_abo', label: 'Data Detail Budget ABO (Overhead/Operasi)' },
@@ -139,18 +142,34 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                     }
                 }
 
+                let dataStartIdx = headerIdx + 1;
+                
+                // Specific overrides for complex Pertamina Excel formats
+                if (dataType === 'alat_berat') {
+                    headerIdx = 4; // Excel Row 5 (index 4) has the main headers
+                    dataStartIdx = 6; // Excel Row 7 (index 6) is where actual data starts
+                }
+
                 const sheetHeaders = Array.from(json[headerIdx] || []).map((h, idx) => {
                     const colLetter = String.fromCharCode(65 + (idx % 26));
                     const prefix = idx >= 26 ? String.fromCharCode(64 + Math.floor(idx / 26)) + colLetter : colLetter;
                     const val = String(h || '').trim();
                     return `Kolom ${prefix}${val ? ` : ${val.substring(0, 40)}` : ' (Kosong)'}`;
                 });
-                const parsedRows = json.slice(headerIdx + 1)
+                const parsedRows = json.slice(dataStartIdx)
                     .map(row => Array.isArray(row) ? row.map(cell => cell === null || cell === undefined ? '' : String(cell).trim()) : [])
                     .filter(row => row.length > 0 && row.some(c => c.length > 0));
 
                 setHeaders(sheetHeaders);
                 setRawRows(parsedRows);
+
+                // If this is a complex format handled by backend, skip auto-mapping UI
+                if (['bbm', 'perbaikan_rumdin'].includes(dataType)) {
+                    // Set dummy mappings to prevent errors, though they won't be used
+                    setMappings({}); 
+                    // Go directly to Step 3 but change the UI or we can just keep them in a "Ready" state
+                    setStep(3); // Wait, if we keep them in Step 3, they still see the dropdowns. 
+                }
 
                 // Auto-map logic based on similarity
                 const initialMappings = {};
@@ -292,6 +311,66 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
         // Submit to Laravel backend via Inertia post
         const submitType = dataType.startsWith('budget_') ? 'budget_detail' : dataType;
         
+        // INTERCEPT BBM UPLOAD: Send raw file to dedicated PHP processor
+        if (dataType === 'bbm') {
+            const formData = new FormData();
+            formData.append('file', file);
+            router.post('/import-bbm', formData, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    Swal.fire({
+                        title: 'Sukses!',
+                        text: 'File BBM berhasil diimpor.',
+                        icon: 'success',
+                        confirmButtonColor: '#2563eb'
+                    });
+                    onClose();
+                },
+                onError: (errors) => {
+                    Swal.fire({
+                        title: 'Gagal!',
+                        text: 'Terjadi kesalahan saat mengimpor BBM.',
+                        icon: 'error',
+                        confirmButtonColor: '#2563eb'
+                    });
+                },
+                onFinish: () => {
+                    setIsProcessing(false);
+                }
+            });
+            return;
+        }
+
+        // PERBAIKAN RUMDIN INTERCEPT
+        if (dataType === 'perbaikan_rumdin') {
+            const formData = new FormData();
+            formData.append('file', file);
+            router.post('/import-perbaikan-rumdin', formData, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    Swal.fire({
+                        title: 'Sukses!',
+                        text: 'File Perbaikan Rumdin berhasil diimpor.',
+                        icon: 'success',
+                        confirmButtonColor: '#2563eb'
+                    });
+                    onClose();
+                },
+                onError: (errors) => {
+                    Swal.fire({
+                        title: 'Gagal!',
+                        text: 'Terjadi kesalahan saat mengimpor Perbaikan Rumdin.',
+                        icon: 'error',
+                        confirmButtonColor: '#2563eb'
+                    });
+                },
+                onFinish: () => {
+                    setIsProcessing(false);
+                }
+            });
+            return;
+        }
+
         router.post('/import', {
             type: submitType,
             rows: formattedRows,
@@ -300,6 +379,21 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
         }, {
             onSuccess: () => {
                 onClose();
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Data berhasil diimpor ke dalam sistem!',
+                    icon: 'success',
+                    confirmButtonColor: '#2563eb'
+                });
+            },
+            onError: (errors) => {
+                Swal.fire({
+                    title: 'Gagal!',
+                    text: 'Terjadi kesalahan saat mengimpor data.',
+                    icon: 'error',
+                    confirmButtonColor: '#2563eb'
+                });
+                console.error(errors);
             },
             onFinish: () => {
                 setIsProcessing(false);
@@ -427,9 +521,10 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                                 </button>
                             </div>
 
-                            {/* MAPPING DROPDOWNS (Hidden by default) */}
-                            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
-                                <div className="flex items-center justify-between mb-4">
+                            {/* MAPPING DROPDOWNS (Hidden by default or if complex) */}
+                            {!['bbm', 'perbaikan_rumdin'].includes(dataType) ? (
+                                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                                    <div className="flex items-center justify-between mb-4">
                                     <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                                         <Table className="w-4 h-4 text-blue-500" />
                                         Auto-Mapping Sukses!
@@ -470,10 +565,22 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                                     </div>
                                 )}
                             </div>
+                            ) : (
+                                <div className="bg-blue-50/40 border border-blue-100 rounded-2xl p-6 text-center">
+                                    <CheckCircle2 className="w-10 h-10 text-blue-500 mx-auto mb-3" />
+                                    <h4 className="text-sm font-black text-blue-900 mb-1">Format Khusus Terdeteksi</h4>
+                                    <p className="text-xs text-blue-700 max-w-md mx-auto">
+                                        Sistem pintar kami akan memproses file Excel ini secara otomatis di *backend*. 
+                                        Anda tidak perlu memetakan kolom secara manual.
+                                        Silakan langsung klik tombol <b>Simpan & Auto-Archive</b>.
+                                    </p>
+                                </div>
+                            )}
 
                             {/* EXCEL PREVIEW TABLE */}
-                            <div className="space-y-2">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Preview 5 Baris Pertama</h4>
+                            {!['bbm', 'perbaikan_rumdin'].includes(dataType) && (
+                                <div className="space-y-2">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Preview 5 Baris Pertama</h4>
                                 <div className="border border-slate-200 rounded-2xl overflow-hidden overflow-x-auto">
                                     <table className="w-full text-left text-[11px] whitespace-nowrap">
                                         <thead className="bg-slate-50 border-b border-slate-200">
@@ -501,6 +608,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                                     </table>
                                 </div>
                             </div>
+                            )}
                         </div>
                     )}
                 </div>

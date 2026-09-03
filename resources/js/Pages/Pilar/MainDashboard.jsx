@@ -17,85 +17,6 @@ import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
 import ProduksiBarChart from '../../Components/ProduksiBarChart';
 
 
-/* ─── Data: Kinerja Operasi & Reliability Area Lahendong ─── */
-const produksiGwh = [
-    { tahun: '2019', nilai: 820 },
-    { tahun: '2020', nilai: 828, diff: '+0.98%', isPositive: true },
-    { tahun: '2021', nilai: 775, diff: '-6.40%', isPositive: false },
-    { tahun: '2022', nilai: 864, diff: '+11.48%', isPositive: true },
-    { tahun: '2023', nilai: 869, diff: '+0.58%', isPositive: true },
-    { tahun: '2024', nilai: 872, diff: '+0.35%', isPositive: true },
-    { tahun: '2025', nilai: 849, diff: '-2.64%', isPositive: false },
-];
-
-const realisasiProduksi2025 = [
-    { bulan: '1', rkap: 8.5, realisasi: 7.8, kumRkap: 8.5, kumReal: 7.8, rkapRevisi: 8.2 },
-    { bulan: '2', rkap: 9.2, realisasi: 8.9, kumRkap: 17.7, kumReal: 16.7, rkapRevisi: 17.0 },
-    { bulan: '3', rkap: 9.8, realisasi: 10.1, kumRkap: 27.5, kumReal: 26.8, rkapRevisi: 26.5 },
-    { bulan: '4', rkap: 10.2, realisasi: 9.5, kumRkap: 37.7, kumReal: 36.3, rkapRevisi: 36.8 },
-    { bulan: '5', rkap: 10.5, realisasi: 11.2, kumRkap: 48.2, kumReal: 47.5, rkapRevisi: 47.8 },
-    { bulan: '6', rkap: 10.8, realisasi: 10.4, kumRkap: 59.0, kumReal: 57.9, rkapRevisi: 58.5 },
-    { bulan: '7', rkap: 11.0, realisasi: 10.8, kumRkap: 70.0, kumReal: 68.7, rkapRevisi: 69.2 },
-    { bulan: '8', rkap: 11.2, realisasi: 11.5, kumRkap: 81.2, kumReal: 80.2, rkapRevisi: 80.5 },
-    { bulan: '9', rkap: 11.5, realisasi: 10.9, kumRkap: 92.7, kumReal: 91.1, rkapRevisi: 91.8 },
-    { bulan: '10', rkap: 11.8, realisasi: 11.3, kumRkap: 104.5, kumReal: 102.4, rkapRevisi: 103.2 },
-    { bulan: '11', rkap: 12.0, realisasi: 11.8, kumRkap: 116.5, kumReal: 114.2, rkapRevisi: 115.0 },
-    { bulan: '12', rkap: 12.2, realisasi: 11.5, kumRkap: 128.7, kumReal: 125.7, rkapRevisi: 127.0 },
-];
-
-const eafData = [
-    { tahun: '2020', nilai: 91.08 },
-    { tahun: '2021', nilai: 88.56 },
-    { tahun: '2022', nilai: 97.27 },
-    { tahun: '2023', nilai: 94.53 },
-    { tahun: '2024', nilai: 89.61 },
-    { tahun: '2025', nilai: 94.61 },
-];
-
-const mtbfUnit5Data = [
-    { tahun: '2019', nilai: 715 },
-    { tahun: '2020', nilai: 719 },
-    { tahun: '2021', nilai: 1752 },
-    { tahun: '2022', nilai: 2066 },
-    { tahun: '2023', nilai: 2162 },
-    { tahun: '2024', nilai: 1231 },
-    { tahun: '2025', nilai: 4356 },
-];
-
-const mtbfUnit6Data = [
-    { tahun: '2019', nilai: 477 },
-    { tahun: '2020', nilai: 8675 },
-    { tahun: '2021', nilai: 1648 },
-    { tahun: '2022', nilai: 2731 },
-    { tahun: '2023', nilai: 2883 },
-    { tahun: '2024', nilai: 4323 },
-    { tahun: '2025', nilai: 2190 },
-];
-
-const eforData = [
-    { tahun: '2020', nilai: 7.60 },
-    { tahun: '2021', nilai: 5.09 },
-    { tahun: '2022', nilai: 2.51 },
-    { tahun: '2023', nilai: 1.42 },
-    { tahun: '2024', nilai: 2.23 },
-    { tahun: '2025', nilai: 0.81 },
-];
-
-const mttrData = [
-    { tahun: '2019', nilai: 30.96 },
-    { tahun: '2020', nilai: 26.96 },
-    { tahun: '2021', nilai: 12.45 },
-    { tahun: '2022', nilai: 6.77 },
-    { tahun: '2023', nilai: 2.79 },
-    { tahun: '2024', nilai: 3.44 },
-    { tahun: '2025', nilai: 8.86 },
-    { tahun: '2026', nilai: 9.40 },
-];
-
-/* ─── Financial Performance Data is now dynamic ─── */
-
-/* Realisasi ABO moved to Budgeting */
-
 const PERTAMINA_BLUE = '#00529C';
 const PERTAMINA_GREEN = '#8DC63F';
 const PERTAMINA_YELLOW = '#F59E0B';
@@ -152,7 +73,16 @@ function ReliabilityLineChart({ data, dataKey, unit, color = PERTAMINA_BLUE, dom
 }
 
 /* ─── Tab: Kinerja Operasi & Reliability ─── */
-function TabOperasi({ onChartClick }) {
+function TabOperasi({ 
+    onChartClick,
+    produksiGwh = [],
+    realisasiProduksi2025 = [],
+    mtbfUnit5Data = [],
+    mtbfUnit6Data = [],
+    mttrData = [],
+    eafData = [],
+    eforData = []
+}) {
     const realisasiHover = useBarHover();
     return (
         <div className="space-y-6">
@@ -256,169 +186,79 @@ function TabOperasi({ onChartClick }) {
 }
 
 /* ─── Tab: Financial Performance ─── */
-function TabFinancial({ onChartClick, financialTrend, costKwhData, ebitdaData, productionCostScatter }) {
+function TabFinancial({ onChartClick, financialTrend, costKwhData, ebitdaData }) {
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard
-                    title="Revenue, Cost & Profit/Loss (Juta USD)"
-                    subtitle="Trend finansial tahunan Area Lahendong"
-                    className="h-80"
-                    onClick={() => onChartClick('financial-trend')}
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={financialTrend} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                            <YAxis 
-                                domain={[dataMin => Math.max(0, Math.floor(dataMin - 5)), dataMax => Math.ceil(dataMax + 5)]} 
-                                tickLine={false} 
-                                axisLine={false} 
-                                tick={{ fontSize: 10, fill: '#64748b' }} 
-                            />
-                            <RechartsTooltip formatter={(v, name) => [`${v} Juta USD`, name]} />
-                            <Legend wrapperStyle={{ fontSize: 9 }} />
-                            <Line type="monotone" dataKey="revenue" name="Revenue" stroke={PERTAMINA_BLUE} strokeWidth={2} dot={{ r: 3 }}>
-                                <LabelList dataKey="revenue" position="top" offset={6} style={{ fontSize: 9, fontWeight: 700, fill: PERTAMINA_BLUE }} />
-                            </Line>
-                            <Line type="monotone" dataKey="cost" name="Cost" stroke={PERTAMINA_GREEN} strokeWidth={2} dot={{ r: 3 }}>
-                                <LabelList dataKey="cost" position="top" offset={6} style={{ fontSize: 9, fontWeight: 700, fill: PERTAMINA_GREEN }} />
-                            </Line>
-                            <Line type="monotone" dataKey="depreciation" name="Depreciation" stroke={PERTAMINA_YELLOW} strokeWidth={2} dot={{ r: 3 }} />
-                            <Line type="monotone" dataKey="profitLoss" name="Profit/Loss Net" stroke="#94a3b8" strokeWidth={2} dot={{ r: 3 }}>
-                                <LabelList dataKey="profitLoss" position="top" offset={6} style={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} />
-                            </Line>
-                        </LineChart>
-                    </ResponsiveContainer>
-                </ChartCard>
-
-                <ChartCard
-                    title="Production vs Cost per kWh"
-                    subtitle="Korelasi produksi (GWh) dan biaya per kWh (cent USD)"
-                    className="h-80"
-                    onClick={() => onChartClick('production-cost-scatter')}
-                >
-                    {productionCostScatter.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Main Trend Chart - Takes up 2/3 of the width on large screens */}
+                <div className="lg:col-span-2">
+                    <ChartCard
+                        title="Financial Performance Area Lahendong"
+                        subtitle="Trend finansial tahunan Area Lahendong"
+                        className="h-full min-h-[420px]"
+                        onClick={() => onChartClick('financial-trend')}
+                    >
                         <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={productionCostScatter} margin={{ top: 15, right: 15, left: -10, bottom: 15 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                                <XAxis 
-                                    dataKey="costKwh" 
-                                    type="number" 
-                                    domain={['auto', 'auto']} 
-                                    tickLine={false} 
-                                    axisLine={false} 
-                                    tick={{ fontSize: 10, fill: '#64748b' }} 
-                                    label={{ value: 'Cost/kWh (cent USD)', position: 'insideBottom', offset: -5, style: { fontSize: 9, fill: '#64748b', fontWeight: 700 } }} 
-                                />
-                                <YAxis 
-                                    dataKey="produksi" 
-                                    domain={['auto', 'auto']} 
-                                    tickLine={false} 
-                                    axisLine={false} 
-                                    tick={{ fontSize: 10, fill: '#64748b' }} 
-                                    label={{ value: 'Produksi (GWh)', angle: -90, position: 'insideLeft', style: { fontSize: 9, fill: '#64748b', fontWeight: 700 } }} 
-                                />
-                                <RechartsTooltip formatter={(v, name) => [v, name === 'produksi' ? 'Produksi (GWh)' : 'Cost/kWh']} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? ''} />
-                                <Line type="monotone" dataKey="produksi" stroke={PERTAMINA_BLUE} strokeWidth={2} dot={{ r: 5, fill: PERTAMINA_BLUE }}>
-                                    <LabelList dataKey="produksi" position="top" offset={6} style={{ fontSize: 9, fontWeight: 700, fill: PERTAMINA_BLUE }} />
-                                </Line>
-                            </ComposedChart>
+                            <LineChart data={financialTrend} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                                <RechartsTooltip formatter={(v, name) => [`${v} Juta USD`, name]} />
+                                <Legend wrapperStyle={{ fontSize: 9 }} />
+                                <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#F59E0B" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="cost" name="Cost" stroke="#3B82F6" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="depreciation" name="Depreciation" stroke="#10B981" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="profitLoss" name="Profit/Loss Net" stroke="#475569" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="abo" name="ABO" stroke="#9D174D" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="ebitda" name="EBITDA" stroke="#F97316" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                            </LineChart>
                         </ResponsiveContainer>
-                    ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 p-6 text-center">
-                            <span className="text-xs font-semibold text-slate-400">Belum ada data korelasi produksi vs biaya per kWh</span>
-                        </div>
-                    )}
-                </ChartCard>
-            </div>
+                    </ChartCard>
+                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ChartCard
-                    title="Cost/kWh (cent USD)"
-                    subtitle="Biaya produksi per kWh"
-                    className="h-64"
-                    onClick={() => onChartClick('cost-kwh')}
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={costKwhData} margin={{ top: 20, right: 15, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                            <YAxis 
-                                domain={[dataMin => Math.max(0, Math.floor(dataMin - 1)), dataMax => Math.ceil(dataMax + 1)]} 
-                                tickLine={false} 
-                                axisLine={false} 
-                                tick={{ fontSize: 10, fill: '#64748b' }} 
-                            />
-                            <RechartsTooltip formatter={(v) => [`${v} cent USD`, 'Cost/kWh']} />
-                            <Line type="monotone" dataKey="nilai" stroke={PERTAMINA_BLUE} strokeWidth={2.5} dot={{ r: 4, fill: PERTAMINA_BLUE }}>
-                                <LabelList dataKey="nilai" position="top" offset={8} style={{ fontSize: 10, fontWeight: 800, fill: '#00529C' }} />
-                            </Line>
-                        </LineChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+                {/* Side Stacked Charts - Takes up 1/3 of the width */}
+                <div className="space-y-4 flex flex-col">
+                    <ChartCard
+                        title="Cost/kWh (cent USD)"
+                        subtitle="Biaya produksi per kWh"
+                        className="flex-1 min-h-[200px]"
+                        onClick={() => onChartClick('cost-kwh')}
+                    >
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={costKwhData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} domain={[5, 26]} />
+                                <RechartsTooltip formatter={(v) => [`${v} cent USD`, 'Cost/kWh']} />
+                                <Line type="monotone" dataKey="nilai" stroke={PERTAMINA_BLUE} strokeWidth={2.5} dot={{ r: 4 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </ChartCard>
 
-                <ChartCard
-                    title="EBITDA (Juta USD)"
-                    subtitle="Earnings Before Interest, Taxes, Depreciation & Amortization"
-                    className="h-64"
-                    onClick={() => onChartClick('ebitda')}
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={ebitdaData} margin={{ top: 20, right: 15, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                            <YAxis 
-                                domain={[dataMin => Math.max(0, Math.floor(dataMin - 5)), dataMax => Math.ceil(dataMax + 5)]} 
-                                tickLine={false} 
-                                axisLine={false} 
-                                tick={{ fontSize: 10, fill: '#64748b' }} 
-                            />
-                            <RechartsTooltip formatter={(v) => [`${v} Juta USD`, 'EBITDA']} />
-                            <Area type="monotone" dataKey="nilai" fill="#dbeafe" fillOpacity={0.6} stroke={PERTAMINA_BLUE} strokeWidth={2.5} dot={{ r: 4, fill: PERTAMINA_BLUE }}>
-                                <LabelList dataKey="nilai" position="top" offset={8} style={{ fontSize: 10, fontWeight: 800, fill: '#00529C' }} />
-                            </Area>
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+                    <ChartCard
+                        title="EBITDA (Juta USD)"
+                        subtitle="Earnings Before Interest, Taxes, Depreciation & Amortization"
+                        className="flex-1 min-h-[200px]"
+                        onClick={() => onChartClick('ebitda')}
+                    >
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={ebitdaData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis dataKey="tahun" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                                <RechartsTooltip formatter={(v) => [`${v} Juta USD`, 'EBITDA']} />
+                                <Area type="monotone" dataKey="nilai" fill="#dbeafe" stroke={PERTAMINA_BLUE} strokeWidth={2.5} />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </ChartCard>
+                </div>
+
             </div>
         </div>
     );
 }
 
 /* ─── Risk Register Map & Data Synchronizer ─── */
-const defaultInherentMap = [
-    { prob: 5, dampak: 2, risks: [23, 24] },
-    { prob: 4, dampak: 2, risks: [34] },
-    { prob: 4, dampak: 5, risks: [5] },
-    { prob: 3, dampak: 3, risks: [21, 22, 39, 40, 41, 49, 53] },
-    { prob: 3, dampak: 4, risks: [15, 20, 29] },
-    { prob: 3, dampak: 5, risks: [6, 7, 8, 14, 35, 36] },
-    { prob: 2, dampak: 2, risks: [55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69] },
-    { prob: 2, dampak: 3, risks: [4, 18, 25, 26, 27, 28, 31, 32, 33, 42, 48, 50, 51, 54] },
-    { prob: 2, dampak: 4, risks: [16, 17, 19, 30, 52] },
-    { prob: 2, dampak: 5, risks: [2, 9, 10, 11, 12, 13, 37, 38, 46] },
-    { prob: 1, dampak: 5, risks: [1, 3, 43, 44, 45, 47] },
-];
-
-const defaultResidualMap = [
-    { prob: 3, dampak: 1, risks: [23, 24] },
-    { prob: 2, dampak: 1, risks: [34, 53] },
-    { prob: 2, dampak: 2, risks: [2, 9, 10, 11, 12, 13, 15, 20, 29, 35, 36, 38, 49, 54] },
-    { prob: 2, dampak: 3, risks: [5, 6, 7, 8, 14, 37, 39, 40, 41] },
-    { prob: 1, dampak: 1, risks: [17, 18, 21, 22, 25, 26, 27, 28, 30, 31, 32, 33] },
-    { prob: 1, dampak: 2, risks: [1, 3, 4, 16, 19, 42, 48, 50, 51, 52, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69] },
-    { prob: 1, dampak: 3, risks: [43, 44, 45, 46, 47] },
-];
-
-function findCellForRisk(num, mapData) {
-    for (let entry of mapData) {
-        if (entry.risks.includes(num)) {
-            return { prob: entry.prob, dampak: entry.dampak };
-        }
-    }
-    return { prob: 1, dampak: 1 };
-}
 
 // Matrix Colors according to official Pertamina Risk Matrix
 const riskColors = [
@@ -623,109 +463,6 @@ function RiskMapGrid({ riskData, title, onSelectRisk }) {
     );
 }
 
-const sampleRiskDescriptions = [
-    "Penurunan Pasokan Uap Sumur Produksi Unit 1-4",
-    "Penurunan Pasokan Uap Sumur Produksi Unit 5&6",
-    "Kualitas Uap PLTP Unit 1-4 Tidak Memenuhi Persyaratan Kontrak",
-    "Hambatan Kegiatan Sampling Fluida Field Lahendong",
-    "Unplanned Shutdown & Dispatching PLTP Unit 1 milik PT PLN",
-    "Kegagalan Operasi Turbine Generator Unit 1-4",
-    "Penurunan EAF PLTP Unit 5&6 akibat Gangguan Kondenser",
-    "Penurunan Flow Rate Fluid Geothermal di Field Lahendong",
-    "Scaling Silica pada Pipanisasi Injeksi Air Terproduksi",
-    "Korosi Pipanisasi Kondensat & Gas Removal System",
-    "Keterlambatan Pengadaan Sparepart Major Overhaul",
-    "Gangguan Sistem Kelistrikan Intern Substation 150kV",
-    "Risiko Penurunan Pressurised Steam Header Unit 1",
-    "Kerusakan Cooling Tower Cell akibat Bio-fouling",
-    "Keterlambatan Inspeksi Bejana Tekan & Safety Valve",
-    "Kenaikan Non-Condensable Gas (NCG) Sumur LHD-23",
-    "Terhentinya Suplai Air Bersih Operasional PLTP",
-    "Risiko Penurunan Kualitas Kondensat Masuk Re-injection",
-    "Keterlambatan Calibrasi Instrumentasi Transducer",
-    "Kerusakan Katup Utama Main Steam Isolation Valve (MSIV)",
-    "Kebocoran Pipanisasi Brine Line Area Cluster 2",
-    "Vibrasi High Level pada Main Steam Turbine Bearing",
-    "Gangguan Suplai Listrik PLN untuk Auxiliary Equipment",
-    "Keterlambatan Perizinan Lingkungan AMDAL/UKL-UPL Extension",
-    "Risiko Kebakaran di Area Switchgear Substation",
-    "Tumpahan Bahan Kimia Dosing Water Treatment",
-    "Risiko Kecelakaan Kerja pada Heavy Lifting Crane Unit",
-    "Keterlambatan Penyelesaian Pekerjaan Land Slide Protection",
-    "Kerusakan Alat Berat Excavator & Bulldozer Operasional",
-    "Keterlambatan Pelaporan Limbah B3 ke KLHK",
-    "Risiko Penurunan Debit Sumur Re-injection LHD-17",
-    "Gangguan Sistem Komunikasi Scada & Fiber Optic",
-    "Risiko Kegagalan Tes Pressure Relief Valve",
-    "Kecelakaan kerja yang bersumber dari kontraktor",
-    "Terjadinya Trip pada Generator Transformer 50MVA",
-    "Kebocoran Gasket Flange Line Main Steam Unit 3",
-    "Kenaikan Temp Bearing Lubrication Oil Turbine",
-    "Keterlambatan Pengiriman Chemical Scale Inhibitor",
-    "Kegagalan Sistem Emergency Diesel Generator (EDG)",
-    "Penurunan Efisiensi Demister Separator Unit 2",
-    "Terjadi Siltation di Basin Catchment Area Sumur",
-    "Keterlambatan Sertifikasi K3 Layak Operasi Equipment",
-    "Risiko Erosi pada Piping Steam akibat Wet Steam",
-    "Kerusakan Valve Actuator Steam Field Cluster 4",
-    "Risiko Penurunan Suplai Air Pendingin Utama",
-    "Kebocoran Silinder Hidrolik Valve Control Unit",
-    "Risiko Kenaikan Vibration Level pada Pump Hotwell",
-    "Gangguan Sistem Fire Protection & Sprinkler Field",
-    "Keterlambatan Pengadaan Jasa Maintenance Vendor",
-    "Kebocoran Heat Exchanger Lube Oil Cooler Unit 4",
-    "Risiko Kegagalan Power Transformer 150kV Unit 5",
-    "Terjadi Overheating pada Motor High Voltage 6.6kV",
-    "Risiko Terhambatnya Mobilisasi Drilling Rig",
-    "Kerusakan Panel Control PLC Turbine Unit 1",
-    "Risiko Keterlambatan Kalibrasi Gas Detector",
-    "Kebocoran Pipe Steam Venting Silencer",
-    "Risiko Penurunan Kapasitas Air Handling Unit",
-    "Terjadi Jamming pada Valve Butterfly Condenser",
-    "Keterlambatan Pengiriman Filter Element Oil",
-    "Risiko Kegagalan Battery Charger DC System 110V",
-    "Kerusakan Mechanical Seal Pump Condensate",
-    "Risiko Kenaikan Pressure Loss di Steam Header",
-    "Terjadi Sparking pada Brush Carbon Generator",
-    "Keterlambatan Re-certification Crane Overhead",
-    "Risiko Kebocoran Tube Inter-condenser Vacuum System",
-    "Gangguan Sistem Automatic Voltage Regulator (AVR)",
-    "Risiko Penurunan Performance Gland Sealing System",
-    "Terjadi Trips akibat Differential Protection Transformer",
-    "Risiko Keterlambatan Pembayaran Kontrak SCM Vendor"
-];
-
-const initialRiskTableData = Array.from({ length: 69 }, (_, idx) => {
-    const no = idx + 1;
-    const padNo = String(no).padStart(3, '0');
-    const kode = `LHD-OPS-260${padNo}`;
-
-    const inhCell = findCellForRisk(no, defaultInherentMap);
-    const resCell = findCellForRisk(no, defaultResidualMap);
-
-    const probInherent = inhCell.prob;
-    const dampakInherent = inhCell.dampak;
-    const bobotInherent = probInherent * dampakInherent;
-
-    const probResidual = resCell.prob;
-    const dampakResidual = resCell.dampak;
-
-    return {
-        kode,
-        no,
-        deskripsi: sampleRiskDescriptions[idx] || `Kejadian Risiko Operasional #${no}`,
-        akar: `1. Penurunan kriteria operasional / teknis\n2. Keterlambatan perawatan rutin unit #${no}\n3. Kondisi lingkungan / operasional eksternal`,
-        probInherent,
-        dampakInherent,
-        bobotInherent,
-        peringkatInherent: getRiskLevelInfo(probInherent, dampakInherent).label,
-        strategi: 'MITIGATE',
-        probResidual,
-        dampakResidual,
-        peringkatResidual: getRiskLevelInfo(probResidual, dampakResidual).label
-    };
-});
-
 function buildMapDataFromTable(tableData, isResidual = false) {
     const result = [];
     for (let p = 5; p >= 1; p--) {
@@ -836,7 +573,7 @@ function RiskPieChartCard({ title, data, total }) {
     );
 }
 
-function TabRiskRegister({ auth }) {
+function TabRiskRegister({ auth, initialData = [] }) {
     const userRole = (auth?.user?.role || '').toLowerCase();
     const isAdmin = userRole.includes('admin');
     const [tableData, setTableData] = useState(() => {
@@ -849,7 +586,7 @@ function TabRiskRegister({ auth }) {
         } catch (e) {
             console.error('Failed to load risk data from localStorage', e);
         }
-        return [];
+        return initialData;
     });
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -1188,6 +925,7 @@ function TabRiskRegister({ auth }) {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
                                 <p className="text-[10px] font-bold text-slate-500 mb-2">Keterangan Matriks Risiko:</p>
+
                                 <div className="flex flex-wrap gap-x-6 gap-y-2">
                                     {[
                                         { color: '#009944', label: 'Low Risk' },
@@ -1457,17 +1195,33 @@ function TabRiskRegister({ auth }) {
 
 /* ─── Main Dashboard ─── */
 export default function MainDashboard(props) {
-    const { scmList, budgetDetailsList, financialPerformances = [] } = props;
+    const { 
+        scmList = [], 
+        budgetDetailsList = [], 
+        financialPerformances = [],
+        produksiGwh = [],
+        realisasiProduksi2025 = [],
+        eafData = [],
+        mtbfUnit5Data = [],
+        mtbfUnit6Data = [],
+        eforData = [],
+        mttrData = [],
+        riskRegisterData = []
+    } = props;
 
-    // Fallback default financial data if database table is empty
-    const defaultFinancialPerformances = [
-        { year: 2020, revenue: 74.5, cost: 42.0, depreciation: 24.0, net_profit: 8.5, ebitda: 58.2, cost_per_kwh: 6.8 },
-        { year: 2021, revenue: 72.0, cost: 44.5, depreciation: 24.5, net_profit: 3.0, ebitda: 54.1, cost_per_kwh: 6.9 },
-        { year: 2022, revenue: 89.0, cost: 43.0, depreciation: 20.0, net_profit: 26.0, ebitda: 63.5, cost_per_kwh: 6.8 },
-        { year: 2023, revenue: 90.5, cost: 46.0, depreciation: 22.0, net_profit: 22.5, ebitda: 65.0, cost_per_kwh: 6.8 },
-        { year: 2024, revenue: 88.0, cost: 48.0, depreciation: 23.0, net_profit: 17.0, ebitda: 63.2, cost_per_kwh: 6.9 },
-        { year: 2025, revenue: 87.5, cost: 50.0, depreciation: 22.5, net_profit: 15.0, ebitda: 62.48, cost_per_kwh: 7.2 },
-    ];
+    // Map dynamic data from database
+    const financialTrend = financialPerformances.length > 0 
+        ? financialPerformances.map(item => ({
+            tahun: String(item.year),
+            revenue: Number((item.revenue / 1000000).toFixed(2)),
+            cost: Number((item.cost / 1000000).toFixed(2)),
+            depreciation: Number((item.depreciation / 1000000).toFixed(2)),
+            profitLoss: Number((item.net_profit / 1000000).toFixed(2)),
+            abo: Number((item.abo / 1000000).toFixed(2)),
+            ebitda: Number((item.ebitda / 1000000).toFixed(2))
+        }))
+        : [];
+
 
     const activeFinancials = (financialPerformances && financialPerformances.length > 0)
         ? financialPerformances
@@ -1478,26 +1232,7 @@ export default function MainDashboard(props) {
         return num > 100000 ? Number((num / 1000000).toFixed(2)) : Number(num.toFixed(2));
     };
 
-    // Map dynamic data from database with fallback
-    const financialTrend = activeFinancials.map(item => ({
-        tahun: String(item.year),
-        revenue: getMillionVal(item.revenue),
-        cost: getMillionVal(item.cost),
-        depreciation: getMillionVal(item.depreciation),
-        profitLoss: getMillionVal(item.net_profit ?? item.profitLoss)
-    }));
 
-    const costKwhData = activeFinancials.map(item => ({
-        tahun: String(item.year),
-        nilai: Number(Number(item.cost_per_kwh || 0).toFixed(2))
-    }));
-
-    const ebitdaData = activeFinancials.map(item => ({
-        tahun: String(item.year),
-        nilai: getMillionVal(item.ebitda)
-    }));
-
-    const productionCostScatter = [];
 
     const [activeSubTab, setActiveSubTab] = useState('operasi');
     const [selectedChart, setSelectedChart] = useState(null);
@@ -1616,24 +1351,16 @@ export default function MainDashboard(props) {
             xAxisKey: 'tahun',
             timeType: 'year',
             series: [
-                { key: 'revenue', label: 'Revenue', color: PERTAMINA_BLUE, unit: 'Juta USD' },
-                { key: 'cost', label: 'Cost', color: PERTAMINA_GREEN, unit: 'Juta USD' },
-                { key: 'depreciation', label: 'Depreciation', color: PERTAMINA_YELLOW, unit: 'Juta USD' },
-                { key: 'profitLoss', label: 'Profit/Loss Net', color: '#94a3b8', unit: 'Juta USD' }
+                { key: 'revenue', label: 'Revenue', color: '#F59E0B', unit: 'Juta USD' },
+                { key: 'cost', label: 'Cost', color: '#3B82F6', unit: 'Juta USD' },
+                { key: 'depreciation', label: 'Depreciation', color: '#10B981', unit: 'Juta USD' },
+                { key: 'profitLoss', label: 'Profit/Loss Net', color: '#475569', unit: 'Juta USD' },
+                { key: 'abo', label: 'ABO', color: '#9D174D', unit: 'Juta USD' },
+                { key: 'ebitda', label: 'EBITDA', color: '#F97316', unit: 'Juta USD' }
             ],
             rawData: financialTrend
         },
-        'production-cost-scatter': {
-            id: 'production-cost-scatter',
-            title: 'Production vs Cost per kWh',
-            subtitle: 'Korelasi produksi (GWh) dan biaya per kWh (cent USD)',
-            type: 'scatter',
-            xAxisKey: 'costKwh',
-            series: [
-                { key: 'produksi', label: 'Produksi (GWh)', color: PERTAMINA_BLUE }
-            ],
-            rawData: productionCostScatter
-        },
+
         'cost-kwh': {
             id: 'cost-kwh',
             title: 'Cost/kWh (cent USD)',
@@ -1715,9 +1442,20 @@ export default function MainDashboard(props) {
             </div>
 
             {/* Tab Content */}
-            {activeSubTab === 'operasi' && <TabOperasi onChartClick={handleChartClick} />}
-            {activeSubTab === 'financial' && <TabFinancial onChartClick={handleChartClick} financialTrend={financialTrend} costKwhData={costKwhData} ebitdaData={ebitdaData} productionCostScatter={productionCostScatter} />}
-            {activeSubTab === 'risk' && <TabRiskRegister auth={props.auth} />}
+            {activeSubTab === 'operasi' && (
+                <TabOperasi 
+                    onChartClick={handleChartClick} 
+                    produksiGwh={produksiGwh}
+                    realisasiProduksi2025={realisasiProduksi2025}
+                    mtbfUnit5Data={mtbfUnit5Data}
+                    mtbfUnit6Data={mtbfUnit6Data}
+                    mttrData={mttrData}
+                    eafData={eafData}
+                    eforData={eforData}
+                />
+            )}
+            {activeSubTab === 'financial' && <TabFinancial onChartClick={handleChartClick} financialTrend={financialTrend} costKwhData={costKwhData} ebitdaData={ebitdaData} />}
+            {activeSubTab === 'risk' && <TabRiskRegister auth={props.auth} initialData={riskRegisterData} />}
 
             {/* Premium Chart Detail Modal */}
             <ChartDetailModal

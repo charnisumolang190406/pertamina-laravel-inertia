@@ -16,55 +16,7 @@ const PERTAMINA_GREEN = '#8DC63F';
 const PERTAMINA_YELLOW = '#F59E0B';
 const PERTAMINA_RED = '#E52B2D';
 
-/* ─── Dummy Data: Realisasi ABO ─── */
-const aboYearly = [
-    { tahun: '2019', rkap: 28.5, actual: 26.0, variance: -8.78 },
-    { tahun: '2020', rkap: 30.2, actual: 24.2, variance: -19.99 },
-    { tahun: '2021', rkap: 31.8, actual: 28.5, variance: -10.38 },
-    { tahun: '2022', rkap: 33.5, actual: 31.2, variance: -6.87 },
-    { tahun: '2023', rkap: 35.0, actual: 33.8, variance: -3.43 },
-    { tahun: '2024', rkap: 36.5, actual: 35.2, variance: -3.56 },
-    { tahun: '2025', rkap: 38.0, actual: 37.5, variance: -1.32 },
-    { tahun: '2026', rkap: 39.5, actual: 38.8, variance: -1.77 },
-];
-
-const aboKumulatif2026 = [
-    { bulan: '1', rkap: 3.2, realisasi: 3.0 },
-    { bulan: '2', rkap: 6.5, realisasi: 6.2 },
-    { bulan: '3', rkap: 9.8, realisasi: 9.5 },
-    { bulan: '4', rkap: 13.2, realisasi: 12.8 },
-    { bulan: '5', rkap: 16.5, realisasi: 16.0 },
-    { bulan: '6', rkap: 19.8, realisasi: 19.2 },
-    { bulan: '7', rkap: 23.2, realisasi: 22.5 },
-    { bulan: '8', rkap: 26.5, realisasi: 25.8 },
-    { bulan: '9', rkap: 29.8, realisasi: 29.0 },
-    { bulan: '10', rkap: 33.2, realisasi: 32.2 },
-    { bulan: '11', rkap: 36.5, realisasi: 35.5 },
-    { bulan: '12', rkap: 39.5, realisasi: 38.8 },
-];
-
-const aboMonthly2026 = [
-    { bulan: '1', rkap: 3.2, realisasi: 3.0 },
-    { bulan: '2', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '3', rkap: 3.3, realisasi: 3.3 },
-    { bulan: '4', rkap: 3.4, realisasi: 3.3 },
-    { bulan: '5', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '6', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '7', rkap: 3.4, realisasi: 3.3 },
-    { bulan: '8', rkap: 3.3, realisasi: 3.3 },
-    { bulan: '9', rkap: 3.3, realisasi: 3.2 },
-    { bulan: '10', rkap: 3.4, realisasi: 3.2 },
-    { bulan: '11', rkap: 3.3, realisasi: 3.3 },
-    { bulan: '12', rkap: 3.0, realisasi: 3.3 },
-];
-
-const dummyAboPerFungsi = [
-    { fungsi: 'Operation', budget: 12.5, actual: 12.4, variance: -0.8 },
-    { fungsi: 'Maintenance', budget: 10.2, actual: 10.1, variance: -1.0 },
-    { fungsi: 'GM', budget: 5.8, actual: 5.7, variance: -1.7 },
-    { fungsi: 'HSSE', budget: 4.5, actual: 4.5, variance: 0.0 },
-    { fungsi: 'Bus. Support', budget: 6.5, actual: 6.1, variance: -6.2 },
-];
+// Data passed via props
 
 function ChartCard({ title, subtitle, children, className = '', onClick }) {
     const isClickable = !!onClick;
@@ -96,7 +48,7 @@ function ChartCard({ title, subtitle, children, className = '', onClick }) {
     );
 }
 
-function TabRealisasiAbo({ budgetDetailsList, onChartClick }) {
+function TabRealisasiAbo({ budgetDetailsList, onChartClick, aboYearly = [], aboKumulatif2026 = [], aboMonthly2026 = [] }) {
     const aboYearlyHover = useBarHover();
     const aboFungsiHover = useBarHover();
 
@@ -321,7 +273,7 @@ function RingkasanVisualization({ chartData, formatCurrency, formatShortCurrency
 }
 
 export default function Budgeting(props) {
-    const { budgetDetailsList, momList, auth, onOpenFeedback, activeSubMenu } = props;
+    const { budgetDetailsList, momList, auth, onOpenFeedback, activeSubMenu, aboYearly = [], aboKumulatif2026 = [], aboMonthly2026 = [] } = props;
     const currentUser = auth.user;
 
     const [activeBudgetSubTab, setActiveBudgetSubTab] = useState('abo');
@@ -1019,7 +971,7 @@ export default function Budgeting(props) {
             )}
 
             {/* Subtab 4: Realisasi ABO */}
-            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo budgetDetailsList={budgetDetailsList} onChartClick={handleChartClick} />}
+            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo budgetDetailsList={budgetDetailsList} onChartClick={handleChartClick} aboYearly={aboYearly} aboKumulatif2026={aboKumulatif2026} aboMonthly2026={aboMonthly2026} />}
 
             {/* Chart Detail Modal */}
             <ChartDetailModal
