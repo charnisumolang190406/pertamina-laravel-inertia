@@ -20,7 +20,7 @@ import BetterIndicator from '../../Components/BetterIndicator';
 
 
 /* ─── Data: Kinerja Operasi & Reliability Area Lahendong ─── */
-const produksiGwh = [
+const defaultProduksiGwh = [
     { tahun: '2019', nilai: 820 },
     { tahun: '2020', nilai: 828, diff: '+0.98%', isPositive: true },
     { tahun: '2021', nilai: 775, diff: '-6.40%', isPositive: false },
@@ -30,7 +30,7 @@ const produksiGwh = [
     { tahun: '2025', nilai: 849, diff: '-2.64%', isPositive: false },
 ];
 
-const realisasiProduksi2025 = [
+const defaultRealisasiProduksi2025 = [
     { bulan: '1', rkap: 8.5, realisasi: 7.8, kumRkap: 8.5, kumReal: 7.8, rkapRevisi: 8.2 },
     { bulan: '2', rkap: 9.2, realisasi: 8.9, kumRkap: 17.7, kumReal: 16.7, rkapRevisi: 17.0 },
     { bulan: '3', rkap: 9.8, realisasi: 10.1, kumRkap: 27.5, kumReal: 26.8, rkapRevisi: 26.5 },
@@ -1605,29 +1605,23 @@ export default function MainDashboard(props) {
         scmList = [], 
         budgetDetailsList = [], 
         financialPerformances = [],
-        produksiGwh = [],
-        realisasiProduksi2025 = [],
-        eafData = [],
-        mtbfUnit5Data = [],
-        mtbfUnit6Data = [],
-        eforData = [],
-        mttrData = [],
+        produksiGwh: propProduksiGwh,
+        realisasiProduksi2025: propRealisasiProduksi2025,
         riskRegisterData = []
     } = props;
 
-    // Map dynamic data from database
-    const financialTrend = financialPerformances.length > 0 
-        ? financialPerformances.map(item => ({
-            tahun: String(item.year),
-            revenue: Number((item.revenue / 1000000).toFixed(2)),
-            cost: Number((item.cost / 1000000).toFixed(2)),
-            depreciation: Number((item.depreciation / 1000000).toFixed(2)),
-            profitLoss: Number((item.net_profit / 1000000).toFixed(2)),
-            abo: Number((item.abo / 1000000).toFixed(2)),
-            ebitda: Number((item.ebitda / 1000000).toFixed(2))
-        }))
-        : [];
+    const produksiGwh = (propProduksiGwh && propProduksiGwh.length > 0) ? propProduksiGwh : defaultProduksiGwh;
+    const realisasiProduksi2025 = (propRealisasiProduksi2025 && propRealisasiProduksi2025.length > 0) ? propRealisasiProduksi2025 : defaultRealisasiProduksi2025;
 
+    // Fallback default financial data if database table is empty
+    const defaultFinancialPerformances = [
+        { year: 2020, revenue: 74.5, cost: 42.0, depreciation: 24.0, net_profit: 8.5, ebitda: 58.2, cost_per_kwh: 6.8, abo: 35.0 },
+        { year: 2021, revenue: 72.0, cost: 44.5, depreciation: 24.5, net_profit: 3.0, ebitda: 54.1, cost_per_kwh: 6.9, abo: 36.5 },
+        { year: 2022, revenue: 89.0, cost: 43.0, depreciation: 20.0, net_profit: 26.0, ebitda: 63.5, cost_per_kwh: 6.8, abo: 38.0 },
+        { year: 2023, revenue: 90.5, cost: 46.0, depreciation: 22.0, net_profit: 22.5, ebitda: 65.0, cost_per_kwh: 6.8, abo: 40.2 },
+        { year: 2024, revenue: 88.0, cost: 48.0, depreciation: 23.0, net_profit: 17.0, ebitda: 63.2, cost_per_kwh: 6.9, abo: 42.1 },
+        { year: 2025, revenue: 87.5, cost: 50.0, depreciation: 22.5, net_profit: 15.0, ebitda: 62.48, cost_per_kwh: 7.2, abo: 43.5 },
+    ];
 
     const activeFinancials = (financialPerformances && financialPerformances.length > 0)
         ? financialPerformances
@@ -1637,6 +1631,27 @@ export default function MainDashboard(props) {
         const num = Number(val) || 0;
         return num > 100000 ? Number((num / 1000000).toFixed(2)) : Number(num.toFixed(2));
     };
+
+    // Map dynamic data from database with fallback
+    const financialTrend = activeFinancials.map(item => ({
+        tahun: String(item.year),
+        revenue: getMillionVal(item.revenue),
+        cost: getMillionVal(item.cost),
+        depreciation: getMillionVal(item.depreciation),
+        profitLoss: getMillionVal(item.net_profit ?? item.profitLoss),
+        abo: getMillionVal(item.abo),
+        ebitda: getMillionVal(item.ebitda)
+    }));
+
+    const costKwhData = activeFinancials.map(item => ({
+        tahun: String(item.year),
+        nilai: Number(Number(item.cost_per_kwh || 0).toFixed(2))
+    }));
+
+    const ebitdaData = activeFinancials.map(item => ({
+        tahun: String(item.year),
+        nilai: getMillionVal(item.ebitda)
+    }));
 
 
 
@@ -1809,11 +1824,6 @@ export default function MainDashboard(props) {
                     onChartClick={handleChartClick} 
                     produksiGwh={produksiGwh}
                     realisasiProduksi2025={realisasiProduksi2025}
-                    mtbfUnit5Data={mtbfUnit5Data}
-                    mtbfUnit6Data={mtbfUnit6Data}
-                    mttrData={mttrData}
-                    eafData={eafData}
-                    eforData={eforData}
                 />
             )}
             {activeSubTab === 'financial' && <TabFinancial onChartClick={handleChartClick} financialTrend={financialTrend} costKwhData={costKwhData} ebitdaData={ebitdaData} />}

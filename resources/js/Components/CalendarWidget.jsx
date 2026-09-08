@@ -32,12 +32,12 @@ export default function CalendarWidget({ events, currentUser }) {
 
   // Check if current user has permission to manage events for a specific category
   const canManage = (category) => {
-    if (currentUser.role.startsWith('Admin') && !currentUser.role.startsWith('Admin Bisnis') && !currentUser.role.startsWith('Admin HC') && !currentUser.role.startsWith('Admin FM')) return true; // Global Admin
+    if (currentUser.role.startsWith('Admin') && !currentUser.role.startsWith('Admin Bisnis') && !currentUser.role.startsWith('Admin HC') && !currentUser.role.startsWith('Admin FM') && !currentUser.role.startsWith('Admin Facility')) return true; // Global Admin
     if (currentUser.role === 'Manager BS' || currentUser.role.startsWith('Kepala') || currentUser.role === 'Management Executive') return true;
     
     if (currentUser.role === 'Admin Bisnis Planning and Budgeting' && category === 'BS') return true;
     if (currentUser.role === 'Admin HC' && category === 'HC') return true;
-    if (currentUser.role === 'Admin FM' && category === 'FM') return true;
+    if ((currentUser.role === 'Admin FM' || currentUser.role.startsWith('Admin Facility')) && category === 'FM') return true;
     
     return false;
   };
@@ -50,7 +50,7 @@ export default function CalendarWidget({ events, currentUser }) {
     if (currentUser.role === 'Manager BS' || currentUser.role.startsWith('Kepala')) return 'BS';
     if (currentUser.role === 'Admin Bisnis Planning and Budgeting') return 'BS';
     if (currentUser.role === 'Admin HC') return 'HC';
-    if (currentUser.role === 'Admin FM') return 'FM';
+    if (currentUser.role === 'Admin FM' || currentUser.role.startsWith('Admin Facility')) return 'FM';
     return 'BS';
   };
 

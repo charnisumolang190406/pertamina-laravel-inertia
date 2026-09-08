@@ -205,7 +205,7 @@ function RingkasanVisualization({ chartData, formatCurrency, formatShortCurrency
 }
 
 export default function Budgeting(props) {
-    const { budgetDetailsList, momList, auth, onOpenFeedback, activeSubMenu, aboYearly = [], aboKumulatif2026 = [], aboMonthly2026 = [] } = props;
+    const { budgetDetailsList = [], momList = [], auth, onOpenFeedback, activeSubMenu, aboYearly = [], aboKumulatif2026 = [], aboMonthly2026 = [] } = props;
     const currentUser = auth.user;
 
     const [activeBudgetSubTab, setActiveBudgetSubTab] = useState('realisasi-abo');
@@ -979,16 +979,11 @@ export default function Budgeting(props) {
                 </div>
             )}
 
-<<<<<<< HEAD
             {/* Subtab 1: Realisasi & Top 3 ABO */}
-            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo onChartClick={handleChartClick} />}
+            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo budgetDetailsList={budgetDetailsList} onChartClick={handleChartClick} aboYearly={aboYearly} aboKumulatif2026={aboKumulatif2026} aboMonthly2026={aboMonthly2026} />}
 
             {/* Subtab 2: Realisasi & Timeline ABI */}
             {activeBudgetSubTab === 'realisasi-abi' && <TabRealisasiAbi onChartClick={handleChartClick} />}
-=======
-            {/* Subtab 4: Realisasi ABO */}
-            {activeBudgetSubTab === 'realisasi-abo' && <TabRealisasiAbo budgetDetailsList={budgetDetailsList} onChartClick={handleChartClick} aboYearly={aboYearly} aboKumulatif2026={aboKumulatif2026} aboMonthly2026={aboMonthly2026} />}
->>>>>>> 150d32ba44efd898a7d933984c4096bd896d15a6
 
             {/* Chart Detail Modal */}
             <ChartDetailModal
