@@ -29,10 +29,15 @@ class PerbaikanImport implements ToModel, WithHeadingRow
             return null;
         }
 
-        // Lokasi: ambil dari kolom lokasi atau deteksi dari deskripsi
-        $lokasi = $row['lokasi'] ?? null;
+        // Lokasi: ambil dari kolom no_unit_rd, unit_rd, lokasi, atau deteksi dari deskripsi
+        $lokasi = $row['no_unit_rd'] 
+            ?? $row['unit_rd'] 
+            ?? $row['unit'] 
+            ?? $row['lokasi'] 
+            ?? null;
+
         if (empty($lokasi)) {
-            if (preg_match('/(RD\s*\d+|Rumah\s*Dinas\s*(?:No\.?)?\s*\d+|Wisma\s*[A-Za-z0-9]+)/i', $pekerjaan, $matches)) {
+            if (preg_match('/(RD\s*\d+|Rumah\s*Dinas\s*(?:No\.?)?\s*\d+|Wisma\s*[A-Za-z0-9]+|Kantor|Mess|Pos\s*Security)/i', $pekerjaan, $matches)) {
                 $lokasi = trim($matches[1]);
             } else {
                 $lokasi = 'Rumah Dinas';
@@ -45,8 +50,30 @@ class PerbaikanImport implements ToModel, WithHeadingRow
 
         // Kategori & Urgensi (Auto-Categorizer jika tidak ada kolom di Excel)
         $keterangan = $row['keterangan'] ?? '';
-        $kategori = !empty($row['kategori']) ? $row['kategori'] : LogistikController::autoCategorize($pekerjaan, $keterangan);
-        $urgensi = !empty($row['urgensi']) ? $row['urgensi'] : LogistikController::autoUrgensi($pekerjaan, $keterangan);
+        $rawKategori = $row['kategori'] ?? null;
+        if (!empty($rawKategori)) {
+            $rk = strtolower($rawKategori);
+            if (str_contains($rk, 'sst') || str_contains($rk, 'sipil')) $kategori = 'Sipil dan Struktural (SST)';
+            elseif (str_contains($rk, 'ps') || str_contains($rk, 'plumb') || str_contains($rk, 'sanit')) $kategori = 'Plumbing dan Sanitasi (PS)';
+            elseif (str_contains($rk, 'mel') || str_contains($rk, 'mep') || str_contains($rk, 'listrik') || str_contains($rk, 'mekanikal')) $kategori = 'Mekanikal dan Elektrikal (MEL)';
+            elseif (str_contains($rk, 'hvac') || str_contains($rk, 'ac') || str_contains($rk, 'pendingin')) $kategori = 'Pendingin Udara (HVAC)';
+            elseif (str_contains($rk, 'ff&e') || str_contains($rk, 'ffe') || str_contains($rk, 'interior') || str_contains($rk, 'fixture')) $kategori = 'Interior dan Fixture (FF&E)';
+            else $kategori = $rawKategori;
+        } else {
+            $kategori = LogistikController::autoCategorize($pekerjaan, $keterangan);
+        }
+        $rawUrgensi = strtolower(trim($row['urgensi'] ?? ''));
+        if ($rawUrgensi === 'high' || $rawUrgensi === 'emergency' || $rawUrgensi === 'darurat') {
+            $urgensi = 'High';
+        } elseif ($rawUrgensi === 'medium' || $rawUrgensi === 'normal' || $rawUrgensi === 'sedang') {
+            $urgensi = 'Medium';
+        } elseif ($rawUrgensi === 'low' || $rawUrgensi === 'rendah') {
+            $urgensi = 'Low';
+        } elseif (!empty($row['urgensi'])) {
+            $urgensi = ucfirst($row['urgensi']);
+        } else {
+            $urgensi = LogistikController::autoUrgensi($pekerjaan, $keterangan);
+        }
 
         $status = $row['status'] ?? ($tglSelesai ? 'Done' : 'In Progress');
         $linkFoto = $row['link_bukti_foto_opsional'] ?? $row['link_foto'] ?? $row['foto'] ?? null;
@@ -79,7 +106,15 @@ class PerbaikanImport implements ToModel, WithHeadingRow
             if (is_numeric($value)) {
                 return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
             }
-            return Carbon::parse($value)->format('Y-m-d');
+            $valStr = trim((string)$value);
+            // Format DD/MM/YYYY atau DD-MM-YYYY (standar Indonesia pada Excel)
+            if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $valStr, $m)) {
+                $day = (int)$m[1];
+                $month = (int)$m[2];
+                $year = (int)$m[3];
+                return sprintf('%04d-%02d-%02d', $year, $month, $day);
+            }
+            return Carbon::parse($valStr)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;
         }

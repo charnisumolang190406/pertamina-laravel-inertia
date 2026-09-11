@@ -21,6 +21,8 @@ use App\Models\HcRetired;
 use App\Models\Employee;
 use App\Models\FinancialPerformance;
 use App\Models\BbmStock;
+use App\Models\IctService;
+use App\Models\IctMaintenance;
 
 class ImportController extends Controller
 {
@@ -358,6 +360,45 @@ class ImportController extends Controller
                             ]
                         );
                         $insertedCount++;
+                        break;
+
+                    case 'ict_service':
+                        $kategori = trim($row['kategori'] ?? $row['nama'] ?? '');
+                        if (!empty($kategori)) {
+                            IctService::updateOrCreate(
+                                [
+                                    'kategori' => $kategori,
+                                    'bulan' => $row['bulan'] ?? '06',
+                                    'tahun' => intval($row['tahun'] ?? 2026),
+                                ],
+                                [
+                                    'jumlah' => intval($row['jumlah'] ?? 0),
+                                    'keterangan' => $row['keterangan'] ?? 'Import Wizard',
+                                    'sumber_url' => $row['sumber_url'] ?? 'http://ptmpgewebapp2.pertamina.com/portal/it/rekap.php?bulan=06&th=2026&button=Submit',
+                                ]
+                            );
+                            $insertedCount++;
+                        }
+                        break;
+
+                    case 'ict_maintenance':
+                        $kegiatan = trim($row['kegiatan'] ?? $row['nama_kegiatan'] ?? '');
+                        if (!empty($kegiatan)) {
+                            IctMaintenance::updateOrCreate(
+                                [
+                                    'kegiatan' => $kegiatan,
+                                    'tahun' => intval($row['tahun'] ?? 2026),
+                                    'bulan' => intval($row['bulan'] ?? 1),
+                                    'minggu' => intval($row['minggu'] ?? 1),
+                                    'tipe' => strtolower(trim($row['tipe'] ?? 'rencana')),
+                                ],
+                                [
+                                    'status' => $row['status'] ?? 'Terjadwal',
+                                    'keterangan' => $row['keterangan'] ?? 'Import Wizard',
+                                ]
+                            );
+                            $insertedCount++;
+                        }
                         break;
                 }
             }

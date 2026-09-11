@@ -140,6 +140,202 @@ class LogistikController extends Controller
         return redirect()->back()->with('success', 'Data perbaikan berhasil diperbarui.');
     }
 
+    /**
+     * Unduh Template Excel Resmi (.xlsx) dengan Format 5 Kategori & SLA 2026
+     */
+    /**
+     * Unduh Template Excel Resmi (.xlsx) dengan Format Dropdown Unit RD & Urgensi
+     */
+    public function downloadTemplateExcel()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+
+        // ── SHEET 1: TEMPLATE_DATA_PERBAIKAN (SESUAI FORMAT SCREENSHOT PENGGUNA) ──
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Template_Data_Perbaikan');
+
+        $headers = [
+            'A1' => 'No',
+            'B1' => 'No Unit RD',
+            'C1' => 'Deskripsi Pekerjaan',
+            'D1' => 'Urgensi',
+            'E1' => 'Tanggal Request',
+            'F1' => 'Tanggal Selesai',
+        ];
+
+        foreach ($headers as $cell => $text) {
+            $sheet->setCellValue($cell, $text);
+        }
+
+        // Header Styling (Abu-abu Profesional Sesuai Screenshot Excel Pengguna)
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['argb' => 'FF1E293B'],
+                'size' => 11,
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FFE2E8F0'],
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF94A3B8'],
+                ],
+            ],
+        ];
+        $sheet->getStyle('A1:F1')->applyFromArray($headerStyle);
+        $sheet->getRowDimension(1)->setRowHeight(26);
+
+        // Data Contoh Persis Seperti Screenshot Pengguna
+        $samples = [
+            [1, 'RD 01', 'Perbaikan meja setrika RD 30,', 'Low', '03/01/2026', '06/01/2026'],
+            [2, 'RD 31', 'Perbaikan Kunci toilet pria management lepas', 'Medium', '06/01/2026', '07/01/2026'],
+            [3, 'RD 05', 'Pipa kran dapur bocor dan wastafel mampet', 'High', '04/02/2026', '05/02/2026'],
+            [4, 'Kantor', 'MCB Listrik sering trip / turun mendadak', 'High', '15/03/2026', '16/03/2026'],
+            [5, 'RD 01', 'Servis AC Split 1.5 PK tidak dingin & bocor freon', 'Low', '02/03/2026', '04/03/2026'],
+            [6, 'RD 30', 'Perbaikan meja setrika dan engsel lemari dinas', 'Medium', '12/01/2026', '14/01/2026'],
+        ];
+
+        $rowIdx = 2;
+        foreach ($samples as $row) {
+            $sheet->setCellValue('A' . $rowIdx, $row[0]);
+            $sheet->setCellValue('B' . $rowIdx, $row[1]);
+            $sheet->setCellValue('C' . $rowIdx, $row[2]);
+            $sheet->setCellValue('D' . $rowIdx, $row[3]);
+            $sheet->setCellValue('E' . $rowIdx, $row[4]);
+            $sheet->setCellValue('F' . $rowIdx, $row[5]);
+
+            // Alignment per kolom
+            $sheet->getStyle('A' . $rowIdx)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('B' . $rowIdx)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('D' . $rowIdx)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('E' . $rowIdx)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('F' . $rowIdx)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+            $sheet->getRowDimension($rowIdx)->setRowHeight(22);
+            $rowIdx++;
+        }
+
+        // ── SHEET 2: SHEET1 (REFERENSI UNIT RD & PANDUAN KATEGORI) ──
+        $refSheet = $spreadsheet->createSheet();
+        $refSheet->setTitle('Sheet1');
+
+        $refSheet->setCellValue('A1', 'Daftar Unit RD');
+        $refSheet->setCellValue('C1', 'Pilihan Urgensi');
+        $refSheet->setCellValue('E1', 'Panduan Kategori');
+        $refSheet->setCellValue('F1', 'Target SLA');
+
+        $units = [
+            'RD 01', 'RD 02', 'RD 03', 'RD 04', 'RD 05', 'RD 06', 'RD 07', 'RD 08', 'RD 09', 'RD 10',
+            'RD 11', 'RD 12', 'RD 13', 'RD 14', 'RD 15', 'RD 16', 'RD 17', 'RD 18', 'RD 19', 'RD 20',
+            'RD 21', 'RD 22', 'RD 23', 'RD 24', 'RD 25', 'RD 26', 'RD 27', 'RD 28', 'RD 29', 'RD 30',
+            'RD 31', 'RD 32', 'RD 33', 'RD 34', 'RD 35',
+            'Kantor', 'Wisma Manajemen', 'Pos Security', 'Mess Karyawan'
+        ];
+
+        foreach ($units as $i => $u) {
+            $refSheet->setCellValue('A' . ($i + 2), $u);
+        }
+
+        $refSheet->setCellValue('C2', 'Low');
+        $refSheet->setCellValue('C3', 'Medium');
+        $refSheet->setCellValue('C4', 'High');
+
+        $kategoriGuide = [
+            ['Sipil dan Struktural (SST)', '7 HK'],
+            ['Plumbing dan Sanitasi (PS)', '2 HK'],
+            ['Mekanikal dan Elektrikal (MEL)', '2 HK'],
+            ['Pendingin Udara (HVAC)', '2 HK'],
+            ['Interior dan Fixture (FF&E)', '2 HK'],
+        ];
+        foreach ($kategoriGuide as $i => $kg) {
+            $refSheet->setCellValue('E' . ($i + 2), $kg[0]);
+            $refSheet->setCellValue('F' . ($i + 2), $kg[1]);
+        }
+
+        $refHeaderStyle = [
+            'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FF1E40AF'],
+            ],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ];
+        $refSheet->getStyle('A1')->applyFromArray($refHeaderStyle);
+        $refSheet->getStyle('C1')->applyFromArray($refHeaderStyle);
+        $refSheet->getStyle('E1:F1')->applyFromArray($refHeaderStyle);
+
+        // Named Range untuk Dropdown Unit
+        $lastUnitRow = count($units) + 1;
+        $spreadsheet->addNamedRange(
+            new \PhpOffice\PhpSpreadsheet\NamedRange('DaftarUnitRD', $refSheet, '$A$2:$A$' . $lastUnitRow)
+        );
+
+        // ── DATA VALIDATION / IN-CELL DROPDOWN ──
+        // 1. Dropdown Lokasi / No Unit RD
+        $valUnit = new \PhpOffice\PhpSpreadsheet\Cell\DataValidation();
+        $valUnit->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+        $valUnit->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
+        $valUnit->setAllowBlank(true);
+        $valUnit->setShowDropDown(true);
+        $valUnit->setShowInputMessage(true);
+        $valUnit->setShowErrorMessage(true);
+        $valUnit->setPromptTitle('Pilih No Unit RD');
+        $valUnit->setPrompt('Pilih unit rumah dinas atau kantor dari daftar dropdown.');
+        $valUnit->setFormula1('=DaftarUnitRD');
+
+        // 2. Dropdown Urgensi (Low, Medium, High)
+        $valUrgensi = new \PhpOffice\PhpSpreadsheet\Cell\DataValidation();
+        $valUrgensi->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+        $valUrgensi->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
+        $valUrgensi->setAllowBlank(true);
+        $valUrgensi->setShowDropDown(true);
+        $valUrgensi->setShowInputMessage(true);
+        $valUrgensi->setShowErrorMessage(true);
+        $valUrgensi->setPromptTitle('Tingkat Urgensi');
+        $valUrgensi->setPrompt('Pilih urgensi pekerjaan: Low, Medium, atau High');
+        $valUrgensi->setFormula1('"Low,Medium,High"');
+
+        // Pasang data validation untuk 200 baris ke depan di Sheet Template
+        for ($r = 2; $r <= 200; $r++) {
+            $sheet->getCell("B$r")->setDataValidation(clone $valUnit);
+            $sheet->getCell("D$r")->setDataValidation(clone $valUrgensi);
+        }
+
+        // Auto size kolom
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        foreach (range('A', 'F') as $col) {
+            $refSheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Pastikan Sheet 1 aktif saat file dibuka
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $fileName = 'Template_Data_Perbaikan.xlsx';
+        $tempPath = tempnam(sys_get_temp_dir(), 'tmpl_') . '.xlsx';
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save($tempPath);
+
+        // Bersihkan output buffer agar tidak ada byte pengotor sebelum file biner dikirim
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        return response()->download($tempPath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Length' => filesize($tempPath),
+            'Cache-Control' => 'no-cache, must-revalidate',
+        ])->deleteFileAfterSend(true);
+    }
+
     public function exportPerbaikan()
     {
         $data = Perbaikan::orderBy('tanggal_request', 'desc')->get();
@@ -153,7 +349,7 @@ class LogistikController extends Controller
             "Expires" => "0"
         ];
 
-        $columns = ['ID', 'Lokasi', 'Deskripsi Pekerjaan', 'Kategori Kerusakan', 'Urgensi', 'Tanggal Request', 'Tanggal Selesai', 'Status', 'Estimasi (Rp)', 'Realisasi (Rp)', 'Link Foto', 'Keterangan'];
+        $columns = ['ID', 'Lokasi', 'Kategori Kerusakan', 'Deskripsi Pekerjaan', 'Urgensi', 'Tanggal Request', 'Tanggal Selesai', 'Lama Perbaikan (Hari)', 'Kesesuaian SLA', 'Status', 'Estimasi (Rp)', 'Realisasi (Rp)', 'Keterangan'];
 
         $callback = function () use ($data, $columns) {
             $file = fopen('php://output', 'w');
@@ -161,18 +357,35 @@ class LogistikController extends Controller
             fputcsv($file, $columns);
 
             foreach ($data as $item) {
+                $cat = $item->kategori ?: self::autoCategorize($item->pekerjaan, $item->keterangan);
+                $urg = $item->urgensi ?: self::autoUrgensi($item->pekerjaan, $item->keterangan);
+                
+                // Hitung lama perbaikan & kesesuaian SLA
+                $durasi = null;
+                $kesesuaianSla = '-';
+                if ($item->tanggal_request) {
+                    $start = new \DateTime($item->tanggal_request);
+                    $end = $item->tanggal_selesai ? new \DateTime($item->tanggal_selesai) : new \DateTime();
+                    $diff = $start->diff($end);
+                    $durasi = (int) $diff->days;
+                    
+                    $slaLimit = str_contains($cat, 'Sipil') || str_contains($cat, 'SST') ? 7 : 2;
+                    $kesesuaianSla = ($durasi <= $slaLimit) ? 'Sesuai SLA' : 'Melebihi SLA';
+                }
+
                 fputcsv($file, [
                     $item->id,
                     $item->lokasi,
+                    $cat,
                     $item->pekerjaan,
-                    $item->kategori ?: self::autoCategorize($item->pekerjaan, $item->keterangan),
-                    $item->urgensi ?: self::autoUrgensi($item->pekerjaan, $item->keterangan),
+                    $urg,
                     $item->tanggal_request,
                     $item->tanggal_selesai,
-                    $item->status,
+                    $durasi !== null ? $durasi : '-',
+                    $kesesuaianSla,
+                    $item->status ?: 'Done',
                     $item->estimasi,
                     $item->realisasi,
-                    $item->link_foto,
                     $item->keterangan,
                 ]);
             }
@@ -202,106 +415,106 @@ class LogistikController extends Controller
                 'id' => 1,
                 'lokasi' => 'Rumah Dinas No. 12',
                 'pekerjaan' => 'Perbaikan Atap dan Plafon Bocor Ruang Tamu',
-                'kategori' => 'Sipil dan Struktural',
+                'kategori' => 'Sipil dan Struktural (SST)',
                 'urgensi' => 'High',
                 'estimasi' => 25000000,
                 'realisasi' => 24500000,
                 'status' => 'Done',
                 'keterangan' => 'Pekerjaan perbaikan atap selesai 100% menggunakan genteng metal',
                 'tanggal_request' => '2026-01-05',
-                'tanggal_selesai' => '2026-01-08',
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-rd12',
+                'tanggal_selesai' => '2026-01-09',
+                'link_foto' => null,
             ],
             [
                 'id' => 2,
                 'lokasi' => 'Rumah Dinas No. 30',
                 'pekerjaan' => 'Perbaikan meja setrika dan engsel lemari dinas',
                 'kategori' => 'Interior dan Fixture (FF&E)',
-                'urgensi' => 'Normal',
+                'urgensi' => 'Low',
                 'estimasi' => 850000,
                 'realisasi' => 800000,
                 'status' => 'Done',
                 'keterangan' => 'Penggantian engsel hidrolik baru',
                 'tanggal_request' => '2026-01-12',
                 'tanggal_selesai' => '2026-01-14',
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-rd30-1',
+                'link_foto' => null,
             ],
             [
                 'id' => 3,
                 'lokasi' => 'Wisma Manajemen',
                 'pekerjaan' => 'Perbaikan Kunci toilet pria management lepas',
                 'kategori' => 'Interior dan Fixture (FF&E)',
-                'urgensi' => 'High',
+                'urgensi' => 'Medium',
                 'estimasi' => 500000,
                 'realisasi' => 450000,
                 'status' => 'Done',
                 'keterangan' => 'Penggantian handle set kunci bulat stainless',
                 'tanggal_request' => '2026-01-18',
                 'tanggal_selesai' => '2026-01-19',
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-wisma',
+                'link_foto' => null,
             ],
             [
                 'id' => 4,
                 'lokasi' => 'Rumah Dinas No. 30',
                 'pekerjaan' => 'Pipa kran dapur bocor dan wastafel mampet',
-                'kategori' => 'Plumbing dan Sanitasi',
-                'urgensi' => 'High',
+                'kategori' => 'Plumbing dan Sanitasi (PS)',
+                'urgensi' => 'Medium',
                 'estimasi' => 1200000,
                 'realisasi' => 1150000,
                 'status' => 'Done',
                 'keterangan' => 'Penggantian pipa sifon & kran leher angsa',
                 'tanggal_request' => '2026-02-04',
-                'tanggal_selesai' => '2026-02-06',
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-rd30-2',
+                'tanggal_selesai' => '2026-02-05',
+                'link_foto' => null,
             ],
             [
                 'id' => 5,
                 'lokasi' => 'Rumah Dinas No. 05',
                 'pekerjaan' => 'Renovasi Pagar Keliling & Engsel Gerbang',
-                'kategori' => 'Sipil dan Struktural',
-                'urgensi' => 'Normal',
+                'kategori' => 'Sipil dan Struktural (SST)',
+                'urgensi' => 'Low',
                 'estimasi' => 15000000,
                 'realisasi' => 15000000,
                 'status' => 'Done',
                 'keterangan' => 'Pengelasan ulang dan cat anti-karat',
                 'tanggal_request' => '2026-02-14',
-                'tanggal_selesai' => '2026-02-18',
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-rd05',
+                'tanggal_selesai' => '2026-02-23',
+                'link_foto' => null,
             ],
             [
                 'id' => 6,
                 'lokasi' => 'Rumah Dinas No. 18',
                 'pekerjaan' => 'Servis AC Split 1.5 PK tidak dingin & bocor freon',
-                'kategori' => 'HVAC (Pendingin Udara)',
-                'urgensi' => 'High',
+                'kategori' => 'Pendingin Udara (HVAC)',
+                'urgensi' => 'Medium',
                 'estimasi' => 1500000,
                 'realisasi' => 1400000,
                 'status' => 'Done',
                 'keterangan' => 'Pengelasan pipa evaporator dan isi ulang freon R32',
                 'tanggal_request' => '2026-03-02',
                 'tanggal_selesai' => '2026-03-04',
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-rd18-1',
+                'link_foto' => null,
             ],
             [
                 'id' => 7,
                 'lokasi' => 'Rumah Dinas No. 12',
                 'pekerjaan' => 'MCB Listrik sering trip / turun mendadak',
-                'kategori' => 'Mekanikal dan Elektrikal (MEP)',
-                'urgensi' => 'Emergency',
+                'kategori' => 'Mekanikal dan Elektrikal (MEL)',
+                'urgensi' => 'High',
                 'estimasi' => 950000,
                 'realisasi' => 900000,
                 'status' => 'Done',
                 'keterangan' => 'Penggantian MCB Schneider 25A & penataan ulang beban fasa',
                 'tanggal_request' => '2026-03-15',
                 'tanggal_selesai' => '2026-03-16',
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-rd12-mcb',
+                'link_foto' => null,
             ],
             [
                 'id' => 8,
                 'lokasi' => 'Rumah Dinas No. 24',
                 'pekerjaan' => 'Instalasi stop kontak baru & perbaikan fitting lampu kamar',
-                'kategori' => 'Mekanikal dan Elektrikal (MEP)',
-                'urgensi' => 'Normal',
+                'kategori' => 'Mekanikal dan Elektrikal (MEL)',
+                'urgensi' => 'Low',
                 'estimasi' => 650000,
                 'realisasi' => 600000,
                 'status' => 'Done',
@@ -314,22 +527,22 @@ class LogistikController extends Controller
                 'id' => 9,
                 'lokasi' => 'Rumah Dinas No. 30',
                 'pekerjaan' => 'Tembok rembes dan cat terkelupas kamar tidur',
-                'kategori' => 'Sipil dan Struktural',
-                'urgensi' => 'Normal',
+                'kategori' => 'Sipil dan Struktural (SST)',
+                'urgensi' => 'Low',
                 'estimasi' => 3200000,
                 'realisasi' => 3000000,
                 'status' => 'Done',
                 'keterangan' => 'Waterproofing Aquaproof dan pengecatan ulang Dulux',
                 'tanggal_request' => '2026-04-20',
-                'tanggal_selesai' => '2026-04-23',
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-rd30-3',
+                'tanggal_selesai' => '2026-04-24',
+                'link_foto' => null,
             ],
             [
                 'id' => 10,
                 'lokasi' => 'Rumah Dinas No. 18',
                 'pekerjaan' => 'Pelampung toren air patah dan air meluap',
-                'kategori' => 'Plumbing dan Sanitasi',
-                'urgensi' => 'Emergency',
+                'kategori' => 'Plumbing dan Sanitasi (PS)',
+                'urgensi' => 'High',
                 'estimasi' => 750000,
                 'realisasi' => 700000,
                 'status' => 'Done',
@@ -342,70 +555,70 @@ class LogistikController extends Controller
                 'id' => 11,
                 'lokasi' => 'Wisma Manajemen',
                 'pekerjaan' => 'Perawatan rutin AC Cassette & ganti filter udara',
-                'kategori' => 'HVAC (Pendingin Udara)',
-                'urgensi' => 'Normal',
+                'kategori' => 'Pendingin Udara (HVAC)',
+                'urgensi' => 'Low',
                 'estimasi' => 2400000,
                 'realisasi' => 2200000,
                 'status' => 'Done',
                 'keterangan' => 'Cleaning 4 unit AC Cassette Daikin',
                 'tanggal_request' => '2026-05-22',
-                'tanggal_selesai' => '2026-05-24',
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-wisma-ac',
+                'tanggal_selesai' => '2026-05-26',
+                'link_foto' => null,
             ],
             [
                 'id' => 12,
                 'lokasi' => 'Rumah Dinas No. 12',
                 'pekerjaan' => 'Kran shower kamar mandi utama patah di drat pipa',
-                'kategori' => 'Plumbing dan Sanitasi',
-                'urgensi' => 'High',
+                'kategori' => 'Plumbing dan Sanitasi (PS)',
+                'urgensi' => 'Medium',
                 'estimasi' => 850000,
                 'realisasi' => 800000,
                 'status' => 'Done',
                 'keterangan' => 'Ekstraksi patahan drat dan pasang kran mixer baru',
                 'tanggal_request' => '2026-06-11',
-                'tanggal_selesai' => '2026-06-13',
+                'tanggal_selesai' => '2026-06-15',
                 'link_foto' => null,
             ],
             [
                 'id' => 13,
                 'lokasi' => 'Rumah Dinas No. 24',
                 'pekerjaan' => 'Genteng geser dan perbaikan talang air bocor',
-                'kategori' => 'Sipil dan Struktural',
+                'kategori' => 'Sipil dan Struktural (SST)',
                 'urgensi' => 'High',
                 'estimasi' => 2800000,
-                'realisasi' => 0,
-                'status' => 'In Progress',
-                'keterangan' => 'Sedang menunggu pengeringan plesteran talang jurai',
+                'realisasi' => 2800000,
+                'status' => 'Done',
+                'keterangan' => 'Plesteran talang jurai dan reposisi genteng',
                 'tanggal_request' => '2026-08-28',
-                'tanggal_selesai' => null,
-                'link_foto' => 'https://drive.google.com/drive/folders/contoh-foto-rd24',
+                'tanggal_selesai' => '2026-09-02',
+                'link_foto' => null,
             ],
             [
                 'id' => 14,
                 'lokasi' => 'Rumah Dinas No. 32',
                 'pekerjaan' => 'Korsleting saklar utama pompa air submersible',
-                'kategori' => 'Mekanikal dan Elektrikal (MEP)',
-                'urgensi' => 'Emergency',
+                'kategori' => 'Mekanikal dan Elektrikal (MEL)',
+                'urgensi' => 'High',
                 'estimasi' => 1250000,
-                'realisasi' => 0,
-                'status' => 'In Progress',
-                'keterangan' => 'Teknisi sedang melakukan pengecekan kabel jalur pompa',
+                'realisasi' => 1200000,
+                'status' => 'Done',
+                'keterangan' => 'Pengecekan dan penggantian saklar magnetik pompa',
                 'tanggal_request' => '2026-09-02',
-                'tanggal_selesai' => null,
+                'tanggal_selesai' => '2026-09-03',
                 'link_foto' => null,
             ],
             [
                 'id' => 15,
                 'lokasi' => 'Rumah Dinas No. 30',
                 'pekerjaan' => 'AC Kamar Anak mati total indikator kedip',
-                'kategori' => 'HVAC (Pendingin Udara)',
-                'urgensi' => 'High',
+                'kategori' => 'Pendingin Udara (HVAC)',
+                'urgensi' => 'Medium',
                 'estimasi' => 1800000,
-                'realisasi' => 0,
-                'status' => 'In Progress',
-                'keterangan' => 'Penggantian kapasitor fan outdoor sedang diproses',
+                'realisasi' => 1750000,
+                'status' => 'Done',
+                'keterangan' => 'Penggantian modul PCB dan kapasitor fan outdoor',
                 'tanggal_request' => '2026-09-05',
-                'tanggal_selesai' => null,
+                'tanggal_selesai' => '2026-09-06',
                 'link_foto' => null,
             ],
         ];
@@ -414,36 +627,36 @@ class LogistikController extends Controller
             Perbaikan::create($data);
         }
 
-        return redirect()->back()->with('success', 'Data perbaikan berhasil direset dengan data komprehensif 5 kategori.');
+        return redirect()->back()->with('success', 'Data perbaikan berhasil direset dengan data 5 kategori standar terbaru.');
     }
 
     public static function autoCategorize($pekerjaan, $keterangan = '')
     {
         $text = strtolower($pekerjaan . ' ' . $keterangan);
         if (preg_match('/(toilet|kloset|closet|pipa|kran|keran|bocor air|saluran|toren|pompa|jet pump|wastafel|drainase|sanyo|got|sanitasi)/i', $text) && !preg_match('/(atap|genteng|plafon)/i', $text)) {
-            return 'Plumbing dan Sanitasi';
+            return 'Plumbing dan Sanitasi (PS)';
         }
         if (preg_match('/(ac|freon|tidak dingin|cuci ac|chiller|kompresor|hvac|pendingin|cassette)/i', $text)) {
-            return 'HVAC (Pendingin Udara)';
+            return 'Pendingin Udara (HVAC)';
         }
         if (preg_match('/(listrik|mcb|lampu|kabel|sakelar|saklar|stop kontak|korslet|konslet|panel|genset|trafo)/i', $text)) {
-            return 'Mekanikal dan Elektrikal (MEP)';
+            return 'Mekanikal dan Elektrikal (MEL)';
         }
         if (preg_match('/(meja|kursi|lemari|kunci|handle|gagang|engsel|kitchen|setrika|furniture|kasur|sofa|gorden|rak)/i', $text)) {
             return 'Interior dan Fixture (FF&E)';
         }
-        return 'Sipil dan Struktural';
+        return 'Sipil dan Struktural (SST)';
     }
 
     public static function autoUrgensi($pekerjaan, $keterangan = '')
     {
         $text = strtolower($pekerjaan . ' ' . $keterangan);
-        if (preg_match('/(darurat|emergency|korslet|banjir|jebol)/i', $text)) {
-            return 'Emergency';
-        }
-        if (preg_match('/(bocor|mati total|lepas|rusak berat|trip)/i', $text)) {
+        if (preg_match('/(darurat|emergency|korslet|banjir|jebol|parah)/i', $text)) {
             return 'High';
         }
-        return 'Normal';
+        if (preg_match('/(bocor|mati total|lepas|rusak berat|trip|tidak dingin|mampet)/i', $text)) {
+            return 'Medium';
+        }
+        return 'Low';
     }
 }

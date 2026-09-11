@@ -23,6 +23,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
+// Public Template Downloads (Accessible without login redirect)
+Route::get('/logistik/perbaikan/template', [LogistikController::class, 'downloadTemplateExcel'])->name('logistik.perbaikan.template');
+
 // Protected Authenticated Routes
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -83,4 +86,10 @@ Route::middleware('auth')->group(function () {
 
     // Financial Performance Route
     Route::get('/financial-performance', [FinancialPerformanceController::class, 'index'])->name('financial.performance.index');
+
+    // ICT & IT Support Routes
+    Route::post('/ict/service/update', [\App\Http\Controllers\IctController::class, 'updateService'])->name('ict.service.update');
+    Route::post('/ict/service/import', [\App\Http\Controllers\IctController::class, 'importService'])->name('ict.service.import');
+    Route::post('/ict/maintenance/toggle', [\App\Http\Controllers\IctController::class, 'toggleMaintenance'])->name('ict.maintenance.toggle');
+    Route::get('/ict/template/{type}', [\App\Http\Controllers\IctController::class, 'downloadTemplate'])->name('ict.template.download');
 });

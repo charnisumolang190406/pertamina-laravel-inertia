@@ -74,8 +74,8 @@ class ActivityLogController extends Controller
                 $moduleCategory = 'Logistik';
                 $itemIdentifier = ($attrs['jenis'] ?? '') . ' ' . ($attrs['merk'] ?? '');
             } elseif ($subjectClass === 'Perbaikan') {
-                $moduleName = 'Facility — Perbaikan Rumah Dinas';
-                $moduleCategory = 'Facility';
+                $moduleName = 'Aset & Facility — Perbaikan Rumah Dinas';
+                $moduleCategory = 'Aset dan Fasility Management';
                 $itemIdentifier = ($attrs['pekerjaan'] ?? '') . ' (' . ($attrs['lokasi'] ?? '') . ')';
             } elseif ($subjectClass === 'LemburTad') {
                 $moduleName = 'Human Capital — Lembur TAD';

@@ -27,7 +27,7 @@ export default function CalendarWidget({ events, currentUser }) {
   const categoryLabels = {
     BS: 'Budgeting (BS)',
     HC: 'Human Capital (HC)',
-    FM: 'Facility Management (FM)'
+    FM: 'Aset dan Fasility Management (FM)'
   };
 
   // Check if current user has permission to manage events for a specific category
@@ -328,7 +328,7 @@ export default function CalendarWidget({ events, currentUser }) {
         <div className="pt-4 border-t border-slate-100 mt-6 space-y-2 text-[9px] font-extrabold text-slate-500 tracking-wide uppercase">
           <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" /> Budget (BS)</div>
           <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> Human Capital (HC)</div>
-          <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" /> Facility Management (FM)</div>
+          <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" /> Aset dan Fasility Management (FM)</div>
         </div>
 
         {/* EVENT INPUT MODAL */}
@@ -369,7 +369,7 @@ export default function CalendarWidget({ events, currentUser }) {
                   >
                     {canManage('BS') && <option value="BS">Budget (BS)</option>}
                     {canManage('HC') && <option value="HC">Human Capital (HC)</option>}
-                    {canManage('FM') && <option value="FM">Facility Management (FM)</option>}
+                    {canManage('FM') && <option value="FM">Aset dan Fasility Management (FM)</option>}
                   </select>
                 </div>
 

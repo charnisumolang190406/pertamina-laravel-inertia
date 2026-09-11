@@ -9,14 +9,17 @@ import Pagination from '../../Components/Pagination';
 
 // Fungsi pillar definitions
 const FUNGSI_OPTIONS = [
-    { value: 'Human Capital',        label: 'Human Capital',        short: 'HC',   color: 'bg-purple-100 text-purple-700 border-purple-200' },
-    { value: 'Facility Management',  label: 'Facility Management',  short: 'FM',   color: 'bg-blue-100 text-blue-700 border-blue-200' },
-    { value: 'Budgeting',            label: 'Budgeting',            short: 'BGT',  color: 'bg-green-100 text-green-700 border-green-200' },
+    { value: 'Human Capital',        label: 'Human Capital',               short: 'HC',   color: 'bg-purple-100 text-purple-700 border-purple-200' },
+    { value: 'Aset dan Fasility Management', label: 'Aset & Facility Management', short: 'FM',   color: 'bg-blue-100 text-blue-700 border-blue-200' },
+    { value: 'Budgeting',            label: 'Budgeting',                   short: 'BGT',  color: 'bg-green-100 text-green-700 border-green-200' },
 ];
 
 const FUNGSI_ALL = { value: 'Semua', label: 'Semua Fungsi', short: 'ALL', color: 'bg-slate-100 text-slate-600 border-slate-200' };
 
 function getFungsiMeta(fungsi) {
+    if (fungsi === 'Facility Management' || fungsi === 'Aset dan Fasility Management' || fungsi === 'FM') {
+        return FUNGSI_OPTIONS[1];
+    }
     return FUNGSI_OPTIONS.find(f => f.value === fungsi) || { label: fungsi || '-', short: fungsi || '-', color: 'bg-slate-100 text-slate-500 border-slate-200' };
 }
 
@@ -158,10 +161,12 @@ export default function Scm(props) {
             {/* PER-FUNGSI SUMMARY CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {FUNGSI_OPTIONS.map(f => {
-                    const fungsiContracts = contractsWithProgress.filter(c => c.fungsi === f.value);
+                    const fungsiContracts = contractsWithProgress.filter(c => 
+                        c.fungsi === f.value || (f.short === 'FM' && (c.fungsi === 'Facility Management' || c.fungsi === 'Aset dan Fasility Management' || c.fungsi === 'FM'))
+                    );
                     const fungsiValue = fungsiContracts.reduce((s, c) => s + c.nilai, 0);
                     const fungsiCount = fungsiContracts.length;
-                    const IconComp = f.value === 'Human Capital' ? Users : f.value === 'Facility Management' ? Package : DollarSign;
+                    const IconComp = f.value === 'Human Capital' ? Users : f.short === 'FM' ? Package : DollarSign;
                     return (
                         <button
                             key={f.value}

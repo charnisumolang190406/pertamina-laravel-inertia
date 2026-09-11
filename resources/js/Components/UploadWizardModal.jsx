@@ -11,7 +11,7 @@ const MAPPING_SPECS = {
     budget_abo: { fundCent: 'Fund Cen', fungsi: 'Fungsi', name: 'Name', commitItem: 'Commitment Item', text: 'Text', budget: 'Consumable Budget(IDR)', consumed: 'Consumed Budget(IDR)', commitment: 'Commitment(IDR)', actual: 'Actual(IDR)', available: 'Available(IDR)' },
     budget_abi: { fundCent: 'No WBS', name: 'Pekerjaan', commitItem: 'PIC', text: 'Keterangan', budget: 'Anggaran Eq IDR', consumed: 'Commitment Ekv IDR', actual: 'Realisasi Ekv IDR', available: 'Available Ekv IDR' },
     alat_berat: { nopol: 'Nomor Polisi', tahun: 'Tahun Kendaraan', jenis: 'Jenis Kendaraan', alokasi: 'Alokasi Pemakai', merk: 'Merk', model: 'Type / Model', stnk: 'STNK Expired', pajak: 'Pajak STNK', kir: 'KIR Expired', status: 'Status', kondisi: 'Kondisi Aset' },
-    perbaikan_rumdin: { deskripsi_pekerjaan: 'Deskripsi Pekerjaan', tanggal_request: 'Tanggal Request', tanggal_selesai: 'Tanggal Selesai', status: 'Status', link_bukti_foto_opsional: 'Link Bukti Foto (Opsional)' },
+    perbaikan_rumdin: { lokasi: 'No Unit RD', deskripsi_pekerjaan: 'Deskripsi Pekerjaan', urgensi: 'Urgensi', tanggal_request: 'Tanggal Request', tanggal_selesai: 'Tanggal Selesai' },
     hc: { bulan: 'Periode', nama: 'Nama Pegawai', jenis: 'Jenis Mutasi', fungsi: 'Fungsi Tujuan', keterangan: 'Keterangan' },
     it_asset: { nomor_seri: 'Nomor Seri / Tag', jenis: 'Jenis Aset', merek: 'Merek/Model', user: 'Pengguna', fungsi: 'Fungsi', status: 'Status' },
     master_organik: { nopok: 'No. Pegawai', nama: 'Nama Pegawai', gender: 'Jenis Kelamin', umur: 'Umur', tanggal_lahir: 'Tanggal Lahir', jabatan: 'Jabatan', fungsi: 'Fungsi/Departemen' },
@@ -19,7 +19,9 @@ const MAPPING_SPECS = {
     master_pensiun: { nama: 'Nama Karyawan', jabatan: 'Jabatan Terakhir', umur: 'Umur Pensiun', tahun: 'Tahun Pensiun', tanggal: 'Tanggal Efektif', keterangan: 'Keterangan' },
     financial_performance: { year: 'Tahun', revenue: 'Revenue', cost: 'Cost', depreciation: 'Depreciation', net_profit: 'Profit/Loss Net', abo: 'ABO', ebitda: 'EBITDA', cost_per_kwh: 'Cost per kWh' },
     bbm: { bulan: 'Bulan', stock_awal_solar: 'Stock Awal', penerimaan_solar: 'Penerimaan', pengeluaran_ag_solar: 'Pengeluaran AG', pengeluaran_proyek_solar: 'Pengeluaran Proyek', stock_akhir_solar: 'Stock Akhir' },
-    risk_register: { no: 'No Urut', kode: 'Kode Risiko', deskripsi: 'Deskripsi / Peristiwa Risiko', akar: 'Akar Penyebab', probInherent: 'Probabilitas Inherent (1-5)', dampakInherent: 'Dampak Inherent (1-5)', bobotInherent: 'Bobot Inherent', peringkatInherent: 'Peringkat Inherent', strategi: 'Strategi Penanganan', probResidual: 'Probabilitas Residual (1-5)', dampakResidual: 'Dampak Residual (1-5)', peringkatResidual: 'Peringkat Residual' }
+    risk_register: { no: 'No Urut', kode: 'Kode Risiko', deskripsi: 'Deskripsi / Peristiwa Risiko', akar: 'Akar Penyebab', probInherent: 'Probabilitas Inherent (1-5)', dampakInherent: 'Dampak Inherent (1-5)', bobotInherent: 'Bobot Inherent', peringkatInherent: 'Peringkat Inherent', strategi: 'Strategi Penanganan', probResidual: 'Probabilitas Residual (1-5)', dampakResidual: 'Dampak Residual (1-5)', peringkatResidual: 'Peringkat Residual' },
+    ict_service: { kategori: 'Kategori Layanan', jumlah: 'Jumlah Tiket', bulan: 'Bulan (01-12)', tahun: 'Tahun', keterangan: 'Keterangan' },
+    ict_maintenance: { kegiatan: 'Nama Kegiatan', tahun: 'Tahun', bulan: 'Bulan (1-12)', minggu: 'Minggu (1-4)', tipe: 'Tipe (rencana/realisasi)', status: 'Status', keterangan: 'Keterangan' }
 };
 
 const MAPPING_DEFAULTS = {
@@ -29,7 +31,7 @@ const MAPPING_DEFAULTS = {
     budget_abo: { fundCent: '', fungsi: 'Business Support', name: 'Pos Anggaran', commitItem: '6001000000', text: '', budget: 0, consumed: 0, commitment: 0, actual: 0, available: 0, kategori: 'ABO' },
     budget_abi: { fundCent: '', name: 'Pos Anggaran', commitItem: '500000', text: '', budget: 0, consumed: 0, actual: 0, available: 0, kategori: 'ABI' },
     alat_berat: { nopol: '-', tahun: '', jenis: 'Unknown', alokasi: '', merk: '', model: '', stnk: '', pajak: '', kir: '', status: 'Optimal', kondisi: '' },
-    perbaikan_rumdin: { deskripsi_pekerjaan: 'Perbaikan', tanggal_request: '', tanggal_selesai: '', status: 'In Progress', link_bukti_foto_opsional: '' },
+    perbaikan_rumdin: { lokasi: 'Rumah Dinas', deskripsi_pekerjaan: 'Perbaikan', urgensi: 'Medium', tanggal_request: '', tanggal_selesai: '' },
     hc: { bulan: '', nama: 'Nama Karyawan', jenis: 'Masuk', fungsi: 'BS', keterangan: '' },
     it_asset: { nomor_seri: '', jenis: 'PC', merek: 'HP', user: 'Staff', fungsi: 'BS', status: 'Optimal' },
     master_organik: { nopok: '-', nama: 'Nama Pegawai', gender: 'Laki-laki', umur: 30, tanggal_lahir: '1990-01-01', jabatan: 'Staff', fungsi: 'Operasi' },
@@ -37,7 +39,9 @@ const MAPPING_DEFAULTS = {
     master_pensiun: { nama: 'Nama Pensiun', jabatan: 'Staff', umur: 56, tahun: 2026, tanggal: '2026-01-01', keterangan: 'Pensiun Normal' },
     financial_performance: { year: 2026, revenue: 0, cost: 0, depreciation: 0, net_profit: 0, abo: 0, ebitda: 0, cost_per_kwh: 0 },
     bbm: { bulan: 'Januari', stock_awal_solar: 0, penerimaan_solar: 0, pengeluaran_ag_solar: 0, pengeluaran_proyek_solar: 0, stock_akhir_solar: 0 },
-    risk_register: { no: 1, kode: 'LHD-OPS-001', deskripsi: 'Risiko', akar: '-', probInherent: 3, dampakInherent: 3, bobotInherent: 9, peringkatInherent: 'MODERATE RISK', strategi: 'MITIGATE', probResidual: 2, dampakResidual: 2, peringkatResidual: 'LOW TO MODERATE RISK' }
+    risk_register: { no: 1, kode: 'LHD-OPS-001', deskripsi: 'Risiko', akar: '-', probInherent: 3, dampakInherent: 3, bobotInherent: 9, peringkatInherent: 'MODERATE RISK', strategi: 'MITIGATE', probResidual: 2, dampakResidual: 2, peringkatResidual: 'LOW TO MODERATE RISK' },
+    ict_service: { kategori: 'Jaringan', jumlah: 0, bulan: '06', tahun: 2026, keterangan: 'Layanan ICT' },
+    ict_maintenance: { kegiatan: 'Minor Maintenance Server', tahun: 2026, bulan: 1, minggu: 1, tipe: 'rencana', status: 'Terjadwal', keterangan: 'Rutin' }
 };
 
 export default function UploadWizardModal({ isOpen, onClose, auth }) {
@@ -72,10 +76,10 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
             { id: 'hc', label: 'Mutasi Organik (HC)' },
             { id: 'lembur_tad', label: 'Data Lembur TAD (Human Capital)' },
         ],
-        'Facility Management (FM)': [
+        'Aset dan Fasility Management (FM)': [
             { id: 'logistik', label: 'Stok Material Gudang (FM)' },
             { id: 'alat_berat', label: 'Aset Alat Berat & KIR (FM)' },
-            { id: 'perbaikan_rumdin', label: 'Perbaikan Rumah Dinas (FM)' },
+            { id: 'perbaikan_rumdin', label: 'Perbaikan Rumah Dinas dan Kantor (FM)' },
             { id: 'bbm', label: 'Laporan Pemakaian BBM (FM)' }
         ],
         'Budgeting': [
@@ -88,8 +92,10 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
             { id: 'scm', label: 'Data Monitoring Kontrak' },
         ],
 
-        'Lainnya': [
-            { id: 'it_asset', label: 'Aset Perangkat IT (IT Asset)' }
+        'Teknologi Informasi & Komunikasi (ICT)': [
+            { id: 'ict_service', label: 'Rekap Layanan ICT Service (Kategori & Jumlah Tiket)' },
+            { id: 'ict_maintenance', label: 'Jadwal Maintenance ICT 2026 (Rencana & Realisasi)' },
+            { id: 'it_asset', label: 'Inventaris Perangkat IT (Hardware & Lokasi)' }
         ]
     };
 
@@ -100,11 +106,11 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
         if (isAdminBPB) {
             if (key === 'Budgeting' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
         } else if (isAdminFM) {
-            if (key === 'Facility Management (FM)' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
+            if (key === 'Aset dan Fasility Management (FM)' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
         } else if (isAdminHC) {
             if (key === 'Human Capital (HC)' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
         } else if (isAdminICT) {
-            if (key === 'Lainnya') acc[key] = groupedDataTypes[key];
+            if (key === 'Teknologi Informasi & Komunikasi (ICT)' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
         } else if (roleLower.startsWith('admin') && !roleLower.includes('kepala')) {
             acc[key] = groupedDataTypes[key];
         }
@@ -373,7 +379,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                 onSuccess: () => {
                     Swal.fire({
                         title: 'Sukses!',
-                        text: 'File Perbaikan Rumdin berhasil diimpor.',
+                        text: 'File Perbaikan Rumah Dinas dan Kantor berhasil diimpor.',
                         icon: 'success',
                         confirmButtonColor: '#2563eb'
                     });
@@ -382,7 +388,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                 onError: (errors) => {
                     Swal.fire({
                         title: 'Gagal!',
-                        text: 'Terjadi kesalahan saat mengimpor Perbaikan Rumdin.',
+                        text: 'Terjadi kesalahan saat mengimpor Perbaikan Rumah Dinas dan Kantor.',
                         icon: 'error',
                         confirmButtonColor: '#2563eb'
                     });
@@ -544,7 +550,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                                     </div>
                                     <h4 className="font-bold text-slate-800 text-sm">Akses Unggah Terbatas</h4>
                                     <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                                        Anda login sebagai <strong className="text-slate-700">{userRole}</strong>. Fitur unggah file Excel hanya diperuntukkan bagi <strong className="text-slate-700">Admin fungsi terkait</strong> (misal: Admin Facility Management, Admin HC, Admin BPB).
+                                        Anda login sebagai <strong className="text-slate-700">{userRole}</strong>. Fitur unggah file Excel hanya diperuntukkan bagi <strong className="text-slate-700">Admin fungsi terkait</strong> (misal: Admin Aset dan Fasility Management, Admin HC, Admin BPB).
                                     </p>
                                 </div>
                             ) : (

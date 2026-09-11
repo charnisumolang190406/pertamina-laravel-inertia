@@ -5,52 +5,103 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area, Legend
 } from 'recharts';
 import {
-    Folder, Download, Search, AlertTriangle, CheckCircle2,
+    Download, Search, AlertTriangle, CheckCircle2,
     Clock, Wrench, Building2, Droplets, Zap, Wind, Sofa, Trash2,
-    UploadCloud, FileSpreadsheet, RotateCcw, X
+    UploadCloud, FileSpreadsheet, RotateCcw, X, Calendar, CheckCircle, XCircle
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Pagination from './Pagination';
 
-// ─── 5 KATEGORI KERUSAKAN FASILITAS STANDAR ───
+// ─── 5 KATEGORI KERUSAKAN FASILITAS & SLA RESMI ───
 export const CATEGORY_CONFIG = {
-    'Sipil dan Struktural': {
+    'Sipil dan Struktural (SST)': {
+        code: 'SST',
+        slaDays: 7,
+        slaLabel: '7 HK',
         color: '#f59e0b',
         bgBadge: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: Building2,
-        desc: 'Atap, plafon, tembok retak, cat, fasad, pagar'
+        contoh: 'Atap/plafon bocor, tembok retak, pintu lapuk, kusen, pengecatan fasad/dinding, dan pagar.',
+        manfaat: 'Mengetahui kondisi fisik bangunan serta kesiapan bangunan dalam menghadapi musim hujan.'
     },
-    'Plumbing dan Sanitasi': {
+    'Plumbing dan Sanitasi (PS)': {
+        code: 'PS',
+        slaDays: 2,
+        slaLabel: '2 HK',
         color: '#0284c7',
         bgBadge: 'bg-sky-50 text-sky-700 border-sky-200',
         icon: Droplets,
-        desc: 'Pipa air, kran, toren, wastafel, kloset, saluran pembuangan'
+        contoh: 'Pipa bocor, keran rusak, saluran pembuangan mampet, toren air, pompa jet pump, dan kloset rusak.',
+        manfaat: 'Mengevaluasi kondisi jaringan air, sanitasi, serta usia jaringan pipa rumah dinas.'
     },
-    'Mekanikal dan Elektrikal (MEP)': {
+    'Mekanikal dan Elektrikal (MEL)': {
+        code: 'MEL',
+        slaDays: 2,
+        slaLabel: '2 HK',
         color: '#8b5cf6',
         bgBadge: 'bg-purple-50 text-purple-700 border-purple-200',
         icon: Zap,
-        desc: 'MCB listrik, instalasi kabel, stop kontak, sakelar, lampu'
+        contoh: 'Sakelar bermasalah, MCB turun, instalasi kabel, lampu mati, dan gangguan kelistrikan lainnya.',
+        manfaat: 'Mendukung aspek keselamatan (safety/HSE) serta mencegah risiko korsleting dan kebakaran.'
     },
-    'HVAC (Pendingin Udara)': {
+    'Pendingin Udara (HVAC)': {
+        code: 'HVAC',
+        slaDays: 2,
+        slaLabel: '2 HK',
         color: '#0d9488',
         bgBadge: 'bg-teal-50 text-teal-700 border-teal-200',
         icon: Wind,
-        desc: 'AC split/cassette, kebocoran freon, cuci AC, pendingin'
+        contoh: 'AC bocor air, AC tidak dingin, freon habis, dan servis/cuci AC rutin.',
+        manfaat: 'Mengevaluasi efisiensi penggunaan energi listrik serta kenyamanan penghuni.'
     },
     'Interior dan Fixture (FF&E)': {
+        code: 'FF&E',
+        slaDays: 2,
+        slaLabel: '2 HK',
         color: '#f43f5e',
         bgBadge: 'bg-rose-50 text-rose-700 border-rose-200',
         icon: Sofa,
-        desc: 'Meja, lemari, kunci/handle pintu, setrika, furniture dinas'
+        contoh: 'Meja setrika, engsel lemari, handle/kunci pintu toilet, kitchen set, isi ulang gas dan perabot rumah dinas.',
+        manfaat: 'Mengevaluasi kondisi aset lepas (furniture) serta inventaris rumah dinas.'
     }
 };
 
-// ─── AUTO CATEGORIZER CERDAS (BACKWARD COMPATIBLE) ───
+// ─── DAFTAR PILIHAN BULAN UNTUK FILTER BULANAN ───
+export const MONTH_OPTIONS = [
+    { value: 'ALL', label: 'Semua Bulan (Tahun 2026)' },
+    { value: '01', label: 'Januari' },
+    { value: '02', label: 'Februari' },
+    { value: '03', label: 'Maret' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'Mei' },
+    { value: '06', label: 'Juni' },
+    { value: '07', label: 'Juli' },
+    { value: '08', label: 'Agustus' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'Oktober' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'Desember' },
+];
+
+// ─── AUTO CATEGORIZER CERDAS & NORMALISASI ───
 export const detectKategoriKerusakan = (item) => {
-    if (item.kategori && CATEGORY_CONFIG[item.kategori]) {
-        return item.kategori;
+    const raw = (item.kategori || '').toLowerCase();
+    if (raw.includes('sst') || raw.includes('sipil') || raw.includes('struktural')) {
+        return 'Sipil dan Struktural (SST)';
     }
+    if (raw.includes('ps') || raw.includes('plumbing') || raw.includes('sanitasi')) {
+        return 'Plumbing dan Sanitasi (PS)';
+    }
+    if (raw.includes('mel') || raw.includes('mep') || raw.includes('mekanikal') || raw.includes('elektrikal') || raw.includes('listrik')) {
+        return 'Mekanikal dan Elektrikal (MEL)';
+    }
+    if (raw.includes('hvac') || raw.includes('pendingin') || raw.includes('ac')) {
+        return 'Pendingin Udara (HVAC)';
+    }
+    if (raw.includes('ff&e') || raw.includes('ffe') || raw.includes('interior') || raw.includes('fixture')) {
+        return 'Interior dan Fixture (FF&E)';
+    }
+
     const text = ((item.pekerjaan || '') + ' ' + (item.keterangan || '')).toLowerCase();
 
     // 1. Plumbing & Sanitasi
@@ -63,7 +114,7 @@ export const detectKategoriKerusakan = (item) => {
         text.includes('sanitasi')
     ) {
         if (!text.includes('atap') && !text.includes('genteng') && !text.includes('plafon')) {
-            return 'Plumbing dan Sanitasi';
+            return 'Plumbing dan Sanitasi (PS)';
         }
     }
 
@@ -73,17 +124,17 @@ export const detectKategoriKerusakan = (item) => {
         text.includes('cuci ac') || text.includes('chiller') || text.includes('kompresor') ||
         text.includes('hvac') || text.includes('pendingin') || text.includes('cassette')
     ) {
-        return 'HVAC (Pendingin Udara)';
+        return 'Pendingin Udara (HVAC)';
     }
 
-    // 3. Mekanikal & Elektrikal (MEP)
+    // 3. Mekanikal & Elektrikal (MEL)
     if (
         text.includes('listrik') || text.includes('mcb') || text.includes('lampu') ||
         text.includes('kabel') || text.includes('sakelar') || text.includes('saklar') ||
         text.includes('stop kontak') || text.includes('korslet') || text.includes('konslet') ||
         text.includes('panel') || text.includes('genset') || text.includes('trafo')
     ) {
-        return 'Mekanikal dan Elektrikal (MEP)';
+        return 'Mekanikal dan Elektrikal (MEL)';
     }
 
     // 4. Interior & Fixture (FF&E)
@@ -92,47 +143,80 @@ export const detectKategoriKerusakan = (item) => {
         text.includes('kunci') || text.includes('handle') || text.includes('gagang') ||
         text.includes('engsel') || text.includes('kitchen') || text.includes('setrika') ||
         text.includes('furniture') || text.includes('kasur') || text.includes('sofa') ||
-        text.includes('gorden') || text.includes('rak')
+        text.includes('gorden') || text.includes('rak') || text.includes('gas')
     ) {
         return 'Interior dan Fixture (FF&E)';
     }
 
     // 5. Sipil & Struktural
-    return 'Sipil dan Struktural';
+    return 'Sipil dan Struktural (SST)';
 };
 
-// ─── AUTO DETECT URGENSI ───
+// ─── AUTO DETECT URGENSI (LOW, MEDIUM, HIGH) ───
 export const detectUrgensi = (item) => {
-    if (item.urgensi && ['Emergency', 'High', 'Normal'].includes(item.urgensi)) {
-        return item.urgensi;
-    }
+    const raw = (item.urgensi || '').toLowerCase();
+    if (raw === 'high' || raw === 'emergency' || raw === 'darurat') return 'High';
+    if (raw === 'medium' || raw === 'normal' || raw === 'sedang') return 'Medium';
+    if (raw === 'low' || raw === 'rendah') return 'Low';
+
     const text = ((item.pekerjaan || '') + ' ' + (item.keterangan || '')).toLowerCase();
-    if (text.includes('darurat') || text.includes('emergency') || text.includes('korslet') || text.includes('banjir') || text.includes('jebol')) {
-        return 'Emergency';
-    }
-    if (text.includes('bocor') || text.includes('mati total') || text.includes('lepas') || text.includes('rusak berat') || text.includes('trip')) {
+    if (text.includes('darurat') || text.includes('emergency') || text.includes('korslet') || text.includes('banjir') || text.includes('jebol') || text.includes('parah')) {
         return 'High';
     }
-    return 'Normal';
+    if (text.includes('bocor') || text.includes('mati total') || text.includes('lepas') || text.includes('rusak berat') || text.includes('trip') || text.includes('tidak dingin')) {
+        return 'Medium';
+    }
+    return 'Low';
+};
+
+// ─── FORMAT TANGGAL RINGKAS (DD-MM-YYYY) SESUAI ARAHAN PAK JOHAN AGAR HEMAT RUANG ───
+const formatCompactDate = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+        const clean = String(dateStr).split('T')[0];
+        const parts = clean.split('-');
+        if (parts.length === 3 && parts[0].length === 4) {
+            const [y, m, d] = parts;
+            return `${d.padStart(2, '0')}-${m.padStart(2, '0')}-${y}`;
+        }
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}-${month}-${year}`;
+    } catch {
+        return dateStr;
+    }
 };
 
 export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin = false, formatDate }) {
     // ─── STATE FILTER & SEARCH ───
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterMonth, setFilterMonth] = useState('ALL');
     const [filterCategory, setFilterCategory] = useState('ALL');
-    const [filterStatus, setFilterStatus] = useState('ALL');
     const [filterUrgensi, setFilterUrgensi] = useState('ALL');
+    const [filterSla, setFilterSla] = useState('ALL');
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 8;
     const fileInputRef = useRef(null);
 
-    // ─── ENRICH DATA WITH COMPUTED FIELDS ───
+    // ─── ENRICH DATA WITH COMPUTED FIELDS & SLA RULES ───
     const enrichedList = useMemo(() => {
         return perbaikanList.map(item => {
             const kategori = detectKategoriKerusakan(item);
+            const catConfig = CATEGORY_CONFIG[kategori] || CATEGORY_CONFIG['Sipil dan Struktural (SST)'];
             const urgensi = detectUrgensi(item);
 
-            // Compute durasi (hari)
+            // Ekstrak bulan dari tanggal_request atau tanggal_selesai
+            let itemMonth = null;
+            if (item.tanggal_request) {
+                itemMonth = item.tanggal_request.substring(5, 7);
+            } else if (item.tanggal_selesai) {
+                itemMonth = item.tanggal_selesai.substring(5, 7);
+            }
+
+            // Hitung durasi lama perbaikan (hari)
             let durasiHari = null;
             if (item.tanggal_request) {
                 const start = new Date(item.tanggal_request);
@@ -141,23 +225,39 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                 durasiHari = Math.round(diffTime / (1000 * 60 * 60 * 24));
             }
 
+            // Aturan SLA: SST = 7 HK, Kategori lainnya = 2 HK
+            const slaDaysLimit = catConfig.slaDays;
+            const isSlaCompliant = durasiHari !== null ? durasiHari <= slaDaysLimit : true;
+
+            const isDone = (item.status || '').toLowerCase().includes('selesai') || (item.status || '').toLowerCase() === 'done';
+
             return {
                 ...item,
                 computedCategory: kategori,
+                catConfig,
                 computedUrgensi: urgensi,
+                itemMonth,
                 durasiHari,
-                isDone: (item.status || '').toLowerCase().includes('selesai') || (item.status || '').toLowerCase() === 'done'
+                slaDaysLimit,
+                isSlaCompliant,
+                isDone
             };
         });
     }, [perbaikanList]);
 
-    // ─── FILTERED LIST ───
+    // ─── DATA TERFILTER BERDASARKAN BULAN (MENGUBAH SEMUA GRAFIK & KPI) ───
+    const monthFilteredList = useMemo(() => {
+        if (filterMonth === 'ALL') return enrichedList;
+        return enrichedList.filter(item => item.itemMonth === filterMonth);
+    }, [enrichedList, filterMonth]);
+
+    // ─── DATA TERFILTER UNTUK TABEL DETAIL (MENERAPKAN SEARCH & FILTER LAIN) ───
     const filteredList = useMemo(() => {
-        return enrichedList.filter(item => {
+        return monthFilteredList.filter(item => {
             if (filterCategory !== 'ALL' && item.computedCategory !== filterCategory) return false;
-            if (filterStatus === 'DONE' && !item.isDone) return false;
-            if (filterStatus === 'PROGRESS' && item.isDone) return false;
             if (filterUrgensi !== 'ALL' && item.computedUrgensi !== filterUrgensi) return false;
+            if (filterSla === 'COMPLIANT' && !item.isSlaCompliant) return false;
+            if (filterSla === 'OVERDUE' && item.isSlaCompliant) return false;
 
             if (searchQuery.trim() !== '') {
                 const q = searchQuery.toLowerCase();
@@ -169,27 +269,30 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
 
             return true;
         });
-    }, [enrichedList, filterCategory, filterStatus, filterUrgensi, searchQuery]);
+    }, [monthFilteredList, filterCategory, filterUrgensi, filterSla, searchQuery]);
 
-    // ─── ANALYTICS KPI METRICS ───
+    // ─── ANALYTICS KPI METRICS (BERDASARKAN BULAN TERPILIH) ───
     const kpiMetrics = useMemo(() => {
-        const total = enrichedList.length;
-        const doneCount = enrichedList.filter(i => i.isDone).length;
+        const list = monthFilteredList;
+        const total = list.length;
+        const doneCount = list.filter(i => i.isDone).length;
         const inProgressCount = total - doneCount;
-        const resolutionRate = total > 0 ? Math.round((doneCount / total) * 100) : 0;
 
-        // Rata-rata durasi pengerjaan untuk yang sudah selesai
-        const completedWithDuration = enrichedList.filter(i => i.isDone && i.durasiHari !== null);
-        const avgDuration = completedWithDuration.length > 0
-            ? (completedWithDuration.reduce((acc, c) => acc + c.durasiHari, 0) / completedWithDuration.length).toFixed(1)
-            : 0;
+        // Kesesuaian SLA: Berapa yang Sesuai SLA dan berapa yang Melebihi SLA
+        const compliantCount = list.filter(i => i.isSlaCompliant).length;
+        const overdueCount = list.filter(i => !i.isSlaCompliant && i.durasiHari !== null).length;
+        const evaluatedTotal = compliantCount + overdueCount;
+        const slaRate = evaluatedTotal > 0 ? Math.round((compliantCount / evaluatedTotal) * 100) : (total > 0 ? 100 : 0);
 
-        // Emergency items
-        const emergencyCount = enrichedList.filter(i => i.computedUrgensi === 'Emergency' && !i.isDone).length;
+        // Rata-rata durasi perbaikan untuk pekerjaan yang memiliki durasi
+        const itemsWithDuration = list.filter(i => i.durasiHari !== null);
+        const avgDuration = itemsWithDuration.length > 0
+            ? (itemsWithDuration.reduce((acc, c) => acc + c.durasiHari, 0) / itemsWithDuration.length).toFixed(1)
+            : '0.0';
 
-        // Kategori dominan
+        // Kategori perbaikan dominan
         const categoryCounts = {};
-        enrichedList.forEach(i => {
+        list.forEach(i => {
             categoryCounts[i.computedCategory] = (categoryCounts[i.computedCategory] || 0) + 1;
         });
         let dominantCategory = '-';
@@ -205,34 +308,38 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
             total,
             doneCount,
             inProgressCount,
-            resolutionRate,
+            compliantCount,
+            overdueCount,
+            slaRate,
             avgDuration,
-            emergencyCount,
+            itemsWithDurationCount: itemsWithDuration.length,
             dominantCategory,
             maxCategoryCount
         };
-    }, [enrichedList]);
+    }, [monthFilteredList]);
 
     // ─── CHART 1: DONUT DISTRIBUSI KATEGORI KERUSAKAN ───
     const donutChartData = useMemo(() => {
         const counts = {};
         Object.keys(CATEGORY_CONFIG).forEach(cat => { counts[cat] = 0; });
-        enrichedList.forEach(item => {
+        monthFilteredList.forEach(item => {
             counts[item.computedCategory] = (counts[item.computedCategory] || 0) + 1;
         });
 
         return Object.entries(counts).map(([name, value]) => ({
             name,
+            code: CATEGORY_CONFIG[name]?.code || name,
+            slaLabel: CATEGORY_CONFIG[name]?.slaLabel || '2 HK',
             value,
-            percentage: enrichedList.length > 0 ? Math.round((value / enrichedList.length) * 100) : 0,
+            percentage: monthFilteredList.length > 0 ? Math.round((value / monthFilteredList.length) * 100) : 0,
             color: CATEGORY_CONFIG[name]?.color || '#94a3b8'
         })).filter(item => item.value > 0);
-    }, [enrichedList]);
+    }, [monthFilteredList]);
 
-    // ─── CHART 2: HORIZONTAL BAR TOP 5 RUMAH DINAS PALING SERING KOMPLAIN ───
+    // ─── CHART 2: BAR TOP 5 UNIT TERBANYAK PERBAIKAN ───
     const topHousesChartData = useMemo(() => {
         const houseCounts = {};
-        enrichedList.forEach(item => {
+        monthFilteredList.forEach(item => {
             let loc = (item.lokasi || 'Rumah Dinas').trim();
             loc = loc.replace(/^Rumah Dinas No\.\s*/i, 'RD ')
                      .replace(/^Rumah Dinas\s*/i, 'RD ')
@@ -244,20 +351,23 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
             .map(([lokasi, total]) => ({ lokasi, total }))
             .sort((a, b) => b.total - a.total)
             .slice(0, 5);
-    }, [enrichedList]);
+    }, [monthFilteredList]);
 
-    // ─── CHART 3: TREN BULANAN REQUEST MASUK VS SELESAI (SLA) ───
+    // ─── CHART 3: TREN PERBAIKAN MASUK VS SELESAI (SLA) ───
     const monthlyTrendData = useMemo(() => {
         const monthsMap = {
-            '01': { month: 'Jan', request: 0, selesai: 0 },
-            '02': { month: 'Feb', request: 0, selesai: 0 },
-            '03': { month: 'Mar', request: 0, selesai: 0 },
-            '04': { month: 'Apr', request: 0, selesai: 0 },
-            '05': { month: 'Mei', request: 0, selesai: 0 },
-            '06': { month: 'Jun', request: 0, selesai: 0 },
-            '07': { month: 'Jul', request: 0, selesai: 0 },
-            '08': { month: 'Agu', request: 0, selesai: 0 },
-            '09': { month: 'Sep', request: 0, selesai: 0 },
+            '01': { month: 'Jan', request: 0, selesaiSla: 0 },
+            '02': { month: 'Feb', request: 0, selesaiSla: 0 },
+            '03': { month: 'Mar', request: 0, selesaiSla: 0 },
+            '04': { month: 'Apr', request: 0, selesaiSla: 0 },
+            '05': { month: 'Mei', request: 0, selesaiSla: 0 },
+            '06': { month: 'Jun', request: 0, selesaiSla: 0 },
+            '07': { month: 'Jul', request: 0, selesaiSla: 0 },
+            '08': { month: 'Agu', request: 0, selesaiSla: 0 },
+            '09': { month: 'Sep', request: 0, selesaiSla: 0 },
+            '10': { month: 'Okt', request: 0, selesaiSla: 0 },
+            '11': { month: 'Nov', request: 0, selesaiSla: 0 },
+            '12': { month: 'Des', request: 0, selesaiSla: 0 },
         };
 
         enrichedList.forEach(item => {
@@ -265,78 +375,20 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                 const m = item.tanggal_request.substring(5, 7);
                 if (monthsMap[m]) monthsMap[m].request += 1;
             }
-            if (item.tanggal_selesai && item.isDone) {
+            if (item.tanggal_selesai && item.isSlaCompliant) {
                 const m = item.tanggal_selesai.substring(5, 7);
-                if (monthsMap[m]) monthsMap[m].selesai += 1;
+                if (monthsMap[m]) monthsMap[m].selesaiSla += 1;
             }
         });
 
         return Object.values(monthsMap);
     }, [enrichedList]);
 
-    // ─── HANDLER UNGGAH FILE EXCEL ───
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        Swal.fire({
-            title: 'Mengunggah & Memproses File Excel...',
-            text: `Memproses data perbaikan rumah dinas dari ${file.name}...`,
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        router.post('/import-perbaikan', formData, {
-            forceFormData: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Impor Excel Berhasil!',
-                    text: 'Data perbaikan rumah dinas telah berhasil diimpor dan diklasifikasikan secara otomatis ke dalam 5 kategori kerusakan.',
-                    confirmButtonColor: '#2563eb'
-                });
-                if (fileInputRef.current) fileInputRef.current.value = '';
-            },
-            onError: (err) => {
-                console.error(err);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal Mengunggah',
-                    text: 'Pastikan format file Excel/CSV sesuai dengan template perbaikan.',
-                    confirmButtonColor: '#2563eb'
-                });
-                if (fileInputRef.current) fileInputRef.current.value = '';
-            }
-        });
-    };
-
-    // ─── HANDLER UNDUH TEMPLATE EXCEL ───
+    // ─── HANDLER UNDUH TEMPLATE EXCEL RESMI (.XLSX) ───
     const handleDownloadTemplate = () => {
-        const headers = ['lokasi', 'deskripsi_pekerjaan', 'tanggal_request', 'tanggal_selesai', 'status', 'link_bukti_foto_opsional', 'estimasi', 'realisasi', 'keterangan'];
-        const sampleRows = [
-            ['Rumah Dinas No. 30', 'Pipa kran wastafel bocor dan saluran air mampet', '2026-09-01', '2026-09-03', 'Done', 'https://drive.google.com/contoh-foto', '1200000', '1150000', 'Penggantian sifon & kran leher angsa'],
-            ['Rumah Dinas No. 12', 'Atap dan plafon ruang tamu bocor rembes', '2026-09-04', '', 'In Progress', '', '2500000', '0', 'Pengecekan genteng geser'],
-            ['Rumah Dinas No. 18', 'Servis AC Split 1.5 PK tidak dingin & freon habis', '2026-09-05', '2026-09-07', 'Done', '', '1500000', '1400000', 'Las pipa evaporator dan isi freon R32'],
-            ['Wisma Manajemen', 'Kunci handle pintu toilet lepas', '2026-09-06', '2026-09-07', 'Done', '', '450000', '450000', 'Ganti handle set stainless'],
-            ['Rumah Dinas No. 24', 'MCB listrik sering turun saat beban puncak', '2026-09-08', '', 'In Progress', '', '850000', '0', 'Pemeriksaan jalur kabel pompa'],
-        ];
-
-        let csvContent = "\uFEFF" + headers.join(',') + "\n";
-        sampleRows.forEach(row => {
-            csvContent += row.map(v => `"${(v || '').replace(/"/g, '""')}"`).join(',') + "\n";
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'Template_Perbaikan_Rumah_Dinas.csv');
+        link.href = '/logistik/perbaikan/template';
+        link.setAttribute('download', 'Template_Data_Perbaikan.xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -376,8 +428,8 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
 
     const handleResetToDefault = () => {
         Swal.fire({
-            title: 'Reset ke Data Bawaan (5 Kategori)?',
-            text: 'Tindakan ini akan mengembalikan data perbaikan ke 15 contoh komprehensif 5 kategori kerusakan.',
+            title: 'Reset ke Data Standar 2026?',
+            text: 'Mengembalikan data perbaikan ke 15 contoh standar 5 kategori (SST, PS, MEL, HVAC, FF&E).',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#2563eb',
@@ -392,7 +444,7 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                         Swal.fire({
                             icon: 'success',
                             title: 'Data Direset',
-                            text: 'Data perbaikan berhasil direset ke standar 5 kategori.',
+                            text: 'Data perbaikan berhasil direset ke standar 5 kategori terbaru.',
                             timer: 1500,
                             showConfirmButton: false
                         });
@@ -402,100 +454,158 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
         });
     };
 
+    const selectedMonthLabel = MONTH_OPTIONS.find(m => m.value === filterMonth)?.label || 'Semua Bulan';
+
     return (
         <div className="space-y-6 animate-[fadeIn_0.3s_ease-in-out]">
 
-            {/* ─── CLEAN INLINE HEADER & ACTIONS (NO POPUP BANNER) ─── */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100">
-                <div>
-                    <div className="flex items-center gap-2.5">
-                        <span className="p-2 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 shrink-0">
-                            <Building2 className="w-5 h-5" />
-                        </span>
-                        <div>
+            {/* ─── HEADER & BULAN FILTER (TOP BAR) ─── */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-slate-200">
+                <div className="flex items-center gap-3">
+                    <span className="p-2.5 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 shrink-0 shadow-2xs">
+                        <Building2 className="w-5 h-5" />
+                    </span>
+                    <div>
+                        <div className="flex items-center gap-2 flex-wrap">
                             <h2 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">
-                                Monitoring Perbaikan Rumah Dinas & Fasilitas
+                                Monitoring Perbaikan Rumah Dinas & Kantor
                             </h2>
-                            <p className="text-xs text-slate-500 font-medium mt-0.5">
-                                Analitik 5 kelompok kerusakan & pemantauan durasi penyelesaian (SLA) fasilitas.
-                            </p>
+                            <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                                Logistic & FM Area 2026
+                            </span>
                         </div>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                            Analitik 5 kelompok kerusakan & pemantauan tingkat kesesuaian durasi penyelesaian (SLA).
+                        </p>
                     </div>
                 </div>
 
+                {/* FILTER PERIODE BULAN & ACTION BUTTONS */}
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    {/* FILTER PER BULAN UTAMA */}
+                    <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                        <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span className="text-[11px] font-bold text-slate-600 hidden sm:inline">Periode:</span>
+                        <select
+                            value={filterMonth}
+                            onChange={(e) => { setFilterMonth(e.target.value); setCurrentPage(1); }}
+                            className="text-xs font-black bg-transparent text-slate-800 focus:outline-hidden cursor-pointer pr-1"
+                        >
+                            {MONTH_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button
+                        onClick={handleDownloadTemplate}
+                        title="Unduh Template Excel (.xlsx) Rekap Perbaikan 2026"
+                        className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-2 rounded-xl border border-emerald-200 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                    >
+                        <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                        <span className="hidden sm:inline">Template Excel (.xlsx)</span>
+                    </button>
+
                     <button
                         onClick={handleExportData}
-                        className="flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs transition-all active:scale-95 cursor-pointer"
+                        className="flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs transition-all active:scale-95 cursor-pointer"
                     >
-                        <Download className="w-4 h-4 text-slate-500" />
+                        <Download className="w-4 h-4 text-slate-600" />
                         <span>Unduh Laporan</span>
                     </button>
+
+                    {isAdmin && (
+                        <button
+                            onClick={handleResetToDefault}
+                            title="Reset data ke contoh 5 kategori 2026"
+                            className="p-2 text-slate-400 hover:text-blue-600 rounded-xl hover:bg-blue-50 border border-slate-200 transition-colors cursor-pointer"
+                        >
+                            <RotateCcw className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {/* ─── 4 SUMMARY KPI CARDS ─── */}
+            {/* ─── 4 SUMMARY KPI CARDS (UPDATE SESUAI KESEPAKATAN) ─── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                {/* CARD 1: TOTAL PERBAIKAN */}
+                <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-xs transition-shadow">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-500">Total Permintaan</span>
+                        <span className="text-xs font-bold text-slate-500">Total Perbaikan</span>
                         <span className="p-2 rounded-xl bg-blue-50 text-blue-600"><Wrench className="w-4 h-4" /></span>
                     </div>
-                    <div className="text-2xl font-black text-slate-800 mt-2">{kpiMetrics.total} <span className="text-xs font-semibold text-slate-500">Item</span></div>
+                    <div className="text-2xl sm:text-3xl font-black text-slate-800 mt-2">
+                        {kpiMetrics.total} <span className="text-xs font-semibold text-slate-500">Item</span>
+                    </div>
                     <div className="text-[11px] text-slate-500 font-medium mt-1">
-                        <span className="text-emerald-600 font-bold">{kpiMetrics.doneCount} Selesai</span> • {kpiMetrics.inProgressCount} Dalam Proses
+                        <span className="text-emerald-600 font-bold">{kpiMetrics.doneCount} Selesai</span> • Rekapitulasi Selesai 100%
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                {/* CARD 2: TINGKAT KESESUAIAN SLA */}
+                <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-xs transition-shadow">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-500">Tingkat Penyelesaian (SLA)</span>
+                        <span className="text-xs font-bold text-slate-500">Tingkat Kesesuaian SLA</span>
                         <span className="p-2 rounded-xl bg-emerald-50 text-emerald-600"><CheckCircle2 className="w-4 h-4" /></span>
                     </div>
-                    <div className="text-2xl font-black text-emerald-600 mt-2">{kpiMetrics.resolutionRate}%</div>
+                    <div className="text-2xl sm:text-3xl font-black text-emerald-600 mt-2">
+                        {kpiMetrics.slaRate}%
+                    </div>
                     <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div className="bg-emerald-500 h-full rounded-full transition-all" style={{ width: `${kpiMetrics.resolutionRate}%` }} />
+                        <div className="bg-emerald-500 h-full rounded-full transition-all" style={{ width: `${kpiMetrics.slaRate}%` }} />
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-medium mt-1.5 flex items-center justify-between">
+                        <span className="text-emerald-700 font-bold">{kpiMetrics.compliantCount} Sesuai SLA</span>
+                        <span className="text-rose-600 font-bold">{kpiMetrics.overdueCount} Melebihi SLA</span>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                {/* CARD 3: RATA-RATA DURASI PERBAIKAN (HAPUS TARGET RESPON) */}
+                <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-xs transition-shadow">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-500">Rata-rata Durasi Selesai</span>
+                        <span className="text-xs font-bold text-slate-500">Rata-rata Durasi Perbaikan</span>
                         <span className="p-2 rounded-xl bg-amber-50 text-amber-600"><Clock className="w-4 h-4" /></span>
                     </div>
-                    <div className="text-2xl font-black text-slate-800 mt-2">{kpiMetrics.avgDuration} <span className="text-xs font-semibold text-slate-500">Hari</span></div>
+                    <div className="text-2xl sm:text-3xl font-black text-slate-800 mt-2">
+                        {kpiMetrics.avgDuration} <span className="text-xs font-semibold text-slate-500">Hari</span>
+                    </div>
                     <div className="text-[11px] text-slate-500 font-medium mt-1">
-                        Target response SLA: &lt; 3.0 Hari
+                        Lama pengerjaan rata-rata per unit rumah dinas
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                {/* CARD 4: KATEGORI TERBANYAK */}
+                <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-xs transition-shadow">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-slate-500">Kategori Terbanyak</span>
                         <span className="p-2 rounded-xl bg-indigo-50 text-indigo-600"><Building2 className="w-4 h-4" /></span>
                     </div>
-                    <div className="text-sm font-black text-slate-800 mt-2 truncate" title={kpiMetrics.dominantCategory}>
+                    <div className="text-sm sm:text-base font-black text-slate-800 mt-2 truncate" title={kpiMetrics.dominantCategory}>
                         {kpiMetrics.dominantCategory}
                     </div>
                     <div className="text-[11px] text-slate-500 font-medium mt-1">
-                        {kpiMetrics.maxCategoryCount} kasus ({kpiMetrics.total > 0 ? Math.round((kpiMetrics.maxCategoryCount / kpiMetrics.total) * 100) : 0}% dari total)
+                        {kpiMetrics.maxCategoryCount} perbaikan ({kpiMetrics.total > 0 ? Math.round((kpiMetrics.maxCategoryCount / kpiMetrics.total) * 100) : 0}% dari total)
                     </div>
                 </div>
             </div>
 
-            {/* ─── 3 CHARTS SECTION (DONUT, BAR, TREND) ─── */}
+            {/* ─── 3 CHARTS SECTION (DONUT KATEGORI, BAR TOP 5 UNIT, TREN BULANAN) ─── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {/* GRAFIK 1: DONUT DISTRIBUSI KATEGORI KERUSAKAN */}
+                {/* GRAFIK 1: DONUT DISTRIBUSI KATEGORI KERUSAKAN & STANDAR SLA */}
                 <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs flex flex-col justify-between">
                     <div>
                         <div className="flex items-center justify-between mb-1">
                             <h3 className="font-black text-slate-800 text-sm flex items-center gap-1.5">
                                 <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                                Distribusi Jenis Kerusakan
+                                Distribusi Kategori Kerusakan
                             </h3>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">5 Kategori</span>
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                                5 Kelompok
+                            </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 font-medium">Proporsi keluhan fasilitas hasil auto-categorizer Excel.</p>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                            Proporsi perbaikan fasilitas periode <strong className="text-slate-700">{selectedMonthLabel}</strong>.
+                        </p>
                     </div>
 
                     <div className="h-56 my-2 relative">
@@ -515,14 +625,14 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                                     ))}
                                 </Pie>
                                 <RechartsTooltip
-                                    formatter={(value, name) => [`${value} Kasus (${enrichedList.length > 0 ? Math.round((value / enrichedList.length) * 100) : 0}%)`, name]}
+                                    formatter={(value, name) => [`${value} Kasus (${monthFilteredList.length > 0 ? Math.round((value / monthFilteredList.length) * 100) : 0}%)`, name]}
                                     contentStyle={{ borderRadius: '12px', fontSize: '12px', border: '1px solid #e2e8f0' }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-xl font-black text-slate-800">{enrichedList.length}</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Kasus</span>
+                            <span className="text-2xl font-black text-slate-800">{monthFilteredList.length}</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Perbaikan</span>
                         </div>
                     </div>
 
@@ -531,69 +641,87 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                             <div key={item.name} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 truncate">
                                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                                    <span className="text-slate-700 font-medium truncate">{item.name}</span>
+                                    <span className="text-slate-700 font-semibold truncate">{item.name}</span>
+                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-500 font-mono font-bold">
+                                        SLA {item.slaLabel}
+                                    </span>
                                 </div>
                                 <span className="font-bold text-slate-800 shrink-0">{item.value} ({item.percentage}%)</span>
                             </div>
                         ))}
+                        {donutChartData.length === 0 && (
+                            <div className="text-center py-4 text-slate-400 text-xs font-medium">
+                                Tidak ada data pada periode ini.
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* GRAFIK 2: BAR TOP 5 RUMAH DINAS (REPEAT COMPLAINTS) */}
+                {/* GRAFIK 2: BAR TOP 5 UNIT TERBANYAK PERBAIKAN (KOMPLAIN DIGANTI PERBAIKAN) */}
                 <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs flex flex-col justify-between">
                     <div>
                         <div className="flex items-center justify-between mb-1">
                             <h3 className="font-black text-slate-800 text-sm flex items-center gap-1.5">
                                 <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
-                                Top 5 Unit Terbanyak Komplain
+                                Top 5 Unit Terbanyak Perbaikan
                             </h3>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                                 Evaluasi Overhaul
                             </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 font-medium">Unit rumah dinas dengan frekuensi kerusakan berulang.</p>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                            Unit rumah dinas dengan frekuensi perbaikan terbanyak.
+                        </p>
                     </div>
 
                     <div className="h-56 my-2">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart
-                                layout="vertical"
-                                data={topHousesChartData}
-                                margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                                <YAxis dataKey="lokasi" type="category" width={95} tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }} />
-                                <RechartsTooltip
-                                    formatter={(val) => [`${val} Permintaan`, 'Jumlah Kerusakan']}
-                                    contentStyle={{ borderRadius: '12px', fontSize: '12px', border: '1px solid #e2e8f0' }}
-                                />
-                                <Bar dataKey="total" fill="#6366f1" radius={[0, 8, 8, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        {topHousesChartData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    layout="vertical"
+                                    data={topHousesChartData}
+                                    margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                                    <YAxis dataKey="lokasi" type="category" width={95} tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }} />
+                                    <RechartsTooltip
+                                        formatter={(val) => [`${val} Pekerjaan`, 'Total Perbaikan']}
+                                        contentStyle={{ borderRadius: '12px', fontSize: '12px', border: '1px solid #e2e8f0' }}
+                                    />
+                                    <Bar dataKey="total" fill="#6366f1" radius={[0, 8, 8, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-slate-400 text-xs font-medium">
+                                Belum ada catatan unit perbaikan pada periode ini.
+                            </div>
+                        )}
                     </div>
 
                     <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3 text-[11px] text-indigo-900 flex items-start gap-2">
                         <AlertTriangle className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
                         <div>
-                            <span className="font-bold">Insight Pemeliharaan:</span> Unit dengan frekuensi &ge; 3 kali disarankan evaluasi menyeluruh (major renovation) untuk efisiensi biaya.
+                            <span className="font-bold">Insight Pemeliharaan:</span> Unit dengan frekuensi perbaikan berulang disarankan dilakukan audit fisik menyeluruh (major overhaul) untuk pencegahan kerusakan berkelanjutan.
                         </div>
                     </div>
                 </div>
 
-                {/* GRAFIK 3: TREN REQUEST MASUK VS SELESAI BULANAN (SLA) */}
+                {/* GRAFIK 3: TREN PERBAIKAN MASUK VS SELESAI (SLA) */}
                 <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs flex flex-col justify-between">
                     <div>
                         <div className="flex items-center justify-between mb-1">
                             <h3 className="font-black text-slate-800 text-sm flex items-center gap-1.5">
                                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-                                Tren Request Masuk vs Selesai
+                                Tren Perbaikan Masuk vs Selesai (SLA)
                             </h3>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                SLA Performance
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                Kinerja Tahunan
                             </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 font-medium">Perbandingan volume laporan masuk vs pekerjaan terselesaikan bulanan.</p>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                            Perbandingan volume laporan perbaikan masuk vs pekerjaan terselesaikan bulanan.
+                        </p>
                     </div>
 
                     <div className="h-56 my-2">
@@ -616,18 +744,42 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                                     contentStyle={{ borderRadius: '12px', fontSize: '12px', border: '1px solid #e2e8f0' }}
                                 />
                                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '4px' }} />
-                                <Area type="monotone" dataKey="request" name="Request Masuk" stroke="#3b82f6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorReq)" />
-                                <Area type="monotone" dataKey="selesai" name="Selesai Sesuai SLA" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorDone)" />
+                                <Area type="monotone" dataKey="request" name="Perbaikan Masuk" stroke="#3b82f6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorReq)" />
+                                <Area type="monotone" dataKey="selesaiSla" name="Selesai Sesuai SLA" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorDone)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
+                </div>
+            </div>
 
-                    <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] font-medium text-slate-600">
-                        <span>Status Backlog Aktif:</span>
-                        <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                            {kpiMetrics.inProgressCount} Pekerjaan Berjalan
-                        </span>
-                    </div>
+            {/* ─── PANDUAN RINGKAS 5 KATEGORI KERUSAKAN & SLA RESMI ─── */}
+            <div className="bg-slate-50/70 border border-slate-200 rounded-3xl p-4.5">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building2 className="w-4 h-4 text-blue-600" />
+                        Standar 5 Kategori Kerusakan Fasilitas & Batas SLA (Tahun 2026)
+                    </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 pt-1">
+                    {Object.entries(CATEGORY_CONFIG).map(([catName, config]) => {
+                        const Icon = config.icon;
+                        return (
+                            <div key={catName} className="bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black border ${config.bgBadge}`}>
+                                        {config.code}
+                                    </span>
+                                    <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 font-mono">
+                                        SLA: {config.slaLabel}
+                                    </span>
+                                </div>
+                                <h4 className="font-bold text-slate-800 text-xs pt-1">{catName}</h4>
+                                <p className="text-[10.5px] text-slate-500 leading-snug line-clamp-2" title={config.contoh}>
+                                    {config.contoh}
+                                </p>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -639,10 +791,10 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                         <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                         <input
                             type="text"
-                            placeholder="Cari unit rumah dinas (misal: RD 30, RD 12) atau kata kunci kerusakan..."
+                            placeholder="Cari unit rumah dinas (misal: RD 12, RD 30) atau kata kunci perbaikan..."
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                            className="w-full pl-9.5 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            className="w-full pl-9.5 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-medium"
                         />
                         {searchQuery && (
                             <button
@@ -655,7 +807,7 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                     </div>
 
                     {/* FILTER KATEGORI */}
-                    <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
                         <select
                             value={filterCategory}
                             onChange={(e) => { setFilterCategory(e.target.value); setCurrentPage(1); }}
@@ -667,15 +819,15 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                             ))}
                         </select>
 
-                        {/* FILTER STATUS */}
+                        {/* FILTER KESESUAIAN SLA */}
                         <select
-                            value={filterStatus}
-                            onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
+                            value={filterSla}
+                            onChange={(e) => { setFilterSla(e.target.value); setCurrentPage(1); }}
                             className="text-xs font-bold rounded-xl border border-slate-200 px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:border-blue-500"
                         >
-                            <option value="ALL">Semua Status</option>
-                            <option value="DONE">Selesai (Done)</option>
-                            <option value="PROGRESS">Dalam Pengerjaan (In Progress)</option>
+                            <option value="ALL">Semua Kesesuaian SLA</option>
+                            <option value="COMPLIANT">Sesuai SLA (Tepat Waktu)</option>
+                            <option value="OVERDUE">Melebihi SLA (Terlambat)</option>
                         </select>
 
                         {/* FILTER URGENSI */}
@@ -685,27 +837,33 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                             className="text-xs font-bold rounded-xl border border-slate-200 px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:border-blue-500"
                         >
                             <option value="ALL">Semua Urgensi</option>
-                            <option value="Emergency">Emergency (24 Jam)</option>
-                            <option value="High">High (3 Hari)</option>
-                            <option value="Normal">Normal (7 Hari)</option>
+                            <option value="High">High (Tinggi)</option>
+                            <option value="Medium">Medium (Sedang)</option>
+                            <option value="Low">Low (Rendah)</option>
                         </select>
                     </div>
                 </div>
 
                 {/* ACTIVE FILTER BADGES */}
-                {(filterCategory !== 'ALL' || filterStatus !== 'ALL' || filterUrgensi !== 'ALL' || searchQuery) && (
+                {(filterMonth !== 'ALL' || filterCategory !== 'ALL' || filterUrgensi !== 'ALL' || filterSla !== 'ALL' || searchQuery) && (
                     <div className="flex items-center gap-2 text-[11px] pt-1 flex-wrap">
                         <span className="text-slate-500 font-bold">Filter Aktif:</span>
-                        {filterCategory !== 'ALL' && (
+                        {filterMonth !== 'ALL' && (
                             <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-lg border border-blue-200 font-bold flex items-center gap-1">
+                                Bulan: {selectedMonthLabel}
+                                <X className="w-3 h-3 cursor-pointer" onClick={() => setFilterMonth('ALL')} />
+                            </span>
+                        )}
+                        {filterCategory !== 'ALL' && (
+                            <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-lg border border-amber-200 font-bold flex items-center gap-1">
                                 Kategori: {filterCategory}
                                 <X className="w-3 h-3 cursor-pointer" onClick={() => setFilterCategory('ALL')} />
                             </span>
                         )}
-                        {filterStatus !== 'ALL' && (
+                        {filterSla !== 'ALL' && (
                             <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-lg border border-emerald-200 font-bold flex items-center gap-1">
-                                Status: {filterStatus === 'DONE' ? 'Selesai' : 'In Progress'}
-                                <X className="w-3 h-3 cursor-pointer" onClick={() => setFilterStatus('ALL')} />
+                                SLA: {filterSla === 'COMPLIANT' ? 'Sesuai SLA' : 'Melebihi SLA'}
+                                <X className="w-3 h-3 cursor-pointer" onClick={() => setFilterSla('ALL')} />
                             </span>
                         )}
                         {filterUrgensi !== 'ALL' && (
@@ -715,22 +873,30 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                             </span>
                         )}
                         <button
-                            onClick={() => { setFilterCategory('ALL'); setFilterStatus('ALL'); setFilterUrgensi('ALL'); setSearchQuery(''); }}
+                            onClick={() => {
+                                setFilterMonth('ALL');
+                                setFilterCategory('ALL');
+                                setFilterUrgensi('ALL');
+                                setFilterSla('ALL');
+                                setSearchQuery('');
+                            }}
                             className="text-red-500 hover:text-red-700 font-bold cursor-pointer underline ml-2"
                         >
-                            Reset Semua
+                            Reset Semua Filter
                         </button>
                     </div>
                 )}
             </div>
 
-            {/* ─── TABEL DETAIL PERBAIKAN DARI UNGGAHAN EXCEL ─── */}
+            {/* ─── TABEL DETAIL PERBAIKAN (EXCEL INTEGRATED, NO BUKTI FOTO) ─── */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                        <h3 className="font-black text-slate-800 text-sm">Daftar Pekerjaan & Permintaan Perbaikan Rumah Dinas (Excel Integrated)</h3>
+                        <h3 className="font-black text-slate-800 text-sm">
+                            Rekapitulasi Data Perbaikan Rumah Dinas & Fasilitas
+                        </h3>
                         <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                            Menampilkan {filteredList.length} dari total {enrichedList.length} baris data perbaikan hasil unggahan Admin Facility Management.
+                            Menampilkan {filteredList.length} dari total {monthFilteredList.length} baris data perbaikan hasil rekapitulasi Admin Aset dan Fasility Management.
                         </p>
                     </div>
                 </div>
@@ -746,16 +912,15 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                                 <th className="p-3.5 text-slate-500 font-bold text-center">Urgensi</th>
                                 <th className="p-3.5 text-slate-500 font-bold">Tanggal Request</th>
                                 <th className="p-3.5 text-slate-500 font-bold">Tanggal Selesai</th>
-                                <th className="p-3.5 text-slate-500 font-bold text-center">Durasi SLA</th>
-                                <th className="p-3.5 text-slate-500 font-bold text-center">Status</th>
-                                <th className="p-3.5 text-slate-500 font-bold text-center">Bukti Foto</th>
+                                <th className="p-3.5 text-slate-500 font-bold text-center">Lama Perbaikan</th>
+                                <th className="p-3.5 text-slate-500 font-bold text-center">Kesesuaian SLA</th>
                                 {isAdmin && <th className="p-3.5 text-slate-500 font-bold text-center w-16">Aksi</th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {filteredList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((item, idx) => {
                                 const actualIdx = (currentPage - 1) * ITEMS_PER_PAGE + idx;
-                                const catConfig = CATEGORY_CONFIG[item.computedCategory] || CATEGORY_CONFIG['Sipil dan Struktural'];
+                                const catConfig = item.catConfig || CATEGORY_CONFIG['Sipil dan Struktural (SST)'];
                                 const CatIcon = catConfig.icon;
 
                                 return (
@@ -767,10 +932,15 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                                             </span>
                                         </td>
                                         <td className="p-3.5">
-                                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-bold ${catConfig.bgBadge}`}>
-                                                <CatIcon className="w-3 h-3 shrink-0" />
-                                                {item.computedCategory}
-                                            </span>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[10px] font-bold ${catConfig.bgBadge}`}>
+                                                    <CatIcon className="w-3 h-3 shrink-0" />
+                                                    {catConfig.code}
+                                                </span>
+                                                <span className="text-[11px] font-semibold text-slate-700 truncate max-w-[170px]" title={item.computedCategory}>
+                                                    {item.computedCategory}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="p-3.5 max-w-sm text-wrap font-medium text-slate-700">
                                             <div className="font-semibold text-slate-800">{item.pekerjaan}</div>
@@ -779,54 +949,54 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                                             )}
                                         </td>
                                         <td className="p-3.5 text-center">
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                                                item.computedUrgensi === 'Emergency'
+                                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                                                item.computedUrgensi === 'High'
                                                     ? 'bg-red-50 text-red-700 border-red-200'
-                                                    : item.computedUrgensi === 'High'
+                                                    : item.computedUrgensi === 'Medium'
                                                     ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                                    : 'bg-slate-100 text-slate-600 border-slate-200'
+                                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                             }`}>
                                                 {item.computedUrgensi}
                                             </span>
                                         </td>
-                                        <td className="p-3.5 text-slate-600 font-mono text-[11px]">{formatDate(item.tanggal_request)}</td>
-                                        <td className="p-3.5 text-slate-600 font-mono text-[11px]">{formatDate(item.tanggal_selesai)}</td>
+                                        <td className="p-3.5 text-slate-600 font-mono text-[11px] font-semibold">{formatCompactDate(item.tanggal_request)}</td>
+                                        <td className="p-3.5 text-slate-600 font-mono text-[11px] font-semibold">{formatCompactDate(item.tanggal_selesai)}</td>
+                                        
+                                        {/* LAMA PERBAIKAN (MENGGANTIKAN DURASI SLA) */}
                                         <td className="p-3.5 text-center font-mono font-bold text-slate-700">
                                             {item.durasiHari !== null ? (
-                                                <span className={`px-2 py-0.5 rounded-md text-[10px] ${
-                                                    item.durasiHari <= 3 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
+                                                    item.isSlaCompliant ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
                                                 }`}>
                                                     {item.durasiHari} Hari
                                                 </span>
-                                            ) : '-'}
-                                        </td>
-                                        <td className="p-3.5 text-center">
-                                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${
-                                                item.isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                                            }`}>
-                                                {item.status || 'In Progress'}
-                                            </span>
-                                        </td>
-                                        <td className="p-3.5 text-center">
-                                            {item.link_foto ? (
-                                                <a
-                                                    href={item.link_foto}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 text-[10px] font-bold transition-colors cursor-pointer"
-                                                >
-                                                    <Folder className="w-3 h-3" /> Foto
-                                                </a>
                                             ) : (
-                                                <span className="text-slate-300 text-[10px]">-</span>
+                                                <span className="text-slate-400 text-[11px]">-</span>
                                             )}
                                         </td>
+
+                                        {/* TINGKAT KESESUAIAN SLA */}
+                                        <td className="p-3.5 text-center">
+                                            {item.isSlaCompliant ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    <CheckCircle className="w-3 h-3 text-emerald-600" />
+                                                    Sesuai SLA ({item.catConfig.slaLabel})
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200">
+                                                    <XCircle className="w-3 h-3 text-rose-600" />
+                                                    Melebihi SLA (&gt; {item.catConfig.slaLabel})
+                                                </span>
+                                            )}
+                                        </td>
+
+                                        {/* AKSI */}
                                         {isAdmin && (
                                             <td className="p-3.5 text-center">
                                                 <button
                                                     onClick={() => handleDeleteItem(item.id)}
                                                     title="Hapus Baris Data"
-                                                    className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 cursor-pointer"
+                                                    className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 cursor-pointer transition-colors"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
@@ -837,8 +1007,8 @@ export default function PerbaikanRumahDinasSection({ perbaikanList = [], isAdmin
                             })}
                             {filteredList.length === 0 && (
                                 <tr>
-                                    <td colSpan={isAdmin ? 11 : 10} className="p-8 text-center text-slate-400">
-                                        Tidak ditemukan data perbaikan yang sesuai dengan filter atau pencarian. Silakan unggah file Excel data perbaikan rumah dinas.
+                                    <td colSpan={isAdmin ? 10 : 9} className="p-8 text-center text-slate-400">
+                                        Tidak ditemukan data perbaikan yang sesuai dengan filter atau pencarian. Silakan unggah file Excel rekap perbaikan rumah dinas.
                                     </td>
                                 </tr>
                             )}

@@ -21,6 +21,9 @@ use App\Models\TadMutation;
 use App\Models\BbmStock;
 use App\Models\FinancialPerformance;
 use App\Models\RiskRegister;
+use App\Models\IctMaintenance;
+use App\Models\IctService;
+use App\Http\Controllers\IctController;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Inertia\Inertia;
@@ -183,6 +186,9 @@ class DashboardController extends Controller
             'bbmList' => BbmStock::all(),
             'financialPerformances' => FinancialPerformance::orderBy('year', 'asc')->get(),
             'riskRegisterData' => RiskRegister::orderBy('no', 'asc')->get(),
+            'ictServices' => IctService::orderBy('id', 'asc')->get(),
+            'ictMaintenances' => IctMaintenance::orderBy('bulan', 'asc')->orderBy('minggu', 'asc')->get(),
+            'ictStats' => IctController::getCalculatedStats(),
             'notifications' => $notifications,
         ]);
     }

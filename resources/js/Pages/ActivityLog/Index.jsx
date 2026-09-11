@@ -50,7 +50,8 @@ export default function Index({ auth, logs, stats = {}, filters = {} }) {
             case 'SCM': return Package;
             case 'Logistik': return Package;
             case 'Human Capital': return Users;
-            case 'Facility': return Home;
+            case 'Facility':
+            case 'Aset dan Fasility Management': return Home;
             case 'Finansial': return TrendingUp;
             case 'MOM': return Activity;
             default: return Database;

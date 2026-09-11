@@ -118,8 +118,24 @@ export default function Logistik(props) {
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto animate-[fadeIn_0.3s_ease-in-out] font-sans text-slate-800">
-            {/* KPI CARDS (Modified per request: Total Stok & Total Jenis Material) */}
+            {/* KPI CARDS: Urutan diselaraskan dengan tab di bawahnya (Total Perbaikan di urutan pertama) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <KpiCard 
+                    title="Total Perbaikan" 
+                    value={`${totalPerbaikan} Item`} 
+                    subtitle="Rumah Dinas & Kantor" 
+                    icon={Folder} 
+                    colorClass="text-indigo-600" 
+                    bgClass="bg-indigo-50" 
+                />
+                <KpiCard 
+                    title="Aset Alat Berat" 
+                    value={`${totalAlatBerat} Unit`} 
+                    subtitle="Crane & Forklift Aktif" 
+                    icon={Laptop} 
+                    colorClass="text-amber-600" 
+                    bgClass="bg-amber-50" 
+                />
                 <KpiCard 
                     title="Total Stok Gudang" 
                     value={`${totalStockItems} Unit`} 
@@ -136,22 +152,6 @@ export default function Logistik(props) {
                     colorClass="text-emerald-600" 
                     bgClass="bg-emerald-50" 
                 />
-                <KpiCard 
-                    title="Total Request Perbaikan" 
-                    value={`${totalPerbaikan} Request`} 
-                    subtitle="Rumah Dinas & Kantor" 
-                    icon={Folder} 
-                    colorClass="text-indigo-600" 
-                    bgClass="bg-indigo-50" 
-                />
-                <KpiCard 
-                    title="Aset Alat Berat" 
-                    value={`${totalAlatBerat} Unit`} 
-                    subtitle="Crane & Forklift Aktif" 
-                    icon={Laptop} 
-                    colorClass="text-amber-600" 
-                    bgClass="bg-amber-50" 
-                />
             </div>
 
             {/* SUB TAB NAV */}
@@ -162,7 +162,7 @@ export default function Logistik(props) {
                         activeSubTab === 'perbaikan' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:text-slate-700'
                     }`}
                 >
-                    <span className="flex items-center justify-center gap-1.5"><Folder className="w-4 h-4"/> Perbaikan Rumah Dinas ({totalPerbaikan})</span>
+                    <span className="flex items-center justify-center gap-1.5"><Folder className="w-4 h-4"/> Perbaikan Rumah Dinas & Kantor ({totalPerbaikan})</span>
                 </button>
                 <button
                     onClick={() => setActiveSubTab('alat_berat')}

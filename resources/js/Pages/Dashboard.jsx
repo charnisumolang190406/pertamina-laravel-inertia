@@ -39,7 +39,8 @@ export default function Dashboard(props) {
         'organik': true,
         'tad': true,
         'view-logistik': true,
-        'view-arsip': true
+        'view-arsip': true,
+        'view-it-asset': true
     });
 
     const toggleMenu = (menuId, e) => {
@@ -94,14 +95,22 @@ export default function Dashboard(props) {
             ]
         },
         { 
-            id: 'view-logistik', title: 'Facility Management', label: 'Logistik & SCM', icon: Package,
+            id: 'view-logistik', title: 'Aset dan Fasility Management', label: 'Aset & FM', icon: Package,
             children: [
-                { id: 'perbaikan', title: 'Perbaikan Rumah Dinas' },
+                { id: 'perbaikan', title: 'Perbaikan Rumah Dinas & Kantor' },
                 { id: 'alat_berat', title: 'Alat Berat & Aset LHD' },
                 { id: 'bbm', title: 'Laporan Pemakaian BBM' }
             ]
         },
-        { id: 'view-it-asset', title: 'IT Asset Area', label: 'Server & Workstation', icon: Laptop },
+        { 
+            id: 'view-it-asset', title: 'ICT & IT Support', label: 'Maintenance & Service', icon: Laptop,
+            children: [
+                { id: 'all-ict', title: 'Ringkasan Eksekutif ICT' },
+                { id: 'maintenance-ict', title: 'Jadwal Maintenance' },
+                { id: 'service-ict', title: 'Rekap Layanan Service' },
+                { id: 'inventaris-it', title: 'Inventaris Perangkat IT' }
+            ]
+        },
         { id: 'view-scm', title: 'Kontrak', label: 'Monitoring Vendor', icon: FileSignature },
         { 
             id: 'view-arsip', title: 'Arsip Dokumen', label: 'Digital Library', icon: FolderOpen,
