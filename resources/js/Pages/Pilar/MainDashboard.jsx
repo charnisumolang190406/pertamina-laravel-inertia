@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { router } from '@inertiajs/react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
     ResponsiveContainer, LineChart, Line, Legend, ComposedChart, AreaChart, Area, Customized,
@@ -7,10 +8,9 @@ import {
 import {
     FileSignature, Calculator, Shield,
     Activity, DollarSign, PieChart as PieChartIcon, Zap, TrendingUp, Maximize2,
-    UploadCloud, FileSpreadsheet, Download, Search, Plus, Trash2,
+    FileSpreadsheet, Download, Search, Plus, Trash2,
     ChevronLeft, ChevronRight, CornerDownLeft, Gauge, CheckCircle2, SlidersHorizontal
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import KpiCard from '../../Components/KpiCard';
 import ChartDetailModal from '../../Components/ChartDetailModal';
 import { BarDiffOverlay, useBarHover } from '../../Components/BarDiffOverlay';
@@ -983,17 +983,26 @@ function TabRiskRegister({ auth, initialData = [] }) {
     const userRole = (auth?.user?.role || '').toLowerCase();
     const isAdmin = userRole.includes('admin');
     const [tableData, setTableData] = useState(() => {
+        if (Array.isArray(initialData) && initialData.length > 0) {
+            return initialData;
+        }
         try {
             const saved = localStorage.getItem('pertamina_risk_register_data');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) return parsed;
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
             }
         } catch (e) {
             console.error('Failed to load risk data from localStorage', e);
         }
-        return initialData;
+        return [];
     });
+
+    React.useEffect(() => {
+        if (Array.isArray(initialData)) {
+            setTableData(initialData);
+        }
+    }, [initialData]);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [gotoInput, setGotoInput] = useState('');
@@ -1108,203 +1117,9 @@ function TabRiskRegister({ auth, initialData = [] }) {
         } catch (e) {
             console.error('Failed to clear risk data from localStorage', e);
         }
-    };
-
-    const handleExcelUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            try {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-
-                // Read raw 2D array from sheet
-                const rawRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
-                if (!rawRows || rawRows.length === 0) {
-                    alert('File Excel kosong.');
-                    return;
-                }
-
-                // Locate main header row index
-                let headerRowIdx = rawRows.findIndex(row =>
-                    Array.isArray(row) && row.some(cell => {
-                        const c = String(cell).toLowerCase().replace(/[^a-z0-9]/g, '');
-                        return c.includes('kode') || c.includes('deskripsi') || c.includes('kejadian') || c.includes('peristiwa') || c.includes('probabilitas') || c.includes('dampak');
-                    })
-                );
-
-                if (headerRowIdx === -1) headerRowIdx = 0;
-
-                const hRow1 = rawRows[headerRowIdx] || [];
-                const hRow2 = rawRows[headerRowIdx + 1] || [];
-                const maxCols = Math.max(hRow1.length, hRow2.length);
-
-                let kodeColIdx = -1;
-                let noColIdx = -1;
-                let deskColIdx = -1;
-                let akarColIdx = -1;
-                let strategiColIdx = -1;
-                let probInhColIdx = -1;
-                let dampInhColIdx = -1;
-                let bobotInhColIdx = -1;
-                let peringkatInhColIdx = -1;
-                let probResColIdx = -1;
-                let dampResColIdx = -1;
-                let peringkatResColIdx = -1;
-
-                // Scan columns dynamically by scanning header text
-                for (let c = 0; c < maxCols; c++) {
-                    const cell1 = String(hRow1[c] || '').trim().toLowerCase();
-                    const cell2 = String(hRow2[c] || '').trim().toLowerCase();
-                    const fullText = (cell1 + ' ' + cell2).replace(/[^a-z0-9]/g, '');
-
-                    const isRes = fullText.includes('residual') || fullText.includes('res');
-
-                    if (fullText.includes('kode')) {
-                        kodeColIdx = c;
-                    } else if (fullText.includes('no') || fullText.includes('nomor')) {
-                        if (noColIdx === -1) noColIdx = c;
-                    } else if (fullText.includes('deskripsi') || fullText.includes('kejadian') || fullText.includes('peristiwa') || fullText.includes('namarisiko') || fullText.includes('description') || fullText.includes('event')) {
-                        deskColIdx = c;
-                    } else if (fullText.includes('akar') || fullText.includes('penyebab') || fullText.includes('rootcause')) {
-                        akarColIdx = c;
-                    } else if (fullText.includes('strategi') || fullText.includes('mitigasi') || fullText.includes('response')) {
-                        strategiColIdx = c;
-                    } else if (fullText.includes('bobot') || fullText.includes('weight') || fullText.includes('score')) {
-                        if (bobotInhColIdx === -1) bobotInhColIdx = c;
-                    } else if (isRes) {
-                        if (fullText.includes('prob') || fullText.includes('pinherent') || fullText.includes('presidual') || fullText === 'p') {
-                            probResColIdx = c;
-                        } else if (fullText.includes('dampak') || fullText.includes('iresidual') || fullText.includes('impact') || fullText === 'i') {
-                            dampResColIdx = c;
-                        } else if (fullText.includes('peringkat') || fullText.includes('level') || fullText.includes('risk')) {
-                            peringkatResColIdx = c;
-                        }
-                    } else {
-                        if (fullText.includes('probabilitas') || fullText.includes('pinherent') || (fullText.includes('prob') && !fullText.includes('peringkat')) || fullText === 'p') {
-                            if (probInhColIdx === -1) probInhColIdx = c;
-                            else if (probResColIdx === -1) probResColIdx = c;
-                        } else if (fullText.includes('dampak') || fullText.includes('iinherent') || (fullText.includes('impact') && !fullText.includes('peringkat')) || fullText === 'i') {
-                            if (dampInhColIdx === -1) dampInhColIdx = c;
-                            else if (dampResColIdx === -1) dampResColIdx = c;
-                        } else if (fullText.includes('peringkat')) {
-                            if (peringkatInhColIdx === -1) peringkatInhColIdx = c;
-                            else if (peringkatResColIdx === -1) peringkatResColIdx = c;
-                        }
-                    }
-                }
-
-                // Fallback for standard Pertamina Risk Register Excel layout (K=10, M=12, AA=26, AB=27)
-                if (probInhColIdx === -1 && maxCols > 10) probInhColIdx = 10;
-                if (dampInhColIdx === -1 && maxCols > 12) dampInhColIdx = 12;
-                if (probResColIdx === -1 && maxCols > 26) probResColIdx = 26;
-                if (dampResColIdx === -1 && maxCols > 27) dampResColIdx = 27;
-
-                // Determine start row of data
-                let dataStartRow = headerRowIdx + 1;
-                const rowAfterHeader = rawRows[headerRowIdx + 1];
-                if (Array.isArray(rowAfterHeader)) {
-                    const isSubHeader = rowAfterHeader.some(cell => {
-                        const val = String(cell || '').trim().toLowerCase();
-                        return val === 'p' || val === 'i' || val === 'w' || val === 'prob' || val === 'dampak' || val === 'probabilitas' || val === 'inherent' || val === 'residual';
-                    });
-                    if (isSubHeader) {
-                        dataStartRow = headerRowIdx + 2;
-                    }
-                }
-
-                const mapped = [];
-
-                for (let r = dataStartRow; r < rawRows.length; r++) {
-                    const row = rawRows[r];
-                    if (!Array.isArray(row)) continue;
-
-                    const rawDesk = deskColIdx !== -1 ? String(row[deskColIdx] || '').trim() : '';
-                    const rawKode = kodeColIdx !== -1 ? String(row[kodeColIdx] || '').trim() : '';
-                    const rawNo = noColIdx !== -1 ? row[noColIdx] : null;
-
-                    // STRICT FILTER: Skip empty/dummy/footer rows!
-                    if (!rawDesk && !rawKode && (rawNo === null || rawNo === '' || isNaN(parseInt(rawNo, 10)))) {
-                        continue;
-                    }
-                    const lowerDesk = rawDesk.toLowerCase();
-                    if (lowerDesk.startsWith('catatan') || lowerDesk.startsWith('disetujui') || lowerDesk.startsWith('total') || lowerDesk.startsWith('laporan')) {
-                        continue;
-                    }
-
-                    const no = (rawNo !== null && !isNaN(parseInt(rawNo, 10))) ? parseInt(rawNo, 10) : (mapped.length + 1);
-                    const kode = rawKode || `LHD-OPS-260${String(no).padStart(3, '0')}`;
-                    const deskripsi = rawDesk || `Kejadian Risiko Operasional #${no}`;
-                    const akar = akarColIdx !== -1 ? String(row[akarColIdx] || '-').trim() : '-';
-
-                    let probInherent = probInhColIdx !== -1 ? extractFirstDigit(row[probInhColIdx]) : NaN;
-                    let dampakInherent = dampInhColIdx !== -1 ? extractFirstDigit(row[dampInhColIdx]) : NaN;
-                    let pInhText = peringkatInhColIdx !== -1 ? String(row[peringkatInhColIdx] || '').trim() : '';
-
-                    if (isNaN(probInherent) || probInherent < 1 || probInherent > 5 || isNaN(dampakInherent) || dampakInherent < 1 || dampakInherent > 5) {
-                        const parsed = parseLevelFromText(pInhText);
-                        probInherent = parsed.prob;
-                        dampakInherent = parsed.dampak;
-                    }
-
-                    const bobotInherent = (bobotInhColIdx !== -1 && !isNaN(parseInt(row[bobotInhColIdx], 10)))
-                        ? parseInt(row[bobotInhColIdx], 10)
-                        : (probInherent * dampakInherent);
-
-                    const peringkatInherent = pInhText || getRiskLevelInfo(probInherent, dampakInherent).label;
-                    const strategi = strategiColIdx !== -1 ? String(row[strategiColIdx] || 'MITIGATE').trim() : 'MITIGATE';
-
-                    let probResidual = probResColIdx !== -1 ? extractFirstDigit(row[probResColIdx]) : NaN;
-                    let dampakResidual = dampResColIdx !== -1 ? extractFirstDigit(row[dampResColIdx]) : NaN;
-                    let pResText = peringkatResColIdx !== -1 ? String(row[peringkatResColIdx] || '').trim() : '';
-
-                    if (isNaN(probResidual) || probResidual < 1 || probResidual > 5 || isNaN(dampakResidual) || dampakResidual < 1 || dampakResidual > 5) {
-                        const derived = deriveResidualPI(pResText, probInherent, dampakInherent);
-                        probResidual = derived.prob;
-                        dampakResidual = derived.dampak;
-                    }
-
-                    const peringkatResidual = pResText || getRiskLevelInfo(probResidual, dampakResidual).label;
-
-                    mapped.push({
-                        kode,
-                        no,
-                        deskripsi,
-                        akar,
-                        probInherent,
-                        dampakInherent,
-                        bobotInherent,
-                        peringkatInherent,
-                        strategi,
-                        probResidual,
-                        dampakResidual,
-                        peringkatResidual
-                    });
-                }
-
-                if (mapped.length > 0) {
-                    setTableData(mapped);
-                    try {
-                        localStorage.setItem('pertamina_risk_register_data', JSON.stringify(mapped));
-                    } catch (e) {
-                        console.error('Failed to save risk data to localStorage', e);
-                    }
-                    setCurrentPage(1);
-                    setSearchTerm('');
-                    setHighlightedNo(null);
-                    alert(`Berhasil mengimpor ${mapped.length} data Risk Register dari Excel! Data telah tersimpan secara permanen.`);
-                } else {
-                    alert('Tidak dapat menemukan data risiko yang valid dari file Excel ini.');
-                }
-            } catch (err) {
-                console.error('Failed to parse excel file', err);
-                alert('Gagal membaca file Excel. Pastikan format file .xlsx / .xls valid.');
-            }
-        };
-        reader.readAsArrayBuffer(file);
+        router.post('/risk-register/clear', {}, {
+            preserveScroll: true
+        });
     };
 
 
@@ -1399,16 +1214,6 @@ function TabRiskRegister({ auth, initialData = [] }) {
                                 />
                             </div>
 
-                            <label className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white px-3.5 py-1.5 rounded-xl text-[11px] font-bold shadow-xs cursor-pointer transition-all active:scale-95">
-                                <UploadCloud className="w-3.5 h-3.5" /> Upload Excel (.xlsx)
-                                <input
-                                    type="file"
-                                    accept=".xlsx, .xls, .csv"
-                                    onChange={handleExcelUpload}
-                                    className="hidden"
-                                />
-                            </label>
-
                             {tableData.length > 0 && (
                                 <button
                                     onClick={() => setShowClearConfirm(true)}
@@ -1481,7 +1286,7 @@ function TabRiskRegister({ auth, initialData = [] }) {
                                                 </div>
                                                 <div>
                                                     <p className="text-xs font-bold text-slate-700">Belum Ada Data Risk Register</p>
-                                                    <p className="text-[11px] text-slate-400 mt-0.5">Silakan unggah file Excel (.xlsx) untuk menampilkan data & Peta Risiko.</p>
+                                                    <p className="text-[11px] text-slate-400 mt-0.5">Silakan unggah file Excel melalui tombol 'Upload Laporan' (warna biru) di kanan atas.</p>
                                                 </div>
                                             </div>
                                         </td>

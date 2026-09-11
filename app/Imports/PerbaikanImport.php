@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Perbaikan;
+use App\Http\Controllers\LogistikController;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Carbon\Carbon;
@@ -17,25 +18,56 @@ class PerbaikanImport implements ToModel, WithHeadingRow
     */
     public function model(array $row)
     {
-        // Pengecekan baris kosong
-        if (!isset($row['deskripsi_pekerjaan']) || empty(trim($row['deskripsi_pekerjaan']))) {
+        // Pengecekan variasi nama kolom pekerjaan
+        $pekerjaan = $row['deskripsi_pekerjaan'] 
+            ?? $row['pekerjaan'] 
+            ?? $row['uraian_pekerjaan'] 
+            ?? $row['uraian'] 
+            ?? null;
+
+        if (empty($pekerjaan) || empty(trim($pekerjaan))) {
             return null;
         }
 
-        // Parsing tanggal, Excel format bisa berupa angka serial atau string Y-m-d
-        $tglRequest = $this->parseDate($row['tanggal_request'] ?? null);
-        $tglSelesai = $this->parseDate($row['tanggal_selesai'] ?? null);
-        
-        $newId = DB::table('perbaikan')->max('id') + 1;
+        // Lokasi: ambil dari kolom lokasi atau deteksi dari deskripsi
+        $lokasi = $row['lokasi'] ?? null;
+        if (empty($lokasi)) {
+            if (preg_match('/(RD\s*\d+|Rumah\s*Dinas\s*(?:No\.?)?\s*\d+|Wisma\s*[A-Za-z0-9]+)/i', $pekerjaan, $matches)) {
+                $lokasi = trim($matches[1]);
+            } else {
+                $lokasi = 'Rumah Dinas';
+            }
+        }
+
+        // Parsing tanggal
+        $tglRequest = $this->parseDate($row['tanggal_request'] ?? $row['tgl_request'] ?? null);
+        $tglSelesai = $this->parseDate($row['tanggal_selesai'] ?? $row['tgl_selesai'] ?? null);
+
+        // Kategori & Urgensi (Auto-Categorizer jika tidak ada kolom di Excel)
+        $keterangan = $row['keterangan'] ?? '';
+        $kategori = !empty($row['kategori']) ? $row['kategori'] : LogistikController::autoCategorize($pekerjaan, $keterangan);
+        $urgensi = !empty($row['urgensi']) ? $row['urgensi'] : LogistikController::autoUrgensi($pekerjaan, $keterangan);
+
+        $status = $row['status'] ?? ($tglSelesai ? 'Done' : 'In Progress');
+        $linkFoto = $row['link_bukti_foto_opsional'] ?? $row['link_foto'] ?? $row['foto'] ?? null;
+        $estimasi = isset($row['estimasi']) && is_numeric($row['estimasi']) ? $row['estimasi'] : 0;
+        $realisasi = isset($row['realisasi']) && is_numeric($row['realisasi']) ? $row['realisasi'] : 0;
+
+        $newId = (int) (DB::table('perbaikan')->max('id') ?? 0) + 1;
 
         return new Perbaikan([
             'id' => $newId,
-            'pekerjaan' => $row['deskripsi_pekerjaan'],
-            'tanggal_request' => $tglRequest,
+            'lokasi' => $lokasi,
+            'pekerjaan' => trim($pekerjaan),
+            'kategori' => $kategori,
+            'urgensi' => $urgensi,
+            'tanggal_request' => $tglRequest ?? now()->format('Y-m-d'),
             'tanggal_selesai' => $tglSelesai,
-            'status' => $row['status'] ?? 'In Progress',
-            'link_foto' => $row['link_bukti_foto_opsional'] ?? null,
-            'lokasi' => 'Rumah Dinas', // default
+            'status' => $status,
+            'estimasi' => $estimasi,
+            'realisasi' => $realisasi,
+            'link_foto' => $linkFoto,
+            'keterangan' => $keterangan,
         ]);
     }
     

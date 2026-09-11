@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import * as XLSX from 'xlsx';
-import { X, UploadCloud, CheckCircle2, ChevronRight, AlertCircle, RefreshCw, Table } from 'lucide-react';
+import { X, UploadCloud, CheckCircle2, ChevronRight, AlertCircle, AlertTriangle, RefreshCw, Table } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const MAPPING_SPECS = {
@@ -18,7 +18,8 @@ const MAPPING_SPECS = {
     master_tad: { nama: 'Nama Lengkap', peran: 'Peran Kerja', vendor: 'Vendor Penyedia', status: 'Status Kontrak' },
     master_pensiun: { nama: 'Nama Karyawan', jabatan: 'Jabatan Terakhir', umur: 'Umur Pensiun', tahun: 'Tahun Pensiun', tanggal: 'Tanggal Efektif', keterangan: 'Keterangan' },
     financial_performance: { year: 'Tahun', revenue: 'Revenue', cost: 'Cost', depreciation: 'Depreciation', net_profit: 'Profit/Loss Net', abo: 'ABO', ebitda: 'EBITDA', cost_per_kwh: 'Cost per kWh' },
-    bbm: { bulan: 'Bulan', stock_awal_solar: 'Stock Awal', penerimaan_solar: 'Penerimaan', pengeluaran_ag_solar: 'Pengeluaran AG', pengeluaran_proyek_solar: 'Pengeluaran Proyek', stock_akhir_solar: 'Stock Akhir' }
+    bbm: { bulan: 'Bulan', stock_awal_solar: 'Stock Awal', penerimaan_solar: 'Penerimaan', pengeluaran_ag_solar: 'Pengeluaran AG', pengeluaran_proyek_solar: 'Pengeluaran Proyek', stock_akhir_solar: 'Stock Akhir' },
+    risk_register: { no: 'No Urut', kode: 'Kode Risiko', deskripsi: 'Deskripsi / Peristiwa Risiko', akar: 'Akar Penyebab', probInherent: 'Probabilitas Inherent (1-5)', dampakInherent: 'Dampak Inherent (1-5)', bobotInherent: 'Bobot Inherent', peringkatInherent: 'Peringkat Inherent', strategi: 'Strategi Penanganan', probResidual: 'Probabilitas Residual (1-5)', dampakResidual: 'Dampak Residual (1-5)', peringkatResidual: 'Peringkat Residual' }
 };
 
 const MAPPING_DEFAULTS = {
@@ -35,17 +36,22 @@ const MAPPING_DEFAULTS = {
     master_tad: { nama: 'Nama TAD', peran: 'Security', vendor: 'PT Daya', status: 'Aktif' },
     master_pensiun: { nama: 'Nama Pensiun', jabatan: 'Staff', umur: 56, tahun: 2026, tanggal: '2026-01-01', keterangan: 'Pensiun Normal' },
     financial_performance: { year: 2026, revenue: 0, cost: 0, depreciation: 0, net_profit: 0, abo: 0, ebitda: 0, cost_per_kwh: 0 },
-    bbm: { bulan: 'Januari', stock_awal_solar: 0, penerimaan_solar: 0, pengeluaran_ag_solar: 0, pengeluaran_proyek_solar: 0, stock_akhir_solar: 0 }
+    bbm: { bulan: 'Januari', stock_awal_solar: 0, penerimaan_solar: 0, pengeluaran_ag_solar: 0, pengeluaran_proyek_solar: 0, stock_akhir_solar: 0 },
+    risk_register: { no: 1, kode: 'LHD-OPS-001', deskripsi: 'Risiko', akar: '-', probInherent: 3, dampakInherent: 3, bobotInherent: 9, peringkatInherent: 'MODERATE RISK', strategi: 'MITIGATE', probResidual: 2, dampakResidual: 2, peringkatResidual: 'LOW TO MODERATE RISK' }
 };
 
 export default function UploadWizardModal({ isOpen, onClose, auth }) {
     if (!isOpen) return null;
 
     const userRole = auth?.user?.role || '';
-    const isAdminBPB = userRole.includes('Bisnis Planning');
-    const isAdminFM = userRole.includes('Facility Management') || userRole.includes('Logistik');
-    const isAdminHC = userRole.includes('HC');
-    const isAdminICT = userRole.includes('ICT');
+    const roleLower = userRole.toLowerCase();
+    const isHeadOrManager = roleLower.includes('kepala') || roleLower.includes('manager') || roleLower.includes('executive');
+
+    // Strict RBAC: Hanya Admin pilar terkait (BUKAN Kepala atau Manager)
+    const isAdminBPB = roleLower.startsWith('admin') && (roleLower.includes('planning') || roleLower.includes('budget')) && !isHeadOrManager;
+    const isAdminFM = roleLower.startsWith('admin') && (roleLower.includes('facility') || roleLower.includes('logistik')) && !isHeadOrManager;
+    const isAdminHC = roleLower.startsWith('admin') && roleLower.includes('hc') && !isHeadOrManager;
+    const isAdminICT = roleLower.startsWith('admin') && roleLower.includes('ict') && !isHeadOrManager;
 
     const [step, setStep] = useState(1); // 1: Select Type, 2: Upload, 3: Preview & Map
     const [dataType, setDataType] = useState('lembur_tad');
@@ -76,6 +82,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
             { id: 'budget_abo', label: 'Data Detail Budget ABO (Overhead/Operasi)' },
             { id: 'budget_abi', label: 'Data Detail Budget ABI (Investasi/Proyek)' },
             { id: 'financial_performance', label: 'Financial Performance (Keuangan)' },
+            { id: 'risk_register', label: 'Risk Register (Peta Risiko PGE Lahendong)' },
         ],
         'Manajemen Kontrak (Semua Fungsi)': [
             { id: 'scm', label: 'Data Monitoring Kontrak' },
@@ -87,6 +94,9 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
     };
 
     const filteredDataTypes = Object.keys(groupedDataTypes).reduce((acc, key) => {
+        if (isHeadOrManager) {
+            return acc; // Kepala dan Manager tidak dapat mengunggah data
+        }
         if (isAdminBPB) {
             if (key === 'Budgeting' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
         } else if (isAdminFM) {
@@ -95,7 +105,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
             if (key === 'Human Capital (HC)' || key === 'Manajemen Kontrak (Semua Fungsi)') acc[key] = groupedDataTypes[key];
         } else if (isAdminICT) {
             if (key === 'Lainnya') acc[key] = groupedDataTypes[key];
-        } else {
+        } else if (roleLower.startsWith('admin') && !roleLower.includes('kepala')) {
             acc[key] = groupedDataTypes[key];
         }
         return acc;
@@ -148,6 +158,19 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                 if (dataType === 'alat_berat') {
                     headerIdx = 4; // Excel Row 5 (index 4) has the main headers
                     dataStartIdx = 6; // Excel Row 7 (index 6) is where actual data starts
+                } else if (dataType === 'risk_register') {
+                    for (let i = 0; i < Math.min(json.length, 20); i++) {
+                        const rowStr = (json[i] || []).join(' ').toLowerCase();
+                        if (rowStr.includes('kode') || rowStr.includes('deskripsi') || rowStr.includes('probabilitas') || rowStr.includes('kejadian')) {
+                            headerIdx = i;
+                            dataStartIdx = i + 1;
+                            const nextStr = (json[i + 1] || []).join(' ').toLowerCase();
+                            if (nextStr.includes('inherent') || nextStr.includes('residual') || nextStr.includes('prob') || nextStr.includes('dampak')) {
+                                dataStartIdx = i + 2;
+                            }
+                            break;
+                        }
+                    }
                 }
 
                 const sheetHeaders = Array.from(json[headerIdx] || []).map((h, idx) => {
@@ -164,7 +187,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                 setRawRows(parsedRows);
 
                 // If this is a complex format handled by backend, skip auto-mapping UI
-                if (['bbm', 'perbaikan_rumdin'].includes(dataType)) {
+                if (['bbm', 'perbaikan_rumdin', 'alat_berat'].includes(dataType)) {
                     // Set dummy mappings to prevent errors, though they won't be used
                     setMappings({}); 
                     // Go directly to Step 3 but change the UI or we can just keep them in a "Ready" state
@@ -345,7 +368,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
         if (dataType === 'perbaikan_rumdin') {
             const formData = new FormData();
             formData.append('file', file);
-            router.post('/import-perbaikan-rumdin', formData, {
+            router.post('/import-perbaikan', formData, {
                 preserveScroll: true,
                 onSuccess: () => {
                     Swal.fire({
@@ -360,6 +383,70 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                     Swal.fire({
                         title: 'Gagal!',
                         text: 'Terjadi kesalahan saat mengimpor Perbaikan Rumdin.',
+                        icon: 'error',
+                        confirmButtonColor: '#2563eb'
+                    });
+                },
+                onFinish: () => {
+                    setIsProcessing(false);
+                }
+            });
+            return;
+        }
+
+        // ALAT BERAT INTERCEPT
+        if (dataType === 'alat_berat') {
+            const formData = new FormData();
+            formData.append('file', file);
+            router.post('/import-alat-berat', formData, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    Swal.fire({
+                        title: 'Sukses!',
+                        text: 'File Alat Berat berhasil diimpor.',
+                        icon: 'success',
+                        confirmButtonColor: '#2563eb'
+                    });
+                    onClose();
+                },
+                onError: (errors) => {
+                    Swal.fire({
+                        title: 'Gagal!',
+                        text: 'Terjadi kesalahan saat mengimpor Alat Berat.',
+                        icon: 'error',
+                        confirmButtonColor: '#2563eb'
+                    });
+                },
+                onFinish: () => {
+                    setIsProcessing(false);
+                }
+            });
+            return;
+        }
+
+        // RISK REGISTER INTERCEPT (ADMIN BPB ONLY)
+        if (dataType === 'risk_register') {
+            const formData = new FormData();
+            formData.append('file', file);
+            router.post('/import-risk-register', formData, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Clear stale localStorage data so UI immediately prefers DB data
+                    try {
+                        localStorage.removeItem('pertamina_risk_register_data');
+                    } catch (e) {}
+                    Swal.fire({
+                        title: 'Sukses!',
+                        text: 'File Risk Register berhasil diimpor dan diproses oleh Backend PHP!',
+                        icon: 'success',
+                        confirmButtonColor: '#2563eb'
+                    });
+                    onClose();
+                },
+                onError: (errors) => {
+                    Swal.fire({
+                        title: 'Gagal!',
+                        text: 'Terjadi kesalahan saat mengimpor Risk Register.',
                         icon: 'error',
                         confirmButtonColor: '#2563eb'
                     });
@@ -450,26 +537,40 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                     {/* STEP 1: SELECT TYPE */}
                     {step === 1 && (
                         <div className="space-y-4">
-                            <h4 className="font-bold text-slate-800 text-xs text-center mb-4">Pilih kategori data laporan yang ingin Anda impor:</h4>
-                            <div className="space-y-6">
-                                {Object.entries(filteredDataTypes).map(([category, types]) => (
-                                    <div key={category} className="space-y-3">
-                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1 border-b border-slate-100 pb-1">{category}</h5>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            {types.map(t => (
-                                                <button
-                                                    key={t.id}
-                                                    onClick={() => handleTypeSelect(t.id)}
-                                                    className="text-left px-4 py-3 border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 rounded-2xl cursor-pointer text-xs font-bold text-slate-700 transition-all flex justify-between items-center group active:scale-98"
-                                                >
-                                                    <span className="leading-relaxed pr-2">{t.label}</span>
-                                                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-transform group-hover:translate-x-1 shrink-0" />
-                                                </button>
-                                            ))}
-                                        </div>
+                            {Object.keys(filteredDataTypes).length === 0 ? (
+                                <div className="py-12 text-center space-y-3">
+                                    <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+                                        <AlertTriangle className="w-6 h-6" />
                                     </div>
-                                ))}
-                            </div>
+                                    <h4 className="font-bold text-slate-800 text-sm">Akses Unggah Terbatas</h4>
+                                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                                        Anda login sebagai <strong className="text-slate-700">{userRole}</strong>. Fitur unggah file Excel hanya diperuntukkan bagi <strong className="text-slate-700">Admin fungsi terkait</strong> (misal: Admin Facility Management, Admin HC, Admin BPB).
+                                    </p>
+                                </div>
+                            ) : (
+                                <>
+                                    <h4 className="font-bold text-slate-800 text-xs text-center mb-4">Pilih kategori data laporan yang ingin Anda impor:</h4>
+                                    <div className="space-y-6">
+                                        {Object.entries(filteredDataTypes).map(([category, types]) => (
+                                            <div key={category} className="space-y-3">
+                                                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-1 border-b border-slate-100 pb-1">{category}</h5>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    {types.map(t => (
+                                                        <button
+                                                            key={t.id}
+                                                            onClick={() => handleTypeSelect(t.id)}
+                                                            className="text-left px-4 py-3 border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 rounded-2xl cursor-pointer text-xs font-bold text-slate-700 transition-all flex justify-between items-center group active:scale-98"
+                                                        >
+                                                            <span className="leading-relaxed pr-2">{t.label}</span>
+                                                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-transform group-hover:translate-x-1 shrink-0" />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
 
@@ -522,7 +623,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                             </div>
 
                             {/* MAPPING DROPDOWNS (Hidden by default or if complex) */}
-                            {!['bbm', 'perbaikan_rumdin'].includes(dataType) ? (
+                            {!['bbm', 'perbaikan_rumdin', 'alat_berat'].includes(dataType) ? (
                                 <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
                                     <div className="flex items-center justify-between mb-4">
                                     <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -578,7 +679,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                             )}
 
                             {/* EXCEL PREVIEW TABLE */}
-                            {!['bbm', 'perbaikan_rumdin'].includes(dataType) && (
+                            {!['bbm', 'perbaikan_rumdin', 'alat_berat'].includes(dataType) && (
                                 <div className="space-y-2">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Preview 5 Baris Pertama</h4>
                                 <div className="border border-slate-200 rounded-2xl overflow-hidden overflow-x-auto">

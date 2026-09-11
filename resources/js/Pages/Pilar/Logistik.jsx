@@ -6,9 +6,19 @@ import {
 import Swal from 'sweetalert2';
 import KpiCard from '../../Components/KpiCard';
 import Pagination from '../../Components/Pagination';
+import PerbaikanRumahDinasSection from '../../Components/PerbaikanRumahDinasSection';
 export default function Logistik(props) {
-    const { stokList, alatBeratList, perbaikanList, momList, bbmList = [], auth, onOpenFeedback, activeSubMenu } = props;
-    const currentUser = auth.user;
+    const { 
+        stokList = [], 
+        alatBeratList = [], 
+        perbaikanList = [], 
+        momList = [], 
+        bbmList = [], 
+        auth, 
+        onOpenFeedback, 
+        activeSubMenu 
+    } = props;
+    const currentUser = auth?.user || {};
 
     const [activeSubTab, setActiveSubTab] = useState('perbaikan');
     const [perbaikanPage, setPerbaikanPage] = useState(1);
@@ -48,10 +58,10 @@ export default function Logistik(props) {
     }, [activeSubMenu]);
 
     const totalStockItems = stokList.length;
-    const totalJenisMaterial = new Set(stokList.map(item => item.nama)).size;
+    const totalJenisMaterial = new Set(stokList.map(item => item?.nama || '')).size;
     const totalAlatBerat = alatBeratList.length;
     const totalPerbaikan = perbaikanList.length;
-    const totalRealisasi = perbaikanList.reduce((acc, c) => acc + c.realisasi, 0);
+    const totalRealisasi = perbaikanList.reduce((acc, c) => acc + (Number(c?.realisasi) || 0), 0);
 
     const formatCurrency = (val) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
@@ -100,7 +110,11 @@ export default function Logistik(props) {
         }
     };
 
-    const isAdmin = currentUser?.role?.startsWith('Admin');
+    const roleLower = (currentUser?.role || '').toLowerCase();
+    const isHeadOrManager = roleLower.includes('kepala') || roleLower.includes('manager') || roleLower.includes('executive');
+    // HANYA Admin Facility Management yang berhak mengunggah dan mengelola data di pilar Facility Management
+    const canUploadFM = roleLower.startsWith('admin') && (roleLower.includes('facility') || roleLower.includes('logistik')) && !isHeadOrManager;
+    const isAdmin = canUploadFM;
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto animate-[fadeIn_0.3s_ease-in-out] font-sans text-slate-800">
@@ -168,13 +182,13 @@ export default function Logistik(props) {
                 </button>
             </div>
 
-            {/* ACTION BUTTONS */}
-            {isAdmin && (
+            {/* ACTION BUTTONS (For Alat Berat & BBM - HANYA Admin Facility Management) */}
+            {canUploadFM && activeSubTab !== 'perbaikan' && (
                 <div className="flex justify-end gap-2 text-xs font-bold">
                     <button
                         onClick={() => Swal.fire({
                             title: 'Fitur Belum Tersedia',
-                            text: 'Fitur Tambah Data secara manual sedang dalam tahap pengembangan. Silakan gunakan tombol Upload Laporan (Excel) di pojok kanan atas layar.',
+                            text: 'Fitur Tambah Data secara manual untuk tab ini sedang dalam tahap pengembangan. Silakan gunakan tombol Upload Laporan (Excel) di pojok kanan atas layar.',
                             icon: 'info',
                             confirmButtonColor: '#2563eb'
                         })}
@@ -185,7 +199,7 @@ export default function Logistik(props) {
                     <button
                         onClick={() => Swal.fire({
                             title: 'Fitur Belum Tersedia',
-                            text: 'Fitur Unduh Laporan sedang dalam tahap pengembangan.',
+                            text: 'Fitur Unduh Laporan untuk tab ini sedang dalam tahap pengembangan.',
                             icon: 'info',
                             confirmButtonColor: '#2563eb'
                         })}
@@ -196,78 +210,13 @@ export default function Logistik(props) {
                 </div>
             )}
 
-            {/* SUB-TAB 1: PERBAIKAN (Sederhana per Request) */}
+            {/* SUB-TAB 1: PERBAIKAN (5 Kategori Kerusakan, 3 Grafik Analitik, SLA & CRUD) */}
             {activeSubTab === 'perbaikan' && (
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-                    <div className="p-5 border-b border-slate-100 bg-slate-50/30">
-                        <h3 className="font-extrabold text-slate-800 text-sm">Monitoring Pekerjaan Sipil & Perbaikan Rumah Dinas</h3>
-                        <p className="text-[11px] text-slate-500 font-medium mt-0.5">Daftar permintaan perbaikan fasilitas aset dan gedung.</p>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs whitespace-nowrap">
-                            <thead className="bg-slate-50 border-b border-slate-200">
-                                <tr>
-                                    <th className="p-3.5 text-slate-500 font-bold w-10 text-center">No</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Tanggal Request</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Tanggal Selesai</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Deskripsi Pekerjaan</th>
-                                    <th className="p-3.5 text-slate-500 font-bold text-center">Status</th>
-                                    <th className="p-3.5 text-slate-500 font-bold text-center">Bukti Foto</th>
-                                    {isAdmin && <th className="p-3.5 text-slate-500 font-bold text-center w-20">Aksi</th>}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {perbaikanList.slice((perbaikanPage - 1) * ITEMS_PER_PAGE, perbaikanPage * ITEMS_PER_PAGE).map((item, idx) => {
-                                    const actualIdx = (perbaikanPage - 1) * ITEMS_PER_PAGE + idx;
-                                    return (
-                                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                        <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
-                                        <td className="p-3.5 text-slate-600 font-mono text-[11px]">{formatDate(item.tanggal_request || item.created_at)}</td>
-                                        <td className="p-3.5 text-slate-600 font-mono text-[11px]">{formatDate(item.tanggal_selesai)}</td>
-                                        <td className="p-3.5 max-w-md text-wrap font-bold text-slate-700">
-                                            {item.pekerjaan} {item.lokasi && item.lokasi !== 'Rumah Dinas' ? `- ${item.lokasi}` : ''}
-                                        </td>
-                                        <td className="p-3.5 text-center">
-                                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold shadow-2xs ${
-                                                item.status?.toLowerCase().includes('selesai') || item.status?.toLowerCase() === 'done' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                                {item.status || 'In Progress'}
-                                            </span>
-                                        </td>
-                                        <td className="p-3.5 text-center">
-                                            {item.link_foto ? (
-                                                <a href={item.link_foto} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 text-[10px] font-bold transition-colors">
-                                                    <Folder className="w-3 h-3" /> Lihat
-                                                </a>
-                                            ) : (
-                                                <span className="text-slate-300 text-[10px]">-</span>
-                                            )}
-                                        </td>
-                                        {isAdmin && (
-                                            <td className="p-3.5 text-center">
-                                                <button
-                                                    onClick={() => handleDeleteItem(item.id)}
-                                                    className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 cursor-pointer"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </td>
-                                        )}
-                                    </tr>
-                                    );
-                                })}
-                                {perbaikanList.length === 0 && (
-                                    <tr>
-                                        <td colSpan={isAdmin ? 5 : 4} className="p-8 text-center text-slate-400 font-medium">
-                                            Tidak ada data perbaikan rumah dinas / kantor.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                        <Pagination currentPage={perbaikanPage} totalItems={perbaikanList.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setPerbaikanPage} />
-                    </div>
-                </div>
+                <PerbaikanRumahDinasSection
+                    perbaikanList={perbaikanList}
+                    isAdmin={canUploadFM}
+                    formatDate={formatDate}
+                />
             )}
 
             {/* SUB-TAB 2: ALAT BERAT */}

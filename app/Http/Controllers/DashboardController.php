@@ -20,6 +20,7 @@ use App\Models\Employee;
 use App\Models\TadMutation;
 use App\Models\BbmStock;
 use App\Models\FinancialPerformance;
+use App\Models\RiskRegister;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Inertia\Inertia;
@@ -181,6 +182,7 @@ class DashboardController extends Controller
             'uploadArchive' => UploadArchive::orderBy('id', 'desc')->get(),
             'bbmList' => BbmStock::all(),
             'financialPerformances' => FinancialPerformance::orderBy('year', 'asc')->get(),
+            'riskRegisterData' => RiskRegister::orderBy('no', 'asc')->get(),
             'notifications' => $notifications,
         ]);
     }

@@ -211,14 +211,28 @@ class ImportController extends Controller
                             } catch (\Exception $e) {}
                         }
 
+                        $descPekerjaan = $row['deskripsi_pekerjaan'] ?? $row['pekerjaan'] ?? 'Perbaikan Umum';
+                        $lokasiRumdin = $row['lokasi'] ?? null;
+                        if (empty($lokasiRumdin)) {
+                            if (preg_match('/(RD\s*\d+|Rumah\s*Dinas\s*(?:No\.?)?\s*\d+|Wisma\s*[A-Za-z0-9]+)/i', $descPekerjaan, $matches)) {
+                                $lokasiRumdin = trim($matches[1]);
+                            } else {
+                                $lokasiRumdin = 'Rumah Dinas';
+                            }
+                        }
+                        $kategoriRumdin = !empty($row['kategori']) ? $row['kategori'] : LogistikController::autoCategorize($descPekerjaan);
+                        $urgensiRumdin = !empty($row['urgensi']) ? $row['urgensi'] : LogistikController::autoUrgensi($descPekerjaan);
+
                         Perbaikan::create([
                             'id' => $uniqueId,
-                            'pekerjaan' => $row['deskripsi_pekerjaan'] ?? 'Perbaikan Umum',
-                            'lokasi' => 'Rumah Dinas',
-                            'tanggal_request' => $tglRequest,
+                            'pekerjaan' => $descPekerjaan,
+                            'lokasi' => $lokasiRumdin,
+                            'kategori' => $kategoriRumdin,
+                            'urgensi' => $urgensiRumdin,
+                            'tanggal_request' => $tglRequest ?? now()->format('Y-m-d'),
                             'tanggal_selesai' => $tglSelesai,
-                            'status' => $row['status'] ?? 'In Progress',
-                            'link_foto' => $row['link_bukti_foto_opsional'] ?? null,
+                            'status' => $row['status'] ?? ($tglSelesai ? 'Done' : 'In Progress'),
+                            'link_foto' => $row['link_bukti_foto_opsional'] ?? $row['link_foto'] ?? null,
                         ]);
                         $insertedCount++;
                         break;

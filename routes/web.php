@@ -15,6 +15,7 @@ use App\Http\Controllers\FinancialPerformanceController;
 use App\Http\Controllers\PerbaikanImportController;
 use App\Http\Controllers\BbmImportController;
 use App\Http\Controllers\AlatBeratImportController;
+use App\Http\Controllers\RiskRegisterImportController;
 
 // Public Guest Routes
 Route::middleware('guest')->group(function () {
@@ -49,6 +50,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/logistik/alat-berat/reset', [LogistikController::class, 'resetAlatBerat'])->name('logistik.alat_berat.reset');
 
     // Logistik - Perbaikan Aset Routes
+    Route::post('/logistik/perbaikan', [LogistikController::class, 'storePerbaikan'])->name('logistik.perbaikan.store');
+    Route::put('/logistik/perbaikan/{id}', [LogistikController::class, 'updatePerbaikan'])->name('logistik.perbaikan.update');
+    Route::get('/logistik/perbaikan/export', [LogistikController::class, 'exportPerbaikan'])->name('logistik.perbaikan.export');
     Route::delete('/logistik/perbaikan/{id}', [LogistikController::class, 'destroyPerbaikan'])->name('logistik.perbaikan.destroy');
     Route::post('/logistik/perbaikan/clear', [LogistikController::class, 'clearPerbaikan'])->name('logistik.perbaikan.clear');
     Route::post('/logistik/perbaikan/reset', [LogistikController::class, 'resetPerbaikan'])->name('logistik.perbaikan.reset');
@@ -71,6 +75,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/import-perbaikan', [PerbaikanImportController::class, 'import'])->name('import.perbaikan');
     Route::post('/import-bbm', [BbmImportController::class, 'import'])->name('import.bbm');
     Route::post('/import-alat-berat', [AlatBeratImportController::class, 'import'])->name('import.alat_berat');
+    Route::post('/import-risk-register', [RiskRegisterImportController::class, 'import'])->name('import.risk_register');
+    Route::post('/risk-register/clear', [RiskRegisterImportController::class, 'clear'])->name('risk_register.clear');
 
     // Activity Log Route
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity.log');

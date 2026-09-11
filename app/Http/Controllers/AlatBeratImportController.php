@@ -30,7 +30,7 @@ class AlatBeratImportController extends Controller
                 'uploaded_by' => 'Admin Facility Management',
             ]);
 
-            return response()->json(['message' => 'File Excel Alat Berat berhasil diunggah dan diproses oleh PHP Backend!']);
+            return redirect()->back()->with('success', 'File Excel Alat Berat berhasil diunggah dan diproses oleh PHP Backend!');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Alat Berat Import Error: " . $e->getMessage());
             
@@ -45,7 +45,7 @@ class AlatBeratImportController extends Controller
                 'uploaded_by' => 'Admin Facility Management',
             ]);
 
-            return response()->json(['error' => 'Gagal mengimpor file Alat Berat: ' . $e->getMessage()], 500);
+            return redirect()->back()->with('error', 'Gagal mengimpor file Alat Berat: ' . $e->getMessage());
         }
     }
 }

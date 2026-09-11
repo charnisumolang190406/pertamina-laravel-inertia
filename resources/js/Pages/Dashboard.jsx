@@ -305,7 +305,10 @@ export default function Dashboard(props) {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        {currentUser?.role?.startsWith('Admin') && (
+                        {currentUser?.role?.startsWith('Admin') && 
+                         !currentUser?.role?.toLowerCase().includes('kepala') && 
+                         !currentUser?.role?.toLowerCase().includes('manager') && 
+                         !currentUser?.role?.toLowerCase().includes('executive') && (
                             <button
                                 onClick={() => setUploadWizardOpen(true)}
                                 className="flex items-center gap-1.5 bg-pertamina-blue hover:bg-blue-800 text-white px-3.5 py-2 rounded-lg text-xs font-bold shadow-md shadow-pertamina-blue/10 cursor-pointer transition-all active:scale-95 shrink-0"
