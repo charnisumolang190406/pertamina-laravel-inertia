@@ -98,8 +98,8 @@ export default function Dashboard(props) {
             id: 'view-logistik', title: 'Aset dan Fasility Management', label: 'Aset & FM', icon: Package,
             children: [
                 { id: 'perbaikan', title: 'Perbaikan Rumah Dinas & Kantor' },
-                { id: 'alat_berat', title: 'Alat Berat & Aset LHD' },
-                { id: 'bbm', title: 'Laporan Pemakaian BBM' }
+                { id: 'alat_berat', title: 'Alat Berat dan KRP' },
+                { id: 'stok_material', title: 'Stok Material Gudang' }
             ]
         },
         { 
@@ -314,10 +314,13 @@ export default function Dashboard(props) {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        {currentUser?.role?.startsWith('Admin') && 
-                         !currentUser?.role?.toLowerCase().includes('kepala') && 
-                         !currentUser?.role?.toLowerCase().includes('manager') && 
-                         !currentUser?.role?.toLowerCase().includes('executive') && (
+                        {Boolean(
+                            (currentUser?.role?.startsWith('Admin') && 
+                             !currentUser?.role?.toLowerCase().includes('kepala') && 
+                             !currentUser?.role?.toLowerCase().includes('manager')) ||
+                            currentUser?.role?.toLowerCase().includes('executive') ||
+                            currentUser?.username?.includes('admin')
+                        ) && (
                             <button
                                 onClick={() => setUploadWizardOpen(true)}
                                 className="flex items-center gap-1.5 bg-pertamina-blue hover:bg-blue-800 text-white px-3.5 py-2 rounded-lg text-xs font-bold shadow-md shadow-pertamina-blue/10 cursor-pointer transition-all active:scale-95 shrink-0"

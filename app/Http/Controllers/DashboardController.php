@@ -23,6 +23,7 @@ use App\Models\FinancialPerformance;
 use App\Models\RiskRegister;
 use App\Models\IctMaintenance;
 use App\Models\IctService;
+use App\Models\MaterialBalance;
 use App\Http\Controllers\IctController;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -102,14 +103,14 @@ class DashboardController extends Controller
             ];
         }
 
-        // 4. Low Material Stock Warnings
-        $lowStocks = Stok::where('saldo', '<=', 5)->take(2)->get();
-        foreach ($lowStocks as $stok) {
+        // 4. Low Material Stock Warnings (dari Material Balance SOH & 2YSP)
+        $lowStocks = MaterialBalance::where('stock_akhir', '<=', 2)->take(2)->get();
+        foreach ($lowStocks as $mat) {
             $notifications[] = [
                 'id' => $notifId++,
                 'type' => 'stock',
                 'title' => 'Peringatan Stok Rendah',
-                'text' => "Stok material '{$stok->nama}' tersisa {$stok->saldo} unit ({$stok->fungsi}).",
+                'text' => "Stok '{$mat->deskripsi}' tersisa {$mat->stock_akhir} {$mat->uom} (KIMAP: {$mat->kimap} - Loc: {$mat->storage_location}).",
                 'time' => 'Inventori Aktif',
                 'read' => false,
             ];
@@ -180,6 +181,7 @@ class DashboardController extends Controller
             'lemburTadList' => LemburTad::orderBy('id', 'desc')->get(),
             'budgetDetailsList' => BudgetDetail::all(),
             'stokList' => Stok::all(),
+            'materialBalanceList' => MaterialBalance::all(),
             'arsipList' => Arsip::orderBy('id', 'desc')->get(),
             'assetList' => Asset::all(),
             'uploadArchive' => UploadArchive::orderBy('id', 'desc')->get(),

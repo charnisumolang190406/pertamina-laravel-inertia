@@ -19,6 +19,8 @@ class AlatBeratImportController extends Controller
             // Import the file using the dedicated AlatBeratImport class
             Excel::import(new AlatBeratImport, $request->file('file'));
 
+            $totalProcessed = \App\Models\AlatBerat::count();
+
             // Log the upload for history
             \App\Models\UploadArchive::create([
                 'id' => (int)(microtime(true) * 1000) + rand(1000, 9999),
@@ -26,11 +28,11 @@ class AlatBeratImportController extends Controller
                 'fileSize' => round($request->file('file')->getSize() / 1024, 2) . ' KB',
                 'type' => 'ALAT_BERAT Import',
                 'timestamp' => date('d-m-Y H:i:s'),
-                'rowCount' => 0, // Since we don't return count from Excel::import natively easily here
+                'rowCount' => $totalProcessed,
                 'uploaded_by' => 'Admin Facility Management',
             ]);
 
-            return redirect()->back()->with('success', 'File Excel Alat Berat berhasil diunggah dan diproses oleh PHP Backend!');
+            return redirect()->back()->with('success', "File Excel Alat Berat & KRP berhasil diunggah! Sebanyak {$totalProcessed} unit berhasil disimpan ke sistem.");
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Alat Berat Import Error: " . $e->getMessage());
             

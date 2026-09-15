@@ -21,7 +21,8 @@ const MAPPING_SPECS = {
     bbm: { bulan: 'Bulan', stock_awal_solar: 'Stock Awal', penerimaan_solar: 'Penerimaan', pengeluaran_ag_solar: 'Pengeluaran AG', pengeluaran_proyek_solar: 'Pengeluaran Proyek', stock_akhir_solar: 'Stock Akhir' },
     risk_register: { no: 'No Urut', kode: 'Kode Risiko', deskripsi: 'Deskripsi / Peristiwa Risiko', akar: 'Akar Penyebab', probInherent: 'Probabilitas Inherent (1-5)', dampakInherent: 'Dampak Inherent (1-5)', bobotInherent: 'Bobot Inherent', peringkatInherent: 'Peringkat Inherent', strategi: 'Strategi Penanganan', probResidual: 'Probabilitas Residual (1-5)', dampakResidual: 'Dampak Residual (1-5)', peringkatResidual: 'Peringkat Residual' },
     ict_service: { kategori: 'Kategori Layanan', jumlah: 'Jumlah Tiket', bulan: 'Bulan (01-12)', tahun: 'Tahun', keterangan: 'Keterangan' },
-    ict_maintenance: { kegiatan: 'Nama Kegiatan', tahun: 'Tahun', bulan: 'Bulan (1-12)', minggu: 'Minggu (1-4)', tipe: 'Tipe (rencana/realisasi)', status: 'Status', keterangan: 'Keterangan' }
+    ict_maintenance: { kegiatan: 'Nama Kegiatan', tahun: 'Tahun', bulan: 'Bulan (1-12)', minggu: 'Minggu (1-4)', tipe: 'Tipe (rencana/realisasi)', status: 'Status', keterangan: 'Keterangan' },
+    material_balance: { kimap: 'KIMAP', deskripsi: 'Deskripsi Material', plant: 'Plant', storage_location: 'Storage Location', uom: 'UoM', stock_awal: 'Stock Awal', masuk: 'Masuk', keluar: 'Keluar', stock_akhir: 'Stock Akhir', physical_check: 'Physical Check', selisih_physical: 'Selisih Physical', qty_mysap: 'Qty MySAP', selisih_mysap: 'Selisih MySAP', binloc: 'BINLOC' }
 };
 
 const MAPPING_DEFAULTS = {
@@ -41,8 +42,11 @@ const MAPPING_DEFAULTS = {
     bbm: { bulan: 'Januari', stock_awal_solar: 0, penerimaan_solar: 0, pengeluaran_ag_solar: 0, pengeluaran_proyek_solar: 0, stock_akhir_solar: 0 },
     risk_register: { no: 1, kode: 'LHD-OPS-001', deskripsi: 'Risiko', akar: '-', probInherent: 3, dampakInherent: 3, bobotInherent: 9, peringkatInherent: 'MODERATE RISK', strategi: 'MITIGATE', probResidual: 2, dampakResidual: 2, peringkatResidual: 'LOW TO MODERATE RISK' },
     ict_service: { kategori: 'Jaringan', jumlah: 0, bulan: '06', tahun: 2026, keterangan: 'Layanan ICT' },
-    ict_maintenance: { kegiatan: 'Minor Maintenance Server', tahun: 2026, bulan: 1, minggu: 1, tipe: 'rencana', status: 'Terjadwal', keterangan: 'Rutin' }
+    ict_maintenance: { kegiatan: 'Minor Maintenance Server', tahun: 2026, bulan: 1, minggu: 1, tipe: 'rencana', status: 'Terjadwal', keterangan: 'Rutin' },
+    material_balance: { kimap: '', deskripsi: '', plant: 'E003', storage_location: 'LHD1', uom: 'PCS', stock_awal: 0, masuk: 0, keluar: 0, stock_akhir: 0, physical_check: 0, selisih_physical: 0, qty_mysap: 0, selisih_mysap: 0, binloc: '-' }
 };
+
+const BACKEND_HANDLED_TYPES = ['bbm', 'perbaikan_rumdin', 'alat_berat', 'material_balance', 'logistik', 'risk_register'];
 
 export default function UploadWizardModal({ isOpen, onClose, auth }) {
     if (!isOpen) return null;
@@ -77,10 +81,9 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
             { id: 'lembur_tad', label: 'Data Lembur TAD (Human Capital)' },
         ],
         'Aset dan Fasility Management (FM)': [
-            { id: 'logistik', label: 'Stok Material Gudang (FM)' },
-            { id: 'alat_berat', label: 'Aset Alat Berat & KIR (FM)' },
+            { id: 'material_balance', label: 'Stok Material Gudang - Matbal SOH & 2YSP (FM)' },
+            { id: 'alat_berat', label: 'Alat Berat dan KRP (FM)' },
             { id: 'perbaikan_rumdin', label: 'Perbaikan Rumah Dinas dan Kantor (FM)' },
-            { id: 'bbm', label: 'Laporan Pemakaian BBM (FM)' }
         ],
         'Budgeting': [
             { id: 'budget_abo', label: 'Data Detail Budget ABO (Overhead/Operasi)' },
@@ -100,6 +103,10 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
     };
 
     const filteredDataTypes = Object.keys(groupedDataTypes).reduce((acc, key) => {
+        if (roleLower.includes('executive') || (roleLower.startsWith('admin') && !roleLower.includes('bpb') && !roleLower.includes('hc') && !roleLower.includes('ict') && !roleLower.includes('logistik') && !roleLower.includes('facility'))) {
+            acc[key] = groupedDataTypes[key];
+            return acc;
+        }
         if (isHeadOrManager) {
             return acc; // Kepala dan Manager tidak dapat mengunggah data
         }
@@ -127,6 +134,17 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
         if (!selectedFile) return;
 
         setFile(selectedFile);
+
+        // If this is a complex format handled by dedicated backend PHP processor, skip client-side parsing completely
+        if (BACKEND_HANDLED_TYPES.includes(dataType)) {
+            setHeaders([]);
+            setRawRows([]);
+            setMappings({});
+            setStep(3);
+            setIsProcessing(false);
+            return;
+        }
+
         setIsProcessing(true);
 
         const reader = new FileReader();
@@ -193,16 +211,16 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                 setRawRows(parsedRows);
 
                 // If this is a complex format handled by backend, skip auto-mapping UI
-                if (['bbm', 'perbaikan_rumdin', 'alat_berat'].includes(dataType)) {
-                    // Set dummy mappings to prevent errors, though they won't be used
+                if (BACKEND_HANDLED_TYPES.includes(dataType)) {
                     setMappings({}); 
-                    // Go directly to Step 3 but change the UI or we can just keep them in a "Ready" state
-                    setStep(3); // Wait, if we keep them in Step 3, they still see the dropdowns. 
+                    setStep(3);
+                    setIsProcessing(false);
+                    return;
                 }
 
                 // Auto-map logic based on similarity
                 const initialMappings = {};
-                const specKeys = Object.keys(MAPPING_SPECS[dataType]);
+                const specKeys = Object.keys(MAPPING_SPECS[dataType] || {});
 
                 specKeys.forEach(key => {
                     const label = MAPPING_SPECS[dataType][key].toLowerCase();
@@ -263,7 +281,18 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
     };
 
     const handleSave = () => {
-        if (rawRows.length === 0) return;
+        if (!file) {
+            Swal.fire({
+                title: 'Perhatian',
+                text: 'Silakan pilih file Excel terlebih dahulu.',
+                icon: 'warning'
+            });
+            return;
+        }
+
+        if (!BACKEND_HANDLED_TYPES.includes(dataType) && rawRows.length === 0) {
+            return;
+        }
 
         setIsProcessing(true);
 
@@ -310,55 +339,26 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
             return row[idx] !== undefined ? row[idx] : fallback;
         };
 
-        // Format rows according to mapping
-        const formattedRows = rawRows.map(row => {
-            const item = {};
-            const specKeys = Object.keys(MAPPING_SPECS[dataType]);
-            const defaults = MAPPING_DEFAULTS[dataType];
-
-            specKeys.forEach(key => {
-                const rawVal = getVal(row, key);
-                const typeVal = typeof defaults[key];
-
-                if (typeVal === 'number') {
-                    item[key] = key.includes('jam') || key.includes('progress') ? cleanFloat(rawVal) : cleanInt(rawVal);
-                } else {
-                    item[key] = cleanString(rawVal) || defaults[key];
-                }
-            });
-
-            // Inject missing defaults that are not in specs (e.g. hardcoded kategori)
-            Object.keys(defaults).forEach(defKey => {
-                if (item[defKey] === undefined) {
-                    item[defKey] = defaults[defKey];
-                }
-            });
-            
-            return item;
-        });
-
-        // Submit to Laravel backend via Inertia post
-        const submitType = dataType.startsWith('budget_') ? 'budget_detail' : dataType;
-        
-        // INTERCEPT BBM UPLOAD: Send raw file to dedicated PHP processor
-        if (dataType === 'bbm') {
+        // INTERCEPT BACKEND-HANDLED UPLOADS: Send raw file directly to dedicated PHP processor
+        if (dataType === 'material_balance' || dataType === 'logistik') {
             const formData = new FormData();
             formData.append('file', file);
-            router.post('/import-bbm', formData, {
+            router.post('/import-material-balance', formData, {
                 preserveScroll: true,
                 onSuccess: () => {
                     Swal.fire({
                         title: 'Sukses!',
-                        text: 'File BBM berhasil diimpor.',
+                        text: 'File Material Balance Inventory (SOH & 2YSP) berhasil diimpor.',
                         icon: 'success',
                         confirmButtonColor: '#2563eb'
                     });
                     onClose();
                 },
                 onError: (errors) => {
+                    const msg = errors?.file || (typeof errors === 'object' && Object.values(errors).length > 0 ? Object.values(errors)[0] : 'Terjadi kesalahan saat mengimpor Material Balance Inventory.');
                     Swal.fire({
                         title: 'Gagal!',
-                        text: 'Terjadi kesalahan saat mengimpor BBM.',
+                        text: String(msg),
                         icon: 'error',
                         confirmButtonColor: '#2563eb'
                     });
@@ -437,7 +437,6 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
             router.post('/import-risk-register', formData, {
                 preserveScroll: true,
                 onSuccess: () => {
-                    // Clear stale localStorage data so UI immediately prefers DB data
                     try {
                         localStorage.removeItem('pertamina_risk_register_data');
                     } catch (e) {}
@@ -452,7 +451,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                 onError: (errors) => {
                     Swal.fire({
                         title: 'Gagal!',
-                        text: 'Terjadi kesalahan saat mengimpor Risk Register.',
+                        text: 'Terjadi kesalahan saat mengimpor file Risk Register.',
                         icon: 'error',
                         confirmButtonColor: '#2563eb'
                     });
@@ -463,6 +462,36 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
             });
             return;
         }
+
+        // Format rows according to mapping for client-side mapped types
+        const formattedRows = rawRows.map(row => {
+            const item = {};
+            const specKeys = Object.keys(MAPPING_SPECS[dataType] || {});
+            const defaults = MAPPING_DEFAULTS[dataType] || {};
+
+            specKeys.forEach(key => {
+                const rawVal = getVal(row, key);
+                const typeVal = typeof defaults[key];
+
+                if (typeVal === 'number') {
+                    item[key] = key.includes('jam') || key.includes('progress') ? cleanFloat(rawVal) : cleanInt(rawVal);
+                } else {
+                    item[key] = cleanString(rawVal) || defaults[key];
+                }
+            });
+
+            // Inject missing defaults that are not in specs (e.g. hardcoded kategori)
+            Object.keys(defaults).forEach(defKey => {
+                if (item[defKey] === undefined) {
+                    item[defKey] = defaults[defKey];
+                }
+            });
+            
+            return item;
+        });
+
+        // Submit to Laravel backend via Inertia post
+        const submitType = dataType.startsWith('budget_') ? 'budget_detail' : dataType;
 
         router.post('/import', {
             type: submitType,
@@ -618,7 +647,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                             <div className="bg-blue-50/60 p-3 border border-blue-150 rounded-2xl text-[11px] font-bold text-blue-800 flex items-center justify-between">
                                 <div className="flex items-center gap-1.5">
                                     <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
-                                    <span>Berhasil membaca berkas: {file?.name} ({rawRows.length} baris data)</span>
+                                    <span>Berhasil memilih berkas: {file?.name} {rawRows.length > 0 ? `(${rawRows.length} baris data)` : ''}</span>
                                 </div>
                                 <button 
                                     onClick={resetWizard} 
@@ -628,8 +657,8 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                                 </button>
                             </div>
 
-                            {/* MAPPING DROPDOWNS (Hidden by default or if complex) */}
-                            {!['bbm', 'perbaikan_rumdin', 'alat_berat'].includes(dataType) ? (
+                            {/* MAPPING DROPDOWNS (Hidden by default or if complex backend processed) */}
+                            {!BACKEND_HANDLED_TYPES.includes(dataType) ? (
                                 <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
                                     <div className="flex items-center justify-between mb-4">
                                     <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -652,10 +681,10 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
 
                                 {showAdvancedMapping && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-200">
-                                        {Object.keys(MAPPING_SPECS[dataType]).map(key => (
+                                        {Object.keys(MAPPING_SPECS[dataType] || {}).map(key => (
                                             <div key={key} className="flex flex-col gap-1.5">
                                                 <span className="text-[11px] font-black text-slate-600 uppercase flex items-center justify-between">
-                                                    <span>{MAPPING_SPECS[dataType][key]}</span>
+                                                    <span>{MAPPING_SPECS[dataType]?.[key]}</span>
                                                     <span className="font-mono text-slate-400 font-semibold">{key}</span>
                                                 </span>
                                                 <select
@@ -685,7 +714,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                             )}
 
                             {/* EXCEL PREVIEW TABLE */}
-                            {!['bbm', 'perbaikan_rumdin', 'alat_berat'].includes(dataType) && (
+                            {!BACKEND_HANDLED_TYPES.includes(dataType) && (
                                 <div className="space-y-2">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Preview 5 Baris Pertama</h4>
                                 <div className="border border-slate-200 rounded-2xl overflow-hidden overflow-x-auto">
@@ -693,8 +722,8 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                                         <thead className="bg-slate-50 border-b border-slate-200">
                                             <tr>
                                                 <th className="p-2.5 text-slate-500 font-bold w-10 text-center">No</th>
-                                                {Object.keys(MAPPING_SPECS[dataType]).map(key => (
-                                                    <th key={key} className="p-2.5 text-slate-600 font-bold">{MAPPING_SPECS[dataType][key]}</th>
+                                                {Object.keys(MAPPING_SPECS[dataType] || {}).map(key => (
+                                                    <th key={key} className="p-2.5 text-slate-600 font-bold">{MAPPING_SPECS[dataType]?.[key]}</th>
                                                 ))}
                                             </tr>
                                         </thead>
@@ -702,7 +731,7 @@ export default function UploadWizardModal({ isOpen, onClose, auth }) {
                                             {rawRows.slice(0, 5).map((row, idx) => (
                                                 <tr key={idx}>
                                                     <td className="p-2.5 text-slate-400 text-center font-bold">{idx + 1}</td>
-                                                    {Object.keys(MAPPING_SPECS[dataType]).map(key => {
+                                                    {Object.keys(MAPPING_SPECS[dataType] || {}).map(key => {
                                                         const colIdx = mappings[key];
                                                         const cellVal = row[colIdx] !== undefined ? row[colIdx] : '-';
                                                         return (

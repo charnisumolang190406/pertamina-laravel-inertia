@@ -25,6 +25,7 @@ Route::middleware('guest')->group(function () {
 
 // Public Template Downloads (Accessible without login redirect)
 Route::get('/logistik/perbaikan/template', [LogistikController::class, 'downloadTemplateExcel'])->name('logistik.perbaikan.template');
+Route::get('/logistik/alat-berat/template', [LogistikController::class, 'downloadTemplateAlatBeratExcel'])->name('logistik.alat_berat.template');
 
 // Protected Authenticated Routes
 Route::middleware('auth')->group(function () {
@@ -47,7 +48,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/logistik/stok/clear', [LogistikController::class, 'clearStok'])->name('logistik.stok.clear');
     Route::post('/logistik/stok/reset', [LogistikController::class, 'resetStok'])->name('logistik.stok.reset');
 
-    // Logistik - Alat Berat Routes
+    // Logistik - Alat Berat & KRP Routes
+    Route::get('/logistik/alat-berat/export', [LogistikController::class, 'exportAlatBerat'])->name('logistik.alat_berat.export');
     Route::delete('/logistik/alat-berat/{id}', [LogistikController::class, 'destroyAlatBerat'])->name('logistik.alat_berat.destroy');
     Route::post('/logistik/alat-berat/clear', [LogistikController::class, 'clearAlatBerat'])->name('logistik.alat_berat.clear');
     Route::post('/logistik/alat-berat/reset', [LogistikController::class, 'resetAlatBerat'])->name('logistik.alat_berat.reset');
@@ -73,11 +75,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/arsip/{id}', [ArsipController::class, 'destroyArsip'])->name('arsip.destroy');
     Route::delete('/arsip/log/{id}', [ArsipController::class, 'destroyUploadLog'])->name('arsip.log.destroy');
 
+    // Logistik - Material Balance (Stok Material Gudang SOH & 2YSP) Routes
+    Route::get('/logistik/material-balance/export', [LogistikController::class, 'exportMaterialBalance'])->name('logistik.material_balance.export');
+    Route::get('/logistik/material-balance/template', [LogistikController::class, 'downloadTemplateMaterialBalanceExcel'])->name('logistik.material_balance.template');
+    Route::delete('/logistik/material-balance/{id}', [LogistikController::class, 'destroyMaterialBalance'])->name('logistik.material_balance.destroy');
+    Route::post('/logistik/material-balance/clear', [LogistikController::class, 'clearMaterialBalance'])->name('logistik.material_balance.clear');
+    Route::post('/logistik/material-balance/reset', [LogistikController::class, 'resetMaterialBalance'])->name('logistik.material_balance.reset');
+
     // Import Excel Wizard Route
     Route::post('/import', [ImportController::class, 'import'])->name('import');
     Route::post('/import-perbaikan', [PerbaikanImportController::class, 'import'])->name('import.perbaikan');
     Route::post('/import-bbm', [BbmImportController::class, 'import'])->name('import.bbm');
     Route::post('/import-alat-berat', [AlatBeratImportController::class, 'import'])->name('import.alat_berat');
+    Route::post('/import-material-balance', [\App\Http\Controllers\MaterialBalanceImportController::class, 'import'])->name('import.material_balance');
     Route::post('/import-risk-register', [RiskRegisterImportController::class, 'import'])->name('import.risk_register');
     Route::post('/risk-register/clear', [RiskRegisterImportController::class, 'clear'])->name('risk_register.clear');
 

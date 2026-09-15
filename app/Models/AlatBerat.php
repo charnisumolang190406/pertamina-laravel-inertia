@@ -12,6 +12,6 @@ class AlatBerat extends Model
     public $incrementing = false;
     protected $primaryKey = 'id';
     protected $fillable = [
-        'id', 'nopol', 'tahun', 'jenis', 'alokasi', 'merk', 'model', 'stnk', 'pajak', 'kir', 'status', 'kondisi'
+        'id', 'nopol', 'tahun', 'jenis', 'kategori', 'alokasi', 'merk', 'model', 'stnk', 'pajak', 'kir', 'status', 'kondisi'
     ];
 }

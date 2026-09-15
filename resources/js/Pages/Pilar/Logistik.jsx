@@ -1,15 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import { 
-  Package, Laptop, Folder, Trash2, Database, AlertCircle, CheckCircle, Droplet, Plus, Download, UploadCloud
+  Package, Laptop, Folder, Trash2, Database, AlertCircle, CheckCircle, Droplet, Plus, Download, UploadCloud, Truck, Warehouse
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import KpiCard from '../../Components/KpiCard';
 import Pagination from '../../Components/Pagination';
 import PerbaikanRumahDinasSection from '../../Components/PerbaikanRumahDinasSection';
+import AlatBeratKrpSection from '../../Components/AlatBeratKrpSection';
+import StokMaterialSection from '../../Components/StokMaterialSection';
+
 export default function Logistik(props) {
     const { 
         stokList = [], 
+        materialBalanceList = [], 
         alatBeratList = [], 
         perbaikanList = [], 
         momList = [], 
@@ -57,8 +61,12 @@ export default function Logistik(props) {
         }
     }, [activeSubMenu]);
 
-    const totalStockItems = stokList.length;
-    const totalJenisMaterial = new Set(stokList.map(item => item?.nama || '')).size;
+    const totalStockItems = materialBalanceList.length > 0 
+        ? materialBalanceList.reduce((acc, curr) => acc + (Number(curr.stock_akhir) || 0), 0)
+        : stokList.length;
+    const totalJenisMaterial = materialBalanceList.length > 0
+        ? materialBalanceList.length
+        : new Set(stokList.map(item => item?.nama || '')).size;
     const totalAlatBerat = alatBeratList.length;
     const totalPerbaikan = perbaikanList.length;
     const totalRealisasi = perbaikanList.reduce((acc, c) => acc + (Number(c?.realisasi) || 0), 0);
@@ -86,6 +94,9 @@ export default function Logistik(props) {
         } else if (activeSubTab === 'perbaikan') {
             url = `/logistik/perbaikan/${id}`;
             confirmText = 'Hapus data perbaikan aset ini?';
+        } else if (activeSubTab === 'stok_material' || activeSubTab === 'stok' || activeSubTab === 'bbm') {
+            url = `/logistik/material-balance/${id}`;
+            confirmText = 'Hapus item material ini?';
         }
 
         if (url && confirm(confirmText)) {
@@ -129,25 +140,25 @@ export default function Logistik(props) {
                     bgClass="bg-indigo-50" 
                 />
                 <KpiCard 
-                    title="Aset Alat Berat" 
+                    title="Aset Alat Berat & KRP" 
                     value={`${totalAlatBerat} Unit`} 
-                    subtitle="Crane & Forklift Aktif" 
-                    icon={Laptop} 
+                    subtitle="Crane, TMC, & Mobil KRP" 
+                    icon={Truck} 
                     colorClass="text-amber-600" 
                     bgClass="bg-amber-50" 
                 />
                 <KpiCard 
                     title="Total Stok Gudang" 
-                    value={`${totalStockItems} Unit`} 
-                    subtitle="Keseluruhan item fisik" 
+                    value={`${totalStockItems.toLocaleString()} Unit`} 
+                    subtitle="Material Fisik SOH & 2YSP" 
                     icon={Package} 
                     colorClass="text-blue-600" 
                     bgClass="bg-blue-50" 
                 />
                 <KpiCard 
                     title="Total Jenis Material" 
-                    value={`${totalJenisMaterial} Jenis`} 
-                    subtitle="Berdasarkan kategori unik" 
+                    value={`${totalJenisMaterial} KIMAP`} 
+                    subtitle="Item SOH & 2 Years Spare Part" 
                     icon={Database} 
                     colorClass="text-emerald-600" 
                     bgClass="bg-emerald-50" 
@@ -170,45 +181,17 @@ export default function Logistik(props) {
                         activeSubTab === 'alat_berat' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:text-slate-700'
                     }`}
                 >
-                    <span className="flex items-center justify-center gap-1.5"><Laptop className="w-4 h-4"/> Alat Berat & Aset LHD ({totalAlatBerat})</span>
+                    <span className="flex items-center justify-center gap-1.5"><Truck className="w-4 h-4"/> Alat Berat dan KRP ({totalAlatBerat})</span>
                 </button>
                 <button
-                    onClick={() => setActiveSubTab('bbm')}
+                    onClick={() => setActiveSubTab('stok_material')}
                     className={`flex-1 py-2 text-xs font-bold rounded-xl transition-colors cursor-pointer ${
-                        activeSubTab === 'bbm' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:text-slate-700'
+                        activeSubTab === 'stok_material' || activeSubTab === 'stok' || activeSubTab === 'bbm' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:text-slate-700'
                     }`}
                 >
-                    <span className="flex items-center justify-center gap-1.5"><Droplet className="w-4 h-4"/> Laporan Pemakaian BBM</span>
+                    <span className="flex items-center justify-center gap-1.5"><Warehouse className="w-4 h-4"/> Stok Material Gudang ({materialBalanceList.length})</span>
                 </button>
             </div>
-
-            {/* ACTION BUTTONS (For Alat Berat & BBM - HANYA Admin Facility Management) */}
-            {canUploadFM && activeSubTab !== 'perbaikan' && (
-                <div className="flex justify-end gap-2 text-xs font-bold">
-                    <button
-                        onClick={() => Swal.fire({
-                            title: 'Fitur Belum Tersedia',
-                            text: 'Fitur Tambah Data secara manual untuk tab ini sedang dalam tahap pengembangan. Silakan gunakan tombol Upload Laporan (Excel) di pojok kanan atas layar.',
-                            icon: 'info',
-                            confirmButtonColor: '#2563eb'
-                        })}
-                        className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-xl border border-blue-700 cursor-pointer transition-all active:scale-95 shadow-sm"
-                    >
-                        <Plus className="w-3.5 h-3.5" /> Tambah Data {activeSubTab.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </button>
-                    <button
-                        onClick={() => Swal.fire({
-                            title: 'Fitur Belum Tersedia',
-                            text: 'Fitur Unduh Laporan untuk tab ini sedang dalam tahap pengembangan.',
-                            icon: 'info',
-                            confirmButtonColor: '#2563eb'
-                        })}
-                        className="flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 px-4 py-1.5 rounded-xl border border-slate-300 cursor-pointer transition-all active:scale-95 shadow-sm"
-                    >
-                        <Download className="w-3.5 h-3.5" /> Unduh Laporan
-                    </button>
-                </div>
-            )}
 
             {/* SUB-TAB 1: PERBAIKAN (5 Kategori Kerusakan, 3 Grafik Analitik, SLA & CRUD) */}
             {activeSubTab === 'perbaikan' && (
@@ -219,140 +202,21 @@ export default function Logistik(props) {
                 />
             )}
 
-            {/* SUB-TAB 2: ALAT BERAT */}
+            {/* SUB-TAB 2: ALAT BERAT & KRP */}
             {activeSubTab === 'alat_berat' && (
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-                    <div className="p-5 border-b border-slate-100 bg-slate-50/30">
-                        <h3 className="font-extrabold text-slate-800 text-sm">Monitoring Masa Berlaku Dokumen & Kondisi Alat Berat</h3>
-                        <p className="text-[11px] text-slate-500 font-medium mt-0.5">Masa berlaku STNK, Pajak, dan KIR untuk crane & forklift operasional.</p>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs whitespace-nowrap">
-                            <thead className="bg-slate-50 border-b border-slate-200">
-                                <tr>
-                                    <th className="p-3.5 text-slate-500 font-bold w-10 text-center">No</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Jenis Aset</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Merk</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Type / Model</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Alokasi</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">No. Polisi</th>
-                                    <th className="p-3.5 text-slate-500 font-bold text-center">STNK (5 Thn)</th>
-                                    <th className="p-3.5 text-slate-500 font-bold text-center">Pajak (1 Thn)</th>
-                                    <th className="p-3.5 text-slate-500 font-bold text-center">KIR (6 Bln)</th>
-                                    <th className="p-3.5 text-slate-500 font-bold">Status Surat</th>
-                                    <th className="p-3.5 text-slate-500 font-bold max-w-xs text-wrap">Kondisi Fisik & Keterangan</th>
-                                    {isAdmin && <th className="p-3.5 text-slate-500 font-bold text-center w-20">Aksi</th>}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {alatBeratList.slice((alatBeratPage - 1) * ITEMS_PER_PAGE, alatBeratPage * ITEMS_PER_PAGE).map((item, idx) => {
-                                    const actualIdx = (alatBeratPage - 1) * ITEMS_PER_PAGE + idx;
-                                    return (
-                                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                        <td className="p-3.5 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
-                                        <td className="p-3.5 font-bold text-slate-800">{item.jenis}</td>
-                                        <td className="p-3.5 font-semibold text-slate-600">{item.merk}</td>
-                                        <td className="p-3.5 font-mono text-slate-600">{item.model}</td>
-                                        <td className="p-3.5 text-slate-600 font-bold">{item.alokasi}</td>
-                                        <td className="p-3.5 font-mono text-slate-600">{item.nopol}</td>
-                                        <td className="p-3.5 text-center font-mono text-slate-500">{item.stnk}</td>
-                                        <td className="p-3.5 text-center font-mono text-slate-500">{item.pajak}</td>
-                                        <td className="p-3.5 text-center font-mono text-slate-500">{item.kir}</td>
-                                        <td className="p-3.5">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                                (item.status || '').toLowerCase().includes('aman') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
-                                            }`}>
-                                                {item.status || '-'}
-                                            </span>
-                                        </td>
-                                        <td className="p-3.5 max-w-xs text-wrap text-slate-600 font-medium">
-                                            {(item.kondisi || '').toLowerCase().includes('maintenance') ? (
-                                                <span className="text-red-600 font-bold flex items-center gap-1">
-                                                    <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {item.kondisi}
-                                                </span>
-                                            ) : (item.kondisi || '-')}
-                                        </td>
-                                        {isAdmin && (
-                                            <td className="p-3.5 text-center">
-                                                <button
-                                                    onClick={() => handleDeleteItem(item.id)}
-                                                    className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 cursor-pointer"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </td>
-                                        )}
-                                    </tr>
-                                    );
-                                })}
-                                {alatBeratList.length === 0 && (
-                                    <tr>
-                                        <td colSpan={isAdmin ? 12 : 11} className="p-8 text-center text-slate-400 font-medium">
-                                            Tidak ada data aset alat berat.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                        <Pagination currentPage={alatBeratPage} totalItems={alatBeratList.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setAlatBeratPage} />
-                    </div>
-                </div>
+                <AlatBeratKrpSection
+                    alatBeratList={alatBeratList}
+                    isAdmin={true}
+                    formatDate={formatDate}
+                />
             )}
 
-            {/* SUB-TAB 3: BBM */}
-            {activeSubTab === 'bbm' && (
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-                    <div className="p-5 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
-                        <div>
-                            <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2">
-                                LAPORAN PEMAKAIAN BAHAN BAKAR MINYAK (BBM) TAHUN 2026
-                            </h3>
-                            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Lahendong Periode Januari sd Desember 2026 (Liter)</p>
-                        </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs whitespace-nowrap border-collapse">
-                            <thead>
-                                <tr className="bg-blue-50 border-b border-slate-200">
-                                    <th className="p-3 text-slate-600 font-extrabold border-r border-slate-200 text-center uppercase text-[10px]" rowSpan={2}>No</th>
-                                    <th className="p-3 text-slate-600 font-extrabold border-r border-slate-200 text-center uppercase text-[10px]" rowSpan={2}>Bulan</th>
-                                    <th className="p-3 text-slate-700 font-black border-r border-slate-200 text-center bg-blue-100" colSpan={5}>BAHAN BAKAR MINYAK (BBM) SOLAR</th>
-                                </tr>
-                                <tr className="bg-slate-50 border-b border-slate-200">
-                                    <th className="p-2.5 text-slate-600 font-bold border-r border-slate-200 text-center text-[10px] uppercase bg-yellow-100/50">Stock Awal</th>
-                                    <th className="p-2.5 text-slate-600 font-bold border-r border-slate-200 text-center text-[10px] uppercase bg-yellow-100/50">Penerimaan</th>
-                                    <th className="p-2.5 text-slate-600 font-bold border-r border-slate-200 text-center text-[10px] uppercase bg-yellow-100/50">Pengeluaran AG LHD</th>
-                                    <th className="p-2.5 text-slate-600 font-bold border-r border-slate-200 text-center text-[10px] uppercase bg-yellow-100/50">Pengeluaran Proyek LHD</th>
-                                    <th className="p-2.5 text-slate-600 font-bold border-r border-slate-200 text-center text-[10px] uppercase bg-yellow-100/50">Stock Akhir</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {bbmList.slice((bbmPage - 1) * ITEMS_PER_PAGE, bbmPage * ITEMS_PER_PAGE).map((item, idx) => {
-                                    const actualIdx = (bbmPage - 1) * ITEMS_PER_PAGE + idx;
-                                    return (
-                                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                        <td className="p-3 border-r border-slate-100 text-slate-500 text-center font-medium">{actualIdx + 1}</td>
-                                        <td className="p-3 border-r border-slate-100 font-bold text-slate-800">{item.bulan}</td>
-                                        <td className="p-3 border-r border-slate-100 text-right font-mono text-slate-700">{formatBbm(item.stock_awal_solar)}</td>
-                                        <td className="p-3 border-r border-slate-100 text-right font-mono text-green-700 font-bold">{formatBbm(item.penerimaan_solar)}</td>
-                                        <td className="p-3 border-r border-slate-100 text-right font-mono text-red-600">{formatBbm(item.pengeluaran_ag_solar)}</td>
-                                        <td className="p-3 border-r border-slate-100 text-right font-mono text-slate-600">{formatBbm(item.pengeluaran_proyek_solar)}</td>
-                                        <td className="p-3 border-r border-slate-100 text-right font-mono text-blue-700 font-bold">{formatBbm(item.stock_akhir_solar)}</td>
-                                    </tr>
-                                    );
-                                })}
-                                {bbmList.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="p-8 text-center text-slate-400 font-medium">
-                                            Belum ada data pemakaian BBM.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                        <Pagination currentPage={bbmPage} totalItems={bbmList.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setBbmPage} />
-                    </div>
-                </div>
+            {/* SUB-TAB 3: STOK MATERIAL GUDANG (MATERIAL BALANCE SOH & 2YSP) */}
+            {(activeSubTab === 'stok_material' || activeSubTab === 'stok' || activeSubTab === 'bbm') && (
+                <StokMaterialSection
+                    materialBalanceList={materialBalanceList}
+                    isAdmin={canUploadFM}
+                />
             )}
 
 
